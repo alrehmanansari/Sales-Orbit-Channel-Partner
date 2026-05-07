@@ -269,6 +269,7 @@
             <label class="form-label">VA Status</label>
             <select class="form-input" id="e-va-status">
               <option value="">—</option>
+              <option value="required">Required</option>
               <option value="applied">Applied</option>
               <option value="issued">Issued</option>
               <option value="activated">Activated</option>
@@ -491,7 +492,7 @@ async function openPanel(id, defaultTab = 'info') {
     document.getElementById('panel-status').innerHTML  = Auth.statusBadge(a.status);
 
     // Info tab
-    const _vaL   = { applied:'Applied', issued:'Issued', activated:'Activated' };
+    const _vaL   = { required:'Required', applied:'Applied', issued:'Issued', activated:'Activated' };
     const _cardL = { required:'Required', applied:'Applied', issued:'Issued' };
 
     document.getElementById('info-grid').innerHTML = [

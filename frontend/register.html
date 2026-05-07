@@ -60,6 +60,7 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center}
         <defs><linearGradient id="lg" x1="40" y1="4" x2="40" y2="76" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#4796E3"/><stop offset="45%" stop-color="#9177C7"/><stop offset="100%" stop-color="#CA6673"/></linearGradient></defs>
         <path d="M40 4C40 4 41.6 22 47 35C53 49 68 40 76 40C68 40 53 31 47 45C41.6 58 40 76 40 76C40 76 38.4 58 33 45C27 31 12 40 4 40C12 40 27 49 33 35C38.4 22 40 4 40 4Z" fill="url(#lg)"/>
       </svg>
+      <span class="auth-brand-name">Sales Orbit</span>
     </div>
 
     <div class="auth-body">
@@ -208,8 +209,11 @@ async function doRegister() {
     await API.register({ name: `${firstName} ${lastName}`, email, password, company_name: cpName || null, designation });
     _pendingEmail = email;
     document.getElementById('otp-email-display').textContent = email;
-    // Hide form fields, show OTP block
-    document.querySelectorAll('.auth-grid, .auth-field, .terms-row').forEach(el => el.style.display = 'none');
+    // Hide form fields but NOT those inside step-otp
+    document.querySelectorAll('.auth-grid, .terms-row').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.auth-field').forEach(el => {
+      if (!el.closest('#step-otp')) el.style.display = 'none';
+    });
     btn.style.display = 'none';
     document.getElementById('step-otp').style.display = '';
     document.getElementById('otp-input').focus();

@@ -29,14 +29,29 @@ function _rightControls(user) {
           <span class="notif-badge hidden" id="notif-badge">0</span>
         </button>
       </div>
-      <div class="user-menu-btn" style="cursor:default">
-        <span class="av av-sm ${Auth.avatarColor(user?.name)}" id="user-avatar">${Auth.avatarInitials(user?.name)}</span>
-        <div>
-          <div class="user-name" id="user-name">${user?.name || ''}</div>
-          <div class="user-role" id="user-role">${Auth.roleLabel(user?.role)}</div>
+      <div style="position:relative">
+        <button onclick="Layout.toggleUserMenu()" style="display:flex;align-items:center;gap:8px;background:transparent;border:1px solid transparent;border-radius:10px;padding:5px 10px;cursor:pointer;transition:all .15s;font-family:var(--font)"
+          onmouseenter="this.style.background='var(--bg3)';this.style.borderColor='var(--border2)'"
+          onmouseleave="this.style.background='transparent';this.style.borderColor='transparent'">
+          <span class="av av-sm ${Auth.avatarColor(user?.name)}" id="user-avatar">${Auth.avatarInitials(user?.name)}</span>
+          <div style="text-align:left">
+            <div class="user-name" id="user-name">${user?.name || ''}</div>
+            <div class="user-role" id="user-role">${Auth.roleLabel(user?.role)}</div>
+          </div>
+          <svg style="width:14px;height:14px;color:var(--text3);flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="user-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border2);border-radius:12px;box-shadow:0 8px 24px -4px rgba(0,0,0,.15);min-width:170px;z-index:400;overflow:hidden">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:600;color:var(--text)">${user?.name || ''}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${user?.email || ''}</div>
+          </div>
+          <button onclick="Auth.logout()" style="width:100%;text-align:left;padding:10px 14px;border:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--g-pink);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .15s"
+            onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='transparent'">
+            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign out
+          </button>
         </div>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="Auth.logout()" style="border-radius:50px;padding:6px 14px;font-size:12px">Sign out</button>
     </div>`;
 }
 
@@ -110,4 +125,15 @@ function topbar(title, subtitle, user) {
   </div>`;
 }
 
-window.Layout = { partnerTopnav, internalTopnav, partnerSidebar, internalSidebar, topbar, notifPanel };
+function toggleUserMenu() {
+  const d = document.getElementById('user-dropdown');
+  if (d) d.style.display = d.style.display === 'none' ? '' : 'none';
+}
+document.addEventListener('click', function(e) {
+  const d = document.getElementById('user-dropdown');
+  if (!d) return;
+  const btn = d.previousElementSibling;
+  if (!d.contains(e.target) && btn && !btn.contains(e.target)) d.style.display = 'none';
+});
+
+window.Layout = { partnerTopnav, internalTopnav, partnerSidebar, internalSidebar, topbar, notifPanel, toggleUserMenu };

@@ -456,7 +456,7 @@ async function loadAccountsTable() {
     document.getElementById('acct-count').textContent   = total;
     document.getElementById('acct-showing').textContent = total ? `${((acctPage-1)*20)+1}–${Math.min(acctPage*20,total)} of ${total}` : '';
 
-    const _vaL   = {applied:'Applied',issued:'Issued',activated:'Activated'};
+    const _vaL   = {required:'Required',applied:'Applied',issued:'Issued',activated:'Activated'};
     const _cardL = {required:'Required',applied:'Applied',issued:'Issued'};
 
     if (!accounts.length) {

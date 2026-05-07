@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   website               VARCHAR(500),
   nature_of_business    VARCHAR(100),
   onboarding_specialist VARCHAR(255),
-  va_status             VARCHAR(30) CHECK (va_status IN ('applied', 'issued', 'activated')),
+  va_status             VARCHAR(30) CHECK (va_status IN ('required', 'applied', 'issued', 'activated')),
   card_status           VARCHAR(30) CHECK (card_status IN ('required', 'applied', 'issued')),
   remarks               TEXT,
 
@@ -232,5 +232,7 @@ CREATE INDEX IF NOT EXISTS idx_email_otps_email ON email_otps(email);
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS website               VARCHAR(500);
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS nature_of_business    VARCHAR(100);
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS onboarding_specialist VARCHAR(255);
-ALTER TABLE accounts ADD COLUMN IF NOT EXISTS va_status             VARCHAR(30) CHECK (va_status IN ('applied', 'issued', 'activated'));
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS va_status             VARCHAR(30);
+ALTER TABLE accounts DROP CONSTRAINT IF EXISTS accounts_va_status_check;
+ALTER TABLE accounts ADD CONSTRAINT accounts_va_status_check CHECK (va_status IN ('required', 'applied', 'issued', 'activated'));
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS card_status           VARCHAR(30) CHECK (card_status IN ('required', 'applied', 'issued'));

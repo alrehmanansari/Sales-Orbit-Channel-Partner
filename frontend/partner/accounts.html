@@ -94,25 +94,25 @@
           </div>
         </div>
         <div style="overflow-x:auto">
-          <table style="min-width:1400px">
+          <table style="min-width:1200px;font-size:11px">
             <thead>
-              <tr>
-                <th>Client ID</th>
-                <th>Company Name</th>
-                <th>Reg Country</th>
-                <th>Director Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Website</th>
-                <th>Reg Date</th>
-                <th>Biz Type</th>
-                <th>Vertical</th>
-                <th>Nature of Business</th>
-                <th>Onboarding Specialist</th>
-                <th>Account Status</th>
-                <th>VA Status</th>
-                <th>Card Status</th>
-                <th style="text-align:center">Actions</th>
+              <tr style="font-size:10px">
+                <th style="padding:7px 8px;white-space:nowrap">Client ID</th>
+                <th style="padding:7px 8px">Company</th>
+                <th style="padding:7px 8px">Country</th>
+                <th style="padding:7px 8px">Director</th>
+                <th style="padding:7px 8px">Email</th>
+                <th style="padding:7px 8px">Phone</th>
+                <th style="padding:7px 8px">Website</th>
+                <th style="padding:7px 8px;white-space:nowrap">Reg Date</th>
+                <th style="padding:7px 8px">Biz Type</th>
+                <th style="padding:7px 8px">Vertical</th>
+                <th style="padding:7px 8px">Nature of Biz</th>
+                <th style="padding:7px 8px">Specialist</th>
+                <th style="padding:7px 8px">Status</th>
+                <th style="padding:7px 8px">VA</th>
+                <th style="padding:7px 8px">Card</th>
+                <th style="padding:7px 8px;text-align:center">Actions</th>
               </tr>
             </thead>
             <tbody id="accounts-tbody">
@@ -327,6 +327,7 @@
           <label class="form-label">VA Status</label>
           <select class="form-input" id="f-va-status">
             <option value="">—</option>
+            <option value="required">Required</option>
             <option value="applied">Applied</option>
             <option value="issued">Issued</option>
             <option value="activated">Activated</option>
@@ -471,27 +472,28 @@ async function loadAccounts() {
       return;
     }
 
+    const _cellStyle = 'padding:6px 8px;font-size:11px;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
     tbody.innerHTML = accounts.map(a => `
       <tr onclick="openDetailPanel('${a.id}')">
-        <td><div class="td-primary">${esc(a.account_number||'—')}</div></td>
-        <td><div class="td-primary">${esc(a.company_name)}</div></td>
-        <td>${esc(a.country||'—')}</td>
-        <td>${esc(a.contact_name||'—')}</td>
-        <td style="font-size:12px">${esc(a.contact_email||'—')}</td>
-        <td style="font-size:12px">${esc(a.contact_phone||'—')}</td>
-        <td style="font-size:12px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.website?`<a href="${esc(a.website)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--g-blue)">${esc(a.website)}</a>`:'—'}</td>
-        <td style="font-size:12px">${Auth.formatDate(a.registration_date)}</td>
-        <td>${Auth.businessTypeLabel(a.business_type)}</td>
-        <td>${Auth.verticalLabel(a.vertical)}</td>
-        <td style="font-size:12px">${esc(a.nature_of_business||'—')}</td>
-        <td style="font-size:12px">${esc(a.onboarding_specialist||'—')}</td>
-        <td>${Auth.statusBadge(a.status)}</td>
-        <td style="font-size:12px">${esc(_vaL[a.va_status]||a.va_status||'—')}</td>
-        <td style="font-size:12px">${esc(_cardL[a.card_status]||a.card_status||'—')}</td>
-        <td style="text-align:center;white-space:nowrap">
-          <div style="display:flex;gap:5px;justify-content:center" onclick="event.stopPropagation()">
-            <button class="btn btn-ghost btn-sm" onclick="openEditModal('${a.id}')">Edit</button>
-            <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="openTicketModal('${a.id}')">Create Ticket</button>
+        <td style="${_cellStyle}">${esc(a.account_number||'—')}</td>
+        <td style="${_cellStyle};font-weight:500;max-width:130px">${esc(a.company_name)}</td>
+        <td style="${_cellStyle}">${esc(a.country||'—')}</td>
+        <td style="${_cellStyle}">${esc(a.contact_name||'—')}</td>
+        <td style="${_cellStyle};max-width:130px">${esc(a.contact_email||'—')}</td>
+        <td style="${_cellStyle}">${esc(a.contact_phone||'—')}</td>
+        <td style="${_cellStyle}">${a.website?`<a href="${esc(a.website)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--g-blue)">${esc(a.website)}</a>`:'—'}</td>
+        <td style="${_cellStyle}">${Auth.formatDate(a.registration_date)}</td>
+        <td style="${_cellStyle}">${Auth.businessTypeLabel(a.business_type)}</td>
+        <td style="${_cellStyle}">${Auth.verticalLabel(a.vertical)}</td>
+        <td style="${_cellStyle}">${esc(a.nature_of_business||'—')}</td>
+        <td style="${_cellStyle}">${esc(a.onboarding_specialist||'—')}</td>
+        <td style="padding:6px 8px">${Auth.statusBadge(a.status)}</td>
+        <td style="${_cellStyle}">${esc(_vaL[a.va_status]||a.va_status||'—')}</td>
+        <td style="${_cellStyle}">${esc(_cardL[a.card_status]||a.card_status||'—')}</td>
+        <td style="padding:6px 8px;text-align:center;white-space:nowrap">
+          <div style="display:flex;gap:4px;justify-content:center" onclick="event.stopPropagation()">
+            <button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:11px" onclick="openEditModal('${a.id}')">Edit</button>
+            <button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:11px;color:var(--g-purple)" onclick="openTicketModal('${a.id}')">+ Ticket</button>
           </div>
         </td>
       </tr>
@@ -534,7 +536,7 @@ async function openDetailPanel(id) {
     document.getElementById('panel-title').textContent = a.company_name;
     document.getElementById('panel-sub').textContent   = `${Auth.verticalLabel(a.vertical)} · ${Auth.businessTypeLabel(a.business_type)}`;
 
-    const vaLabels   = { applied:'Applied', issued:'Issued', activated:'Activated' };
+    const vaLabels   = { required:'Required', applied:'Applied', issued:'Issued', activated:'Activated' };
     const cardLabels = { required:'Required', applied:'Applied', issued:'Issued' };
 
     document.getElementById('info-grid').innerHTML = [
@@ -549,7 +551,7 @@ async function openDetailPanel(id) {
       ['Business Type',         Auth.businessTypeLabel(a.business_type)],
       ['Vertical',              Auth.verticalLabel(a.vertical)],
       ['Nature of Business',    esc(a.nature_of_business || '—')],
-      ['Channel Partner',       esc(a.partner_name || '—')],
+      ['Channel Partner',       esc(a.partner_company || a.partner_name || '—')],
       ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
       ['Account Status',        Auth.statusBadge(a.status)],
       ['VA Status',             esc(vaLabels[a.va_status] || a.va_status || '—')],
@@ -747,7 +749,7 @@ function openAddModal() {
   document.getElementById('f-biz').value             = '';
   document.getElementById('f-vertical').value        = '';
   document.getElementById('f-nob').value             = '';
-  document.getElementById('f-partner-display').value = user.name || '';
+  document.getElementById('f-partner-display').value = user.company_name || user.name || '';
   document.getElementById('f-status').value          = 'registered';
   document.getElementById('f-va-status').value       = '';
   document.getElementById('f-card-status').value     = '';
@@ -777,7 +779,7 @@ async function openEditModal(id) {
     document.getElementById('f-biz').value             = a.business_type  || '';
     document.getElementById('f-vertical').value        = a.vertical       || '';
     document.getElementById('f-nob').value             = a.nature_of_business || '';
-    document.getElementById('f-partner-display').value = a.partner_name   || user.name || '';
+    document.getElementById('f-partner-display').value = a.partner_company || a.partner_name || user.name || '';
     document.getElementById('f-status').value          = a.status         || 'registered';
     document.getElementById('f-va-status').value       = a.va_status      || '';
     document.getElementById('f-card-status').value     = a.card_status    || '';
