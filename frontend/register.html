@@ -60,7 +60,6 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center}
         <defs><linearGradient id="lg" x1="40" y1="4" x2="40" y2="76" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#4796E3"/><stop offset="45%" stop-color="#9177C7"/><stop offset="100%" stop-color="#CA6673"/></linearGradient></defs>
         <path d="M40 4C40 4 41.6 22 47 35C53 49 68 40 76 40C68 40 53 31 47 45C41.6 58 40 76 40 76C40 76 38.4 58 33 45C27 31 12 40 4 40C12 40 27 49 33 35C38.4 22 40 4 40 4Z" fill="url(#lg)"/>
       </svg>
-      <span class="auth-brand-name">Sales Orbit · Partner Registration</span>
     </div>
 
     <div class="auth-body">
@@ -81,26 +80,27 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center}
       </div>
 
       <div class="auth-field">
-        <label>Company / Partner name *</label>
-        <label class="auth-input">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          <input type="text" id="company_name" placeholder="Globex Partners LLC"/>
-        </label>
-      </div>
-
-      <div class="auth-field">
         <label>Designation</label>
         <label class="auth-input">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          <select id="designation">
+          <select id="designation" onchange="toggleCPName()">
             <option value="">Select designation</option>
             <option>Business Development Manager</option>
             <option>Sales Development Representative</option>
             <option>Country Head</option>
             <option>Senior Business Development Manager</option>
             <option>Manager Partnerships</option>
+            <option value="Channel Partner">Channel Partner</option>
           </select>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none"><path d="m6 9 6 6 6-6"/></svg>
+        </label>
+      </div>
+
+      <div class="auth-field" id="cp-name-field" style="display:none">
+        <label>Company / Partner Name *</label>
+        <label class="auth-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <input type="text" id="cp_name" placeholder="Enter your company or partner name"/>
         </label>
       </div>
 
@@ -109,14 +109,6 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center}
         <label class="auth-input">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
           <input type="email" id="email" placeholder="you@company.com" autocomplete="email"/>
-        </label>
-      </div>
-
-      <div class="auth-field">
-        <label>Phone</label>
-        <label class="auth-input">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92V20a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
-          <input type="tel" id="phone" placeholder="+1 555 000 0000"/>
         </label>
       </div>
 
@@ -171,13 +163,20 @@ if (_u) window.location.href = '/partner/dashboard.html';
 
 let _pendingEmail = '';
 
+function toggleCPName() {
+  const sel = document.getElementById('designation');
+  document.getElementById('cp-name-field').style.display =
+    sel.value === 'Channel Partner' ? '' : 'none';
+}
+
 async function doRegister() {
   const firstName   = document.getElementById('first_name').value.trim();
   const lastName    = document.getElementById('last_name').value.trim();
-  const company     = document.getElementById('company_name').value.trim();
   const designation = document.getElementById('designation').value;
+  const cpName      = designation === 'Channel Partner'
+                        ? document.getElementById('cp_name').value.trim()
+                        : null;
   const email       = document.getElementById('email').value.trim();
-  const phone       = document.getElementById('phone').value.trim();
   const password    = document.getElementById('password').value;
   const terms       = document.getElementById('terms-cb').classList.contains('on');
   const btn         = document.getElementById('reg-btn');
@@ -185,8 +184,12 @@ async function doRegister() {
 
   errEl.classList.remove('show');
 
-  if (!firstName || !lastName || !email || !password || !company) {
+  if (!firstName || !lastName || !email || !password) {
     errEl.textContent = 'Please fill in all required fields.';
+    errEl.classList.add('show'); return;
+  }
+  if (designation === 'Channel Partner' && !cpName) {
+    errEl.textContent = 'Please enter your company or partner name.';
     errEl.classList.add('show'); return;
   }
   if (password.length < 8) {
@@ -202,7 +205,7 @@ async function doRegister() {
   btn.textContent = 'Creating account…';
 
   try {
-    await API.register({ name: `${firstName} ${lastName}`, email, password, company_name: company, phone, designation });
+    await API.register({ name: `${firstName} ${lastName}`, email, password, company_name: cpName || null, designation });
     _pendingEmail = email;
     document.getElementById('otp-email-display').textContent = email;
     // Hide form fields, show OTP block
