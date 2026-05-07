@@ -39,7 +39,7 @@
 </head>
 <body>
 <div class="app-shell">
-  <aside class="sidebar" id="sidebar-placeholder"></aside>
+  <div id="sidebar-placeholder"></div>
   <div class="main-content">
     <div id="topbar-placeholder"></div>
     <div class="page-body">
@@ -161,8 +161,33 @@
       <div class="edit-section">
         <div class="edit-section-title">Account Information</div>
         <div class="form-row">
+          <div class="form-group"><label class="form-label">Client ID</label><input class="form-input" id="e-acct-num" placeholder="Account number"/></div>
           <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" id="e-company"/></div>
-          <div class="form-group"><label class="form-label">Trading Name</label><input class="form-input" id="e-trading"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Company Reg Country</label>
+            <select class="form-input" id="e-country" onchange="toggleECountryOther()">
+              <option value="">Select country</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="United Arab Emirates">United Arab Emirates</option>
+              <option value="Singapore">Singapore</option>
+              <option value="Hong Kong">Hong Kong</option>
+              <option value="Pakistan">Pakistan</option>
+              <option value="__other__">Other (Type Manually)</option>
+            </select>
+            <input class="form-input" id="e-country-other" placeholder="Type country name…" style="margin-top:6px;display:none"/>
+          </div>
+          <div class="form-group"><label class="form-label">Director Name</label><input class="form-input" id="e-contact-name"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Email ID</label><input class="form-input" type="email" id="e-contact-email"/></div>
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="e-phone" placeholder="Active Whatsapp Number of Client"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Website</label><input class="form-input" id="e-website" placeholder="Store Link in case of Ecomm Seller"/></div>
+          <div class="form-group"><label class="form-label">Account Reg Date</label><input class="form-input" type="date" id="e-reg-date"/></div>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -173,20 +198,51 @@
             <label class="form-label">Vertical</label>
             <select class="form-input" id="e-vertical">
               <option value="">—</option>
-              <option value="it_services_provider">IT Services Provider</option>
-              <option value="ecomm_seller">E-comm Seller</option>
+              <option value="it_services_provider">IT Services</option>
+              <option value="ecomm_seller">Ecomm Seller</option>
               <option value="b2b_seller">B2B Seller</option>
-              <option value="freelancer">Freelancer</option>
             </select>
           </div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Contact Name</label><input class="form-input" id="e-contact-name"/></div>
-          <div class="form-group"><label class="form-label">Contact Email</label><input class="form-input" type="email" id="e-contact-email"/></div>
+        <div class="form-group">
+          <label class="form-label">Nature of Business</label>
+          <select class="form-input" id="e-nob">
+            <option value="">—</option>
+            <option value="Ai Solutions">Ai Solutions</option>
+            <option value="App Development">App Development</option>
+            <option value="B2B Goods">B2B Goods</option>
+            <option value="BPO">BPO</option>
+            <option value="Digital Accountancy">Digital Accountancy</option>
+            <option value="Digital Marketing Agency">Digital Marketing Agency</option>
+            <option value="E-comm Marketplaces">E-comm Marketplaces</option>
+            <option value="Game Development">Game Development</option>
+            <option value="HR Management">HR Management</option>
+            <option value="IT Services">IT Services</option>
+            <option value="Logistics">Logistics</option>
+            <option value="Medical Billing">Medical Billing</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Shopify">Shopify</option>
+            <option value="Software Development">Software Development</option>
+            <option value="Stripe">Stripe</option>
+            <option value="Web Development">Web Development</option>
+          </select>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="e-phone"/></div>
-          <div class="form-group"><label class="form-label">Country</label><input class="form-input" id="e-country"/></div>
+          <div class="form-group">
+            <label class="form-label">Onboarding Specialist</label>
+            <select class="form-input" id="e-onboarding-specialist" onchange="toggleEOSother()">
+              <option value="">Select specialist</option>
+              <option value="Anum Farooq">Anum Farooq</option>
+              <option value="Muhammad Shoaib">Muhammad Shoaib</option>
+              <option value="Khushbu Fatima">Khushbu Fatima</option>
+              <option value="__other__">Other (Add manually)</option>
+            </select>
+            <input class="form-input" id="e-os-other" placeholder="Enter specialist name…" style="margin-top:6px;display:none"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assign to Owner</label>
+            <select class="form-input" id="e-owner"><option value="">Unassigned</option></select>
+          </div>
         </div>
       </div>
 
@@ -205,17 +261,27 @@
           </div>
           <div class="form-group">
             <label class="form-label">KYC Agent</label>
-            <input class="form-input" id="e-kyc" placeholder="Agent name"/>
+            <input class="form-input" id="e-kyc" placeholder="Enter agent name"/>
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Account Number</label>
-            <input class="form-input" id="e-acct-num" placeholder="Account number"/>
+            <label class="form-label">VA Status</label>
+            <select class="form-input" id="e-va-status">
+              <option value="">—</option>
+              <option value="applied">Applied</option>
+              <option value="issued">Issued</option>
+              <option value="activated">Activated</option>
+            </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Assign to Owner</label>
-            <select class="form-input" id="e-owner"><option value="">Unassigned</option></select>
+            <label class="form-label">Card Status</label>
+            <select class="form-input" id="e-card-status">
+              <option value="">—</option>
+              <option value="required">Required</option>
+              <option value="applied">Applied</option>
+              <option value="issued">Issued</option>
+            </select>
           </div>
         </div>
         <div class="form-group">
@@ -370,6 +436,46 @@ function renderPagination(total, limit) {
 }
 function changePage(p) { currentPage = p; loadAccounts(); }
 
+// ── COUNTRY / OS HELPERS FOR INTERNAL EDIT ──
+function toggleECountryOther() {
+  const sel = document.getElementById('e-country');
+  const other = document.getElementById('e-country-other');
+  other.style.display = sel.value === '__other__' ? 'block' : 'none';
+  if (sel.value !== '__other__') other.value = '';
+}
+function getECountryValue() {
+  const sel = document.getElementById('e-country');
+  return sel.value === '__other__'
+    ? document.getElementById('e-country-other').value.trim()
+    : sel.value;
+}
+function setECountryValue(val) {
+  const sel = document.getElementById('e-country');
+  const known = ['United States','United Kingdom','United Arab Emirates','Singapore','Hong Kong','Pakistan'];
+  if (!val) { sel.value = ''; }
+  else if (known.includes(val)) { sel.value = val; }
+  else { sel.value = '__other__'; document.getElementById('e-country-other').value = val; document.getElementById('e-country-other').style.display = 'block'; }
+}
+function toggleEOSother() {
+  const sel = document.getElementById('e-onboarding-specialist');
+  const other = document.getElementById('e-os-other');
+  other.style.display = sel.value === '__other__' ? 'block' : 'none';
+  if (sel.value !== '__other__') other.value = '';
+}
+function getEOSValue() {
+  const sel = document.getElementById('e-onboarding-specialist');
+  return sel.value === '__other__'
+    ? document.getElementById('e-os-other').value.trim()
+    : sel.value;
+}
+function setEOSValue(val) {
+  const sel = document.getElementById('e-onboarding-specialist');
+  const known = ['Anum Farooq','Muhammad Shoaib','Khushbu Fatima'];
+  if (!val) { sel.value = ''; }
+  else if (known.includes(val)) { sel.value = val; }
+  else { sel.value = '__other__'; document.getElementById('e-os-other').value = val; document.getElementById('e-os-other').style.display = 'block'; }
+}
+
 // ── PANEL ──
 async function openPanel(id, defaultTab = 'info') {
   currentAccountId = id;
@@ -407,19 +513,24 @@ async function openPanel(id, defaultTab = 'info') {
     }
 
     // Populate edit fields
-    document.getElementById('e-company').value      = a.company_name    || '';
-    document.getElementById('e-trading').value      = a.trading_name    || '';
-    document.getElementById('e-biz').value          = a.business_type   || '';
-    document.getElementById('e-vertical').value     = a.vertical        || '';
-    document.getElementById('e-contact-name').value = a.contact_name    || '';
-    document.getElementById('e-contact-email').value= a.contact_email   || '';
-    document.getElementById('e-phone').value        = a.contact_phone   || '';
-    document.getElementById('e-country').value      = a.country         || '';
-    document.getElementById('e-status').value       = a.status          || 'registered';
-    document.getElementById('e-kyc').value          = a.kyc_agent       || '';
-    document.getElementById('e-acct-num').value     = a.account_number  || '';
-    document.getElementById('e-owner').value        = a.owner_id        || '';
-    document.getElementById('e-rejection').value    = a.rejection_reason|| '';
+    document.getElementById('e-acct-num').value      = a.account_number        || '';
+    document.getElementById('e-company').value       = a.company_name          || '';
+    document.getElementById('e-contact-name').value  = a.contact_name          || '';
+    document.getElementById('e-contact-email').value = a.contact_email         || '';
+    document.getElementById('e-phone').value         = a.contact_phone         || '';
+    document.getElementById('e-website').value       = a.website               || '';
+    document.getElementById('e-reg-date').value      = a.registration_date ? a.registration_date.split('T')[0] : '';
+    document.getElementById('e-biz').value           = a.business_type         || '';
+    document.getElementById('e-vertical').value      = a.vertical              || '';
+    document.getElementById('e-nob').value           = a.nature_of_business    || '';
+    document.getElementById('e-status').value        = a.status                || 'registered';
+    document.getElementById('e-kyc').value           = a.kyc_agent             || '';
+    document.getElementById('e-owner').value         = a.owner_id              || '';
+    document.getElementById('e-va-status').value     = a.va_status             || '';
+    document.getElementById('e-card-status').value   = a.card_status           || '';
+    document.getElementById('e-rejection').value     = a.rejection_reason      || '';
+    setECountryValue(a.country || '');
+    setEOSValue(a.onboarding_specialist || '');
   } catch (e) {
     Auth.showToast('Could not load account.', 'error');
   }
@@ -453,19 +564,24 @@ async function saveAccount() {
   errEl.style.display = 'none';
 
   const body = {
-    company_name:     document.getElementById('e-company').value.trim(),
-    trading_name:     document.getElementById('e-trading').value.trim(),
-    business_type:    document.getElementById('e-biz').value,
-    vertical:         document.getElementById('e-vertical').value,
-    contact_name:     document.getElementById('e-contact-name').value.trim(),
-    contact_email:    document.getElementById('e-contact-email').value.trim(),
-    contact_phone:    document.getElementById('e-phone').value.trim(),
-    country:          document.getElementById('e-country').value.trim(),
-    status:           document.getElementById('e-status').value,
-    kyc_agent:        document.getElementById('e-kyc').value.trim(),
-    account_number:   document.getElementById('e-acct-num').value.trim(),
-    owner_id:         document.getElementById('e-owner').value || null,
-    rejection_reason: document.getElementById('e-rejection').value.trim(),
+    company_name:          document.getElementById('e-company').value.trim(),
+    business_type:         document.getElementById('e-biz').value,
+    vertical:              document.getElementById('e-vertical').value,
+    contact_name:          document.getElementById('e-contact-name').value.trim(),
+    contact_email:         document.getElementById('e-contact-email').value.trim(),
+    contact_phone:         document.getElementById('e-phone').value.trim(),
+    country:               getECountryValue(),
+    website:               document.getElementById('e-website').value.trim(),
+    nature_of_business:    document.getElementById('e-nob').value,
+    onboarding_specialist: getEOSValue(),
+    registration_date:     document.getElementById('e-reg-date').value || null,
+    status:                document.getElementById('e-status').value,
+    kyc_agent:             document.getElementById('e-kyc').value.trim(),
+    account_number:        document.getElementById('e-acct-num').value.trim(),
+    owner_id:              document.getElementById('e-owner').value || null,
+    va_status:             document.getElementById('e-va-status').value || null,
+    card_status:           document.getElementById('e-card-status').value || null,
+    rejection_reason:      document.getElementById('e-rejection').value.trim(),
   };
 
   try {

@@ -26,11 +26,9 @@
 <body>
 
 <div class="app-shell">
-  <!-- Sidebar injected by JS -->
-  <aside class="sidebar" id="sidebar-placeholder"></aside>
+  <div id="sidebar-placeholder"></div>
 
   <div class="main-content">
-    <!-- Topbar injected by JS -->
     <div id="topbar-placeholder"></div>
 
     <div class="page-body">
@@ -114,7 +112,7 @@ const user = Auth.requirePartnerAuth();
 if (user) {
   // Render sidebar + topbar
   document.getElementById('sidebar-placeholder').outerHTML = Layout.partnerSidebar('dashboard', user);
-  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Dashboard', `Welcome back, ${user.name.split(' ')[0]}`, user);
+  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Partner Dashboard', `Welcome back, ${user.name.split(' ')[0]}`, user);
 
   document.getElementById('welcome-heading').textContent = `Good day, ${user.name.split(' ')[0]}!`;
 

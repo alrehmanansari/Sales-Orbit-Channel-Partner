@@ -129,7 +129,9 @@ async function createAccount(req, res, next) {
 
     const {
       company_name, trading_name, business_type, vertical,
-      contact_name, contact_email, contact_phone, country, remarks
+      contact_name, contact_email, contact_phone, country,
+      website, nature_of_business, onboarding_specialist,
+      va_status, card_status, registration_date, remarks
     } = req.body;
 
     if (!company_name || !contact_name || !contact_email) {
@@ -149,11 +151,16 @@ async function createAccount(req, res, next) {
     const result = await client.query(
       `INSERT INTO accounts
          (company_name, trading_name, business_type, vertical, contact_name,
-          contact_email, contact_phone, country, remarks, partner_id, owner_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+          contact_email, contact_phone, country, website, nature_of_business,
+          onboarding_specialist, va_status, card_status, registration_date,
+          remarks, partner_id, owner_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
        RETURNING *`,
       [company_name, trading_name || null, business_type || null, vertical || null,
        contact_name, contact_email, contact_phone || null, country || null,
+       website || null, nature_of_business || null, onboarding_specialist || null,
+       va_status || null, card_status || null,
+       registration_date || null,
        remarks || null, req.user.id, ownerId]
     );
 
@@ -191,7 +198,9 @@ async function updateAccount(req, res, next) {
 
     // Fields partners can edit
     const partnerFields = ['company_name','trading_name','business_type','vertical',
-                           'contact_name','contact_email','contact_phone','country','remarks'];
+                           'contact_name','contact_email','contact_phone','country',
+                           'website','nature_of_business','onboarding_specialist',
+                           'va_status','card_status','registration_date','remarks'];
 
     // Fields only internal staff can edit
     const internalFields = ['kyc_agent','account_number','status','owner_id','rejection_reason'];
