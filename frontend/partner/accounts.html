@@ -94,20 +94,29 @@
           </div>
         </div>
         <div style="overflow-x:auto">
-          <table>
+          <table style="min-width:1400px">
             <thead>
               <tr>
-                <th>Company</th>
-                <th>Contact</th>
+                <th>Client ID</th>
+                <th>Company Name</th>
+                <th>Reg Country</th>
+                <th>Director Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Website</th>
+                <th>Reg Date</th>
+                <th>Biz Type</th>
                 <th>Vertical</th>
-                <th>Business Type</th>
-                <th>Status</th>
-                <th>Registered</th>
+                <th>Nature of Business</th>
+                <th>Onboarding Specialist</th>
+                <th>Account Status</th>
+                <th>VA Status</th>
+                <th>Card Status</th>
                 <th style="text-align:center">Actions</th>
               </tr>
             </thead>
             <tbody id="accounts-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
+              <tr><td colspan="16" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -454,29 +463,35 @@ async function loadAccounts() {
     document.getElementById('tbl-count').textContent = total;
     document.getElementById('tbl-showing').textContent = `Showing ${((currentPage-1)*20)+1}–${Math.min(currentPage*20, total)} of ${total}`;
 
+    const _vaL   = {applied:'Applied',issued:'Issued',activated:'Activated'};
+    const _cardL = {required:'Required',applied:'Applied',issued:'Issued'};
+
     if (!accounts.length) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No accounts found. <a href="#" onclick="openAddModal()" style="color:var(--g-blue)">Add your first account</a></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:40px;color:var(--text3)">No accounts found. <a href="#" onclick="openAddModal()" style="color:var(--g-blue)">Add your first account</a></td></tr>`;
       return;
     }
 
     tbody.innerHTML = accounts.map(a => `
       <tr onclick="openDetailPanel('${a.id}')">
-        <td>
-          <div class="td-primary">${esc(a.company_name)}</div>
-          <div class="td-sub">${esc(a.trading_name || '—')}</div>
-        </td>
-        <td>
-          <div class="td-primary">${esc(a.contact_name)}</div>
-          <div class="td-sub">${esc(a.contact_email)}</div>
-        </td>
-        <td>${Auth.verticalLabel(a.vertical)}</td>
+        <td><div class="td-primary">${esc(a.account_number||'—')}</div></td>
+        <td><div class="td-primary">${esc(a.company_name)}</div></td>
+        <td>${esc(a.country||'—')}</td>
+        <td>${esc(a.contact_name||'—')}</td>
+        <td style="font-size:12px">${esc(a.contact_email||'—')}</td>
+        <td style="font-size:12px">${esc(a.contact_phone||'—')}</td>
+        <td style="font-size:12px;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.website?`<a href="${esc(a.website)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--g-blue)">${esc(a.website)}</a>`:'—'}</td>
+        <td style="font-size:12px">${Auth.formatDate(a.registration_date)}</td>
         <td>${Auth.businessTypeLabel(a.business_type)}</td>
+        <td>${Auth.verticalLabel(a.vertical)}</td>
+        <td style="font-size:12px">${esc(a.nature_of_business||'—')}</td>
+        <td style="font-size:12px">${esc(a.onboarding_specialist||'—')}</td>
         <td>${Auth.statusBadge(a.status)}</td>
-        <td>${Auth.formatDate(a.registration_date)}</td>
-        <td style="text-align:center">
-          <div style="display:flex;gap:6px;justify-content:center" onclick="event.stopPropagation()">
+        <td style="font-size:12px">${esc(_vaL[a.va_status]||a.va_status||'—')}</td>
+        <td style="font-size:12px">${esc(_cardL[a.card_status]||a.card_status||'—')}</td>
+        <td style="text-align:center;white-space:nowrap">
+          <div style="display:flex;gap:5px;justify-content:center" onclick="event.stopPropagation()">
             <button class="btn btn-ghost btn-sm" onclick="openEditModal('${a.id}')">Edit</button>
-            <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="openTicketModal('${a.id}')">Ticket</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="openTicketModal('${a.id}')">Create Ticket</button>
           </div>
         </td>
       </tr>

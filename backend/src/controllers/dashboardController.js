@@ -258,7 +258,8 @@ async function getTicketReport(req, res, next) {
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const result = await query(
-      `SELECT t.ticket_number, t.query_type, t.status, t.created_at, t.resolved_at,
+      `SELECT t.id AS ticket_id, t.ticket_number, t.query_type, t.status,
+              t.created_at, t.resolved_at,
               EXTRACT(DAY FROM (COALESCE(t.resolved_at, NOW()) - t.created_at)) AS days_open,
               a.company_name AS account_name,
               p.name AS partner_name,
@@ -278,10 +279,89 @@ async function getTicketReport(req, res, next) {
   }
 }
 
+function _resolveDateRange(date_range, custom_start, custom_end) {
+  const now = new Date();
+  switch (date_range) {
+    case 'last_week': {
+      const s = new Date(now); s.setDate(now.getDate() - now.getDay() - 6);
+      const e = new Date(now); e.setDate(now.getDate() - now.getDay());
+      return [s, e];
+    }
+    case 'current_week': {
+      const s = new Date(now); s.setDate(now.getDate() - now.getDay() + 1);
+      return [s, now];
+    }
+    case 'last_month':
+      return [new Date(now.getFullYear(), now.getMonth() - 1, 1),
+              new Date(now.getFullYear(), now.getMonth(), 0)];
+    case 'current_month':
+      return [new Date(now.getFullYear(), now.getMonth(), 1), now];
+    case 'ytd':
+      return [new Date(now.getFullYear(), 0, 1), now];
+    case 'current_quarter': {
+      const q = Math.floor(now.getMonth() / 3);
+      return [new Date(now.getFullYear(), q * 3, 1), now];
+    }
+    case 'last_quarter': {
+      const q = Math.floor(now.getMonth() / 3) - 1;
+      return [new Date(now.getFullYear(), q * 3, 1),
+              new Date(now.getFullYear(), (q + 1) * 3, 0)];
+    }
+    case 'next_quarter': {
+      const q = Math.floor(now.getMonth() / 3) + 1;
+      return [new Date(now.getFullYear(), q * 3, 1),
+              new Date(now.getFullYear(), (q + 1) * 3, 0)];
+    }
+    case 'custom':
+      return [custom_start ? new Date(custom_start) : new Date(now.getFullYear(), now.getMonth(), 1),
+              custom_end   ? new Date(custom_end)   : now];
+    default:
+      return [new Date(now.getFullYear(), now.getMonth(), 1), now];
+  }
+}
+
+async function getPartnerKpi(req, res, next) {
+  try {
+    const { date_range = 'current_month', custom_start, custom_end, owner_id } = req.query;
+    const [startDate, endDate] = _resolveDateRange(date_range, custom_start, custom_end);
+
+    const params = [startDate.toISOString(), endDate.toISOString()];
+    let idx = 3;
+    const ownerFilter = owner_id ? `AND a.owner_id = $${idx++}` : '';
+    if (owner_id) params.push(owner_id);
+
+    const result = await query(
+      `SELECT
+         p.id, p.name AS partner_name, p.company_name AS partner_company,
+         COUNT(a.id) FILTER (WHERE a.registration_date BETWEEN $1 AND $2)                          AS accounts_registered,
+         COUNT(a.id) FILTER (WHERE a.status='in_review'  AND a.registration_date BETWEEN $1 AND $2) AS accounts_in_review,
+         COUNT(a.id) FILTER (WHERE a.status='onboarded'  AND a.registration_date BETWEEN $1 AND $2) AS accounts_onboarded,
+         COUNT(a.id) FILTER (WHERE a.status='activated'  AND a.registration_date BETWEEN $1 AND $2) AS accounts_activated,
+         COUNT(a.id) FILTER (WHERE a.business_type='new'          AND a.registration_date BETWEEN $1 AND $2) AS business_new,
+         COUNT(a.id) FILTER (WHERE a.business_type='established'  AND a.registration_date BETWEEN $1 AND $2) AS business_established,
+         COUNT(a.id) FILTER (WHERE a.vertical='it_services_provider' AND a.registration_date BETWEEN $1 AND $2) AS vertical_it,
+         COUNT(a.id) FILTER (WHERE a.vertical='ecomm_seller'         AND a.registration_date BETWEEN $1 AND $2) AS vertical_ecomm,
+         COUNT(a.id) FILTER (WHERE a.vertical='b2b_seller'           AND a.registration_date BETWEEN $1 AND $2) AS vertical_b2b,
+         COUNT(a.id) FILTER (WHERE a.vertical='freelancer'           AND a.registration_date BETWEEN $1 AND $2) AS vertical_freelancer
+       FROM users p
+       LEFT JOIN accounts a ON a.partner_id = p.id ${ownerFilter}
+       WHERE p.role = 'channel_partner' AND p.is_active = TRUE
+       GROUP BY p.id, p.name, p.company_name
+       ORDER BY accounts_registered DESC`,
+      params
+    );
+
+    res.json({ data: result.rows, date_range, start_date: startDate, end_date: endDate });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getSummaryStats,
   getRegistrationTrend,
   getBusinessTypeTrend,
   getKpiTable,
+  getPartnerKpi,
   getTicketReport
 };

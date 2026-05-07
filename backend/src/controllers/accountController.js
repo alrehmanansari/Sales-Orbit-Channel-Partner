@@ -61,6 +61,8 @@ async function listAccounts(req, res, next) {
     const dataResult = await query(
       `SELECT a.id, a.company_name, a.trading_name, a.business_type, a.vertical,
               a.contact_name, a.contact_email, a.contact_phone, a.country,
+              a.website, a.nature_of_business, a.onboarding_specialist,
+              a.va_status, a.card_status,
               a.status, a.registration_date, a.onboarded_at, a.activated_at,
               a.account_number,
               p.name AS partner_name, p.company_name AS partner_company,

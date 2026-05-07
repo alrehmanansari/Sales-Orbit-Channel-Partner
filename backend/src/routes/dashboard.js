@@ -6,15 +6,17 @@ const {
   getRegistrationTrend,
   getBusinessTypeTrend,
   getKpiTable,
+  getPartnerKpi,
   getTicketReport
 } = require('../controllers/dashboardController');
 
 router.use(authenticate, requireInternal);
 
-router.get('/stats',           getSummaryStats);
+router.get('/stats',               getSummaryStats);
 router.get('/trend/registrations', getRegistrationTrend);
 router.get('/trend/business-type', getBusinessTypeTrend);
-router.get('/kpi',             getKpiTable);
-router.get('/tickets',         getTicketReport);
+router.get('/kpi',                 getKpiTable);
+router.get('/partner-kpi',         getPartnerKpi);
+router.get('/tickets',             getTicketReport);
 
 module.exports = router;

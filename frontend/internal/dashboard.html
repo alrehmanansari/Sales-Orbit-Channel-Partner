@@ -3,19 +3,24 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Internal Dashboard · Sales Orbit</title>
+<title>Team Dashboard · Sales Orbit</title>
 <link rel="stylesheet" href="../assets/css/design-system.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-.filter-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);align-items:flex-end}
+.filter-row{display:flex;flex-wrap:wrap;gap:10px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);align-items:flex-end;margin-bottom:20px}
 .filter-group{display:flex;flex-direction:column;gap:5px}
 .filter-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3)}
 .filter-select,.filter-input{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:12px;color:var(--text);outline:none;min-width:130px;appearance:none;-webkit-appearance:none;cursor:pointer;transition:border-color .2s}
 .filter-select:focus,.filter-input:focus{border-color:var(--g-blue)}
-.funnel-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:20px}
-[data-theme=dark] .funnel-wrap{background:linear-gradient(180deg,#1d1d1d,#141414)}
-.funnel-title{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:16px}
-.funnel-steps{display:flex;flex-direction:column;gap:10px}
+
+/* Accounts table section */
+.section-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px}
+[data-theme=dark] .section-card{background:linear-gradient(180deg,#1d1d1d,#141414)}
+.section-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
+.section-title{font-size:14px;font-weight:600;color:var(--text)}
+
+/* Funnel */
+.funnel-steps{display:flex;flex-direction:column;gap:10px;padding:16px}
 .f-step{border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
 .f-step-label{font-size:13px;font-weight:600;color:var(--text);position:relative;z-index:1}
 .f-step-nums{text-align:right;position:relative;z-index:1}
@@ -23,20 +28,25 @@
 .f-step-pct{font-size:11px;color:var(--text2);margin-top:2px}
 .f-step-bg{position:absolute;inset:0;opacity:.12}
 
-.kpi-section{margin-bottom:20px}
-.kpi-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-.kpi-title{font-size:16px;font-weight:600;color:var(--text);letter-spacing:-.2px}
-.date-filter-row{display:flex;gap:6px;flex-wrap:wrap}
-.date-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
-.date-btn.active,.date-btn:hover{background:linear-gradient(90deg,var(--g-blue),var(--g-purple));color:#fff;border-color:transparent}
-.kpi-tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:auto}
-[data-theme=dark] .kpi-tbl-wrap{background:#141414}
+/* KPI */
+.kpi-tbl-wrap{overflow-x:auto}
 .kpi-tbl{width:100%;border-collapse:collapse;font-family:var(--font);font-size:12px;min-width:900px}
 .kpi-tbl th{font-size:9px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);text-align:left;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);white-space:nowrap}
-.kpi-tbl td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.kpi-tbl td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 .kpi-tbl tbody tr:last-child td{border-bottom:none}
 .kpi-tbl tbody tr:hover{background:var(--bg2)}
 .kpi-num{text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* Date range buttons */
+.date-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.date-btn.active,.date-btn:hover{background:linear-gradient(90deg,var(--g-blue),var(--g-purple));color:#fff;border-color:transparent}
+
+/* Ticket report */
+.ticket-report-tbl{width:100%;border-collapse:collapse;font-family:var(--font);font-size:12px;min-width:800px}
+.ticket-report-tbl th{font-size:9px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);text-align:left;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);white-space:nowrap}
+.ticket-report-tbl td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.ticket-report-tbl tbody tr:last-child td{border-bottom:none}
+.ticket-report-tbl tbody tr:hover{background:var(--bg2)}
 </style>
 </head>
 <body>
@@ -46,7 +56,7 @@
     <div id="topbar-placeholder"></div>
     <div class="page-body">
 
-      <!-- FILTERS -->
+      <!-- ═══ FILTERS ═══ -->
       <div class="filter-row" id="filters-row">
         <div class="filter-group">
           <span class="filter-label">Month</span>
@@ -67,6 +77,18 @@
           </select>
         </div>
         <div class="filter-group">
+          <span class="filter-label">Reg Date From</span>
+          <input type="date" class="filter-input" id="f-date-from"/>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Reg Date To</span>
+          <input type="date" class="filter-input" id="f-date-to"/>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Account Owner</span>
+          <select class="filter-select" id="f-owner"><option value="">All Owners</option></select>
+        </div>
+        <div class="filter-group">
           <span class="filter-label">Account Status</span>
           <select class="filter-select" id="f-status">
             <option value="">All Statuses</option>
@@ -78,8 +100,8 @@
           </select>
         </div>
         <div class="filter-group">
-          <span class="filter-label">Account Owner</span>
-          <select class="filter-select" id="f-owner"><option value="">All Owners</option></select>
+          <span class="filter-label">KYC Agent</span>
+          <input type="text" class="filter-input" id="f-kyc" placeholder="Agent name…"/>
         </div>
         <div class="filter-group">
           <span class="filter-label">Business Type</span>
@@ -89,155 +111,191 @@
             <option value="established">Established</option>
           </select>
         </div>
-        <div class="filter-group">
-          <span class="filter-label">Reg. Date From</span>
-          <input type="date" class="filter-input" id="f-date-from"/>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Reg. Date To</span>
-          <input type="date" class="filter-input" id="f-date-to"/>
-        </div>
         <div class="filter-group" style="justify-content:flex-end">
           <button class="btn btn-grad btn-sm" onclick="applyFilters()">Apply Filters</button>
           <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="clearFilters()">Clear</button>
         </div>
       </div>
 
-      <!-- STATS -->
+      <!-- ═══ STATS ═══ -->
       <div class="stats-grid" id="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card">
-          <div class="lbl">Total Registered</div>
-          <div class="val text-grad" id="s-total">—</div>
-          <div class="stat-card-accent" style="background:linear-gradient(90deg,var(--g-blue),var(--g-purple))"></div>
+        <div class="stat-card"><div class="lbl">Total Registered</div><div class="val text-grad" id="s-total">—</div><div class="stat-card-accent" style="background:linear-gradient(90deg,var(--g-blue),var(--g-purple))"></div></div>
+        <div class="stat-card"><div class="lbl">In Review</div><div class="val" style="color:var(--g-blue)" id="s-review">—</div><div class="stat-card-accent" style="background:var(--g-blue)"></div></div>
+        <div class="stat-card"><div class="lbl">Onboarded</div><div class="val" style="color:var(--g-purple)" id="s-onboarded">—</div><div class="stat-card-accent" style="background:var(--g-purple)"></div></div>
+        <div class="stat-card"><div class="lbl">Activated</div><div class="val" style="color:var(--g-green)" id="s-activated">—</div><div class="stat-card-accent" style="background:var(--g-green)"></div></div>
+        <div class="stat-card"><div class="lbl">New Business</div><div class="val" id="s-biz-new">—</div><div class="stat-card-accent" style="background:var(--g-blue)"></div></div>
+        <div class="stat-card"><div class="lbl">Established</div><div class="val" id="s-biz-est">—</div><div class="stat-card-accent" style="background:var(--g-purple)"></div></div>
+      </div>
+
+      <!-- ═══ FILTERED ACCOUNTS TABLE ═══ -->
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <span class="section-title">Accounts</span>
+            <span class="table-count" id="acct-count" style="margin-left:8px">0</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span id="acct-showing" style="font-size:12px;color:var(--text3)"></span>
+            <div class="pgr" id="acct-pgr"></div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="lbl">In Review</div>
-          <div class="val" style="color:var(--g-blue)" id="s-review">—</div>
-          <div class="stat-card-accent" style="background:var(--g-blue)"></div>
-        </div>
-        <div class="stat-card">
-          <div class="lbl">Onboarded</div>
-          <div class="val" style="color:var(--g-purple)" id="s-onboarded">—</div>
-          <div class="stat-card-accent" style="background:var(--g-purple)"></div>
-        </div>
-        <div class="stat-card">
-          <div class="lbl">Activated</div>
-          <div class="val" style="color:var(--g-green)" id="s-activated">—</div>
-          <div class="stat-card-accent" style="background:var(--g-green)"></div>
-        </div>
-        <div class="stat-card">
-          <div class="lbl">New Business</div>
-          <div class="val" id="s-biz-new">—</div>
-          <div class="stat-card-accent" style="background:var(--g-blue)"></div>
-        </div>
-        <div class="stat-card">
-          <div class="lbl">Established</div>
-          <div class="val" id="s-biz-est">—</div>
-          <div class="stat-card-accent" style="background:var(--g-purple)"></div>
+        <div style="overflow-x:auto">
+          <table style="min-width:1300px">
+            <thead>
+              <tr>
+                <th>Client ID</th>
+                <th>Company Name</th>
+                <th>Country</th>
+                <th>Director</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Website</th>
+                <th>Reg Date</th>
+                <th>Biz Type</th>
+                <th>Vertical</th>
+                <th>Nature of Biz</th>
+                <th>Specialist</th>
+                <th>Status</th>
+                <th>VA Status</th>
+                <th>Card Status</th>
+                <th>KYC Agent</th>
+                <th>Owner</th>
+                <th>Partner</th>
+              </tr>
+            </thead>
+            <tbody id="acct-tbody">
+              <tr><td colspan="18" style="text-align:center;padding:32px;color:var(--text3)">Apply filters and click Apply to load accounts</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- CHARTS ROW 1 -->
+      <!-- ═══ CHARTS ═══ -->
       <div class="chart-grid" style="margin-bottom:20px">
         <div class="chart-card">
-          <div class="chart-head">
-            <div>
-              <div class="chart-title">Account Registration Trend</div>
-              <div class="chart-val" style="font-size:18px" id="ch-reg-val">—</div>
-            </div>
-          </div>
+          <div class="chart-head"><div><div class="chart-title">Account Registration Trend</div><div class="chart-val" style="font-size:18px" id="ch-reg-val">—</div></div></div>
           <canvas id="chart-registration" height="160"></canvas>
         </div>
         <div class="chart-card">
-          <div class="chart-head">
-            <div>
-              <div class="chart-title">Activated Accounts Trend</div>
-              <div class="chart-val" style="font-size:18px" id="ch-act-val">—</div>
-            </div>
-          </div>
+          <div class="chart-head"><div><div class="chart-title">Activated Accounts Trend</div><div class="chart-val" style="font-size:18px" id="ch-act-val">—</div></div></div>
           <canvas id="chart-activation" height="160"></canvas>
         </div>
       </div>
-
-      <!-- CHARTS ROW 2 -->
       <div class="chart-grid" style="margin-bottom:20px">
         <div class="chart-card">
-          <div class="chart-head">
-            <div><div class="chart-title">Business Type Trend</div></div>
-          </div>
+          <div class="chart-head"><div><div class="chart-title">Business Type Trend</div></div></div>
           <canvas id="chart-biztype" height="160"></canvas>
         </div>
         <div class="chart-card">
-          <div class="chart-head">
-            <div><div class="chart-title">Account Volume by Month</div></div>
-          </div>
+          <div class="chart-head"><div><div class="chart-title">Account Monthly Volume Trend</div></div></div>
           <canvas id="chart-volume" height="160"></canvas>
         </div>
       </div>
 
-      <!-- FUNNEL -->
-      <div class="funnel-wrap">
-        <div class="funnel-title">Account Registration Funnel</div>
+      <!-- ═══ FUNNEL ═══ -->
+      <div class="section-card" style="margin-bottom:20px">
+        <div class="section-head"><span class="section-title">Account Registration Funnel</span></div>
         <div class="funnel-steps" id="funnel-steps">
-          <div style="color:var(--text3);font-size:13px">Loading…</div>
+          <div style="color:var(--text3);font-size:13px;padding:8px">Loading…</div>
         </div>
       </div>
 
-      <!-- KPI DASHBOARD -->
-      <div class="kpi-section">
-        <div class="kpi-title-row">
-          <div class="kpi-title">KPI Achievement Dashboard</div>
+      <!-- ═══ KPI ACHIEVEMENT DASHBOARD ═══ -->
+      <div class="section-card" style="margin-bottom:20px">
+        <div class="section-head">
+          <span class="section-title">KPI Achievement Dashboard</span>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
             <div class="filter-group">
               <span class="filter-label">Team Member</span>
-              <select class="filter-select" id="kpi-member" onchange="loadKpi()" style="min-width:160px">
+              <select class="filter-select" id="kpi-owner" onchange="loadPartnerKpi()" style="min-width:170px">
                 <option value="">All Team Members</option>
               </select>
             </div>
-            <div class="date-filter-row" id="date-filter-row">
-              <button class="date-btn" data-range="last_week"       onclick="setDateRange(this)">Last Week</button>
-              <button class="date-btn active" data-range="current_month" onclick="setDateRange(this)">This Month</button>
-              <button class="date-btn" data-range="last_month"      onclick="setDateRange(this)">Last Month</button>
-              <button class="date-btn" data-range="ytd"             onclick="setDateRange(this)">YTD</button>
-              <button class="date-btn" data-range="current_quarter" onclick="setDateRange(this)">This Qtr</button>
-              <button class="date-btn" data-range="last_quarter"    onclick="setDateRange(this)">Last Qtr</button>
-              <button class="date-btn" data-range="custom"          onclick="setDateRange(this)">Custom</button>
+            <div style="display:flex;gap:6px;flex-wrap:wrap" id="kpi-date-row">
+              <button class="date-btn" data-range="last_week"       onclick="setKpiRange(this)">Last Week</button>
+              <button class="date-btn" data-range="current_week"    onclick="setKpiRange(this)">Current Week</button>
+              <button class="date-btn" data-range="last_month"      onclick="setKpiRange(this)">Last Month</button>
+              <button class="date-btn active" data-range="current_month" onclick="setKpiRange(this)">This Month</button>
+              <button class="date-btn" data-range="ytd"             onclick="setKpiRange(this)">YTD</button>
+              <button class="date-btn" data-range="current_quarter" onclick="setKpiRange(this)">This Qtr</button>
+              <button class="date-btn" data-range="next_quarter"    onclick="setKpiRange(this)">Next Qtr</button>
+              <button class="date-btn" data-range="last_quarter"    onclick="setKpiRange(this)">Last Qtr</button>
+              <button class="date-btn" data-range="custom"          onclick="setKpiRange(this)">Custom</button>
             </div>
           </div>
         </div>
-
-        <div id="custom-date-row" style="display:none;gap:10px;margin-bottom:12px;flex-wrap:wrap" class="flex">
+        <div id="kpi-custom-row" style="display:none;gap:10px;padding:12px 18px 0;flex-wrap:wrap">
           <div class="filter-group">
             <span class="filter-label">From</span>
-            <input type="date" class="filter-input" id="kpi-date-from" onchange="loadKpi()"/>
+            <input type="date" class="filter-input" id="kpi-from" onchange="loadPartnerKpi()"/>
           </div>
           <div class="filter-group">
             <span class="filter-label">To</span>
-            <input type="date" class="filter-input" id="kpi-date-to" onchange="loadKpi()"/>
+            <input type="date" class="filter-input" id="kpi-to" onchange="loadPartnerKpi()"/>
           </div>
         </div>
-
-        <div class="kpi-tbl-wrap">
+        <div class="kpi-tbl-wrap" style="padding:0 0 1px">
           <table class="kpi-tbl">
             <thead>
               <tr>
-                <th>Team Member</th>
-                <th>Role</th>
-                <th class="kpi-num">Partner</th>
+                <th>Partner Name</th>
                 <th class="kpi-num">Registered</th>
                 <th class="kpi-num">In Review</th>
                 <th class="kpi-num">Onboarded</th>
                 <th class="kpi-num">Activated</th>
-                <th class="kpi-num">New Biz</th>
+                <th class="kpi-num">New</th>
                 <th class="kpi-num">Established</th>
-                <th class="kpi-num">IT</th>
-                <th class="kpi-num">E-comm</th>
-                <th class="kpi-num">B2B</th>
+                <th class="kpi-num">IT Services</th>
+                <th class="kpi-num">Ecomm Seller</th>
+                <th class="kpi-num">B2B Seller</th>
                 <th class="kpi-num">Freelancer</th>
               </tr>
             </thead>
             <tbody id="kpi-tbody">
-              <tr><td colspan="13" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
+              <tr><td colspan="11" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TICKET REPORT ═══ -->
+      <div class="section-card">
+        <div class="section-head">
+          <span class="section-title">Ticket Resolution Report</span>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select class="filter-select" id="tr-partner" onchange="loadTicketReport()" style="min-width:130px">
+              <option value="">All Partners</option>
+            </select>
+            <select class="filter-select" id="tr-specialist" onchange="loadTicketReport()" style="min-width:150px">
+              <option value="">All Specialists</option>
+            </select>
+            <select class="filter-select" id="tr-status" onchange="loadTicketReport()">
+              <option value="">All Statuses</option>
+              <option value="open">Open</option>
+              <option value="in_review">In Review</option>
+              <option value="pending_partner">Pending Partner</option>
+              <option value="pending_customer">Pending Customer</option>
+              <option value="resolved">Resolved</option>
+              <option value="declined">Declined</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="ticket-report-tbl">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Account</th>
+                <th>Partner</th>
+                <th>Specialist</th>
+                <th>Query Type</th>
+                <th>Status</th>
+                <th>Opened</th>
+                <th>Days Open</th>
+              </tr>
+            </thead>
+            <tbody id="ticket-report-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -263,64 +321,77 @@
 <script src="../assets/js/layout.js"></script>
 <script>
 const user = Auth.requireInternalAuth();
-let activeRange = 'current_month';
+let activeKpiRange = 'current_month';
+let acctPage = 1;
 let chartReg, chartAct, chartBiz, chartVol;
 
 if (user) {
   document.getElementById('sidebar-placeholder').outerHTML = Layout.internalSidebar('dashboard', user);
-  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Dashboard', 'Account performance overview', user);
+  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Team Dashboard', 'Account performance overview', user);
   Notifications.initNotifications();
   initCharts();
   loadDropdowns();
   loadDashboard();
-  loadKpi();
+  loadPartnerKpi();
+  loadTicketReport();
 }
 
+// ── DROPDOWNS ──
 async function loadDropdowns() {
   try {
     const [partners, specialists] = await Promise.all([API.getPartners(), API.getSpecialists()]);
-    const partnerSel = document.getElementById('f-partner');
+    const pSel = document.getElementById('f-partner');
+    const trPSel = document.getElementById('tr-partner');
     (partners.data || []).forEach(p => {
-      partnerSel.innerHTML += `<option value="${p.id}">${esc(p.name)}${p.company_name ? ' · '+esc(p.company_name) : ''}</option>`;
+      const opt = `<option value="${p.id}">${esc(p.name)}${p.company_name ? ' · '+esc(p.company_name) : ''}</option>`;
+      pSel.innerHTML += opt;
+      trPSel.innerHTML += opt;
     });
-    const ownerSel = document.getElementById('f-owner');
+    const oSel = document.getElementById('f-owner');
+    const kpiOSel = document.getElementById('kpi-owner');
+    const trSSel = document.getElementById('tr-specialist');
     (specialists.data || []).forEach(s => {
-      ownerSel.innerHTML += `<option value="${s.id}">${esc(s.name)}</option>`;
+      const opt = `<option value="${s.id}">${esc(s.name)}</option>`;
+      oSel.innerHTML   += opt;
+      kpiOSel.innerHTML += opt;
+      trSSel.innerHTML  += opt;
     });
-    // KPI team member
-    const kpiSel = document.getElementById('kpi-member');
-    const allUsers = await API.getUsers({ is_active: true });
-    (allUsers.data || []).forEach(u => {
-      if (u.role !== 'channel_partner') kpiSel.innerHTML += `<option value="${u.id}">${esc(u.name)} · ${Auth.roleLabel(u.role)}</option>`;
-    });
-  } catch (e) { /* silently fail dropdowns */ }
+  } catch {}
 }
 
+// ── FILTERS ──
 function getFilterParams() {
   return {
-    month:         document.getElementById('f-month').value || '',
-    partner_id:    document.getElementById('f-partner').value || '',
-    vertical:      document.getElementById('f-vertical').value || '',
-    status:        document.getElementById('f-status').value || '',
-    owner_id:      document.getElementById('f-owner').value || '',
-    business_type: document.getElementById('f-biz').value || '',
-    start_date:    document.getElementById('f-date-from').value || '',
-    end_date:      document.getElementById('f-date-to').value || '',
+    month:         document.getElementById('f-month').value      || '',
+    partner_id:    document.getElementById('f-partner').value    || '',
+    vertical:      document.getElementById('f-vertical').value   || '',
+    start_date:    document.getElementById('f-date-from').value  || '',
+    end_date:      document.getElementById('f-date-to').value    || '',
+    owner_id:      document.getElementById('f-owner').value      || '',
+    status:        document.getElementById('f-status').value     || '',
+    kyc_agent:     document.getElementById('f-kyc').value.trim() || '',
+    business_type: document.getElementById('f-biz').value        || '',
   };
 }
 
 async function applyFilters() {
-  await loadDashboard();
+  acctPage = 1;
+  await Promise.all([loadDashboard(), loadAccountsTable()]);
 }
 
 function clearFilters() {
-  ['f-month','f-partner','f-vertical','f-status','f-owner','f-biz','f-date-from','f-date-to'].forEach(id => {
+  ['f-month','f-partner','f-vertical','f-date-from','f-date-to',
+   'f-owner','f-status','f-biz'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  document.getElementById('f-kyc').value = '';
+  acctPage = 1;
   loadDashboard();
+  loadAccountsTable();
 }
 
+// ── STATS + CHARTS + FUNNEL ──
 async function loadDashboard() {
   const params = getFilterParams();
   Object.keys(params).forEach(k => !params[k] && delete params[k]);
@@ -332,7 +403,6 @@ async function loadDashboard() {
       API.getBusinessTypeTrend({ months: 6 })
     ]);
 
-    // Stats
     const s = stats.stats;
     document.getElementById('s-total').textContent     = s.total     || 0;
     document.getElementById('s-review').textContent    = s.in_review || 0;
@@ -341,83 +411,140 @@ async function loadDashboard() {
     document.getElementById('s-biz-new').textContent   = s.business_new || 0;
     document.getElementById('s-biz-est').textContent   = s.business_established || 0;
 
-    // Funnel
-    const f = stats.funnel;
-    const total = parseInt(f.total_registered) || 0;
-    renderFunnel(f, total);
-
-    // Charts
-    const trendData = trend.data || [];
-    updateCharts(trendData, bizTrend.data || []);
+    renderFunnel(stats.funnel);
+    updateCharts(trend.data || [], bizTrend.data || []);
   } catch (e) {
     Auth.showToast('Could not load dashboard data.', 'error');
   }
 }
 
-function renderFunnel(f, total) {
+function renderFunnel(f) {
+  const total = parseInt(f.total_registered) || 0;
   const steps = [
-    { label: 'Total Accounts Registered', count: parseInt(f.total_registered)||0, color: '#4796E3', pct: 100 },
-    { label: 'In Review',                 count: parseInt(f.in_review)||0,         color: '#9177C7', pct: total ? Math.round((f.in_review/total)*100) : 0 },
-    { label: 'Onboarded Accounts',        count: parseInt(f.onboarded)||0,         color: '#CA6673', pct: total ? Math.round((f.onboarded/total)*100) : 0 },
-    { label: 'Activated Accounts',        count: parseInt(f.activated)||0,         color: '#1E8E3E', pct: total ? Math.round((f.activated/total)*100) : 0 },
+    { label:'Total Accounts Registered', count:parseInt(f.total_registered)||0, color:'#4796E3', pct:100 },
+    { label:'In Review',                 count:parseInt(f.in_review)||0,         color:'#9177C7', pct:total?Math.round((f.in_review/total)*100):0 },
+    { label:'Onboarded Accounts',        count:parseInt(f.onboarded)||0,         color:'#CA6673', pct:total?Math.round((f.onboarded/total)*100):0 },
+    { label:'Activated Accounts',        count:parseInt(f.activated)||0,         color:'#1E8E3E', pct:total?Math.round((f.activated/total)*100):0 },
   ];
-
   const widths = [100, 85, 70, 55];
-  document.getElementById('funnel-steps').innerHTML = steps.map((s, i) => `
+  document.getElementById('funnel-steps').innerHTML = steps.map((s,i) => `
     <div class="f-step" style="background:${s.color}1a;border:1px solid ${s.color}30;width:${widths[i]}%;align-self:center">
       <div class="f-step-bg" style="background:${s.color}"></div>
       <div class="f-step-label">${s.label}</div>
       <div class="f-step-nums">
         <div class="f-step-count" style="color:${s.color}">${s.count.toLocaleString()}</div>
-        ${i > 0 ? `<div class="f-step-pct">${s.pct}% of registered</div>` : ''}
+        ${i>0 ? `<div class="f-step-pct">${s.pct}% of registered</div>` : ''}
       </div>
     </div>`).join('');
 }
 
+// ── ACCOUNTS TABLE ──
+async function loadAccountsTable() {
+  const params = getFilterParams();
+  Object.keys(params).forEach(k => !params[k] && delete params[k]);
+  params.page  = acctPage;
+  params.limit = 20;
+
+  const tbody = document.getElementById('acct-tbody');
+  tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:24px;color:var(--text3)">Loading…</td></tr>`;
+
+  try {
+    const data     = await API.getAccounts(params);
+    const accounts = data.data || [];
+    const total    = data.total || 0;
+
+    document.getElementById('acct-count').textContent   = total;
+    document.getElementById('acct-showing').textContent = total ? `${((acctPage-1)*20)+1}–${Math.min(acctPage*20,total)} of ${total}` : '';
+
+    const _vaL   = {applied:'Applied',issued:'Issued',activated:'Activated'};
+    const _cardL = {required:'Required',applied:'Applied',issued:'Issued'};
+
+    if (!accounts.length) {
+      tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:32px;color:var(--text3)">No accounts match the current filters</td></tr>`;
+      renderAcctPagination(0);
+      return;
+    }
+
+    tbody.innerHTML = accounts.map(a => `
+      <tr>
+        <td style="font-size:12px">${esc(a.account_number||'—')}</td>
+        <td><div class="td-primary">${esc(a.company_name)}</div></td>
+        <td style="font-size:12px">${esc(a.country||'—')}</td>
+        <td style="font-size:12px">${esc(a.contact_name||'—')}</td>
+        <td style="font-size:11px">${esc(a.contact_email||'—')}</td>
+        <td style="font-size:11px">${esc(a.contact_phone||'—')}</td>
+        <td style="font-size:11px;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.website?`<a href="${esc(a.website)}" target="_blank" style="color:var(--g-blue)">${esc(a.website)}</a>`:'—'}</td>
+        <td style="font-size:11px">${Auth.formatDate(a.registration_date)}</td>
+        <td style="font-size:12px">${Auth.businessTypeLabel(a.business_type)}</td>
+        <td style="font-size:12px">${Auth.verticalLabel(a.vertical)}</td>
+        <td style="font-size:11px">${esc(a.nature_of_business||'—')}</td>
+        <td style="font-size:11px">${esc(a.onboarding_specialist||'—')}</td>
+        <td>${Auth.statusBadge(a.status)}</td>
+        <td style="font-size:11px">${esc(_vaL[a.va_status]||a.va_status||'—')}</td>
+        <td style="font-size:11px">${esc(_cardL[a.card_status]||a.card_status||'—')}</td>
+        <td style="font-size:11px">${esc(a.kyc_agent||'—')}</td>
+        <td style="font-size:11px">${esc(a.owner_name||'—')}</td>
+        <td style="font-size:11px">${esc(a.partner_name||'—')}</td>
+      </tr>`).join('');
+
+    renderAcctPagination(total);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:24px;color:#D93025">${esc(e.message)}</td></tr>`;
+  }
+}
+
+function renderAcctPagination(total) {
+  const pages = Math.ceil(total / 20);
+  const pgr   = document.getElementById('acct-pgr');
+  if (pages <= 1) { pgr.innerHTML = ''; return; }
+  let html = `<button onclick="changeAcctPage(${acctPage-1})" ${acctPage===1?'disabled':''}>‹</button>`;
+  for (let i = 1; i <= Math.min(pages, 5); i++) {
+    html += `<button class="${i===acctPage?'act':''}" onclick="changeAcctPage(${i})">${i}</button>`;
+  }
+  html += `<button onclick="changeAcctPage(${acctPage+1})" ${acctPage===pages?'disabled':''}>›</button>`;
+  pgr.innerHTML = html;
+}
+function changeAcctPage(p) { acctPage = p; loadAccountsTable(); }
+
+// ── CHARTS ──
 function initCharts() {
-  const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+  const isDark    = () => document.documentElement.getAttribute('data-theme') === 'dark';
   const gridColor = () => isDark() ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
   const textColor = () => isDark() ? '#5F6368' : '#9AA0A6';
-
-  const baseOpts = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Google Sans', size: 10 } } },
-      y: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Google Sans', size: 10 } }, beginAtZero: true }
+  const baseOpts  = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ display:false } },
+    scales:{
+      x:{ grid:{color:gridColor}, ticks:{color:textColor, font:{family:'Google Sans',size:10}} },
+      y:{ grid:{color:gridColor}, ticks:{color:textColor, font:{family:'Google Sans',size:10}}, beginAtZero:true }
     }
   };
-
   chartReg = new Chart(document.getElementById('chart-registration'), {
-    type: 'line',
-    data: { labels: [], datasets: [{ label: 'Registered', data: [], borderColor: '#4796E3', backgroundColor: 'rgba(71,150,227,.12)', fill: true, tension: .4, borderWidth: 2, pointRadius: 3 }] },
-    options: { ...baseOpts, plugins: { legend: { display: false } } }
+    type:'line',
+    data:{ labels:[], datasets:[{ label:'Registered', data:[], borderColor:'#4796E3', backgroundColor:'rgba(71,150,227,.12)', fill:true, tension:.4, borderWidth:2, pointRadius:3 }] },
+    options:{ ...baseOpts }
   });
-
   chartAct = new Chart(document.getElementById('chart-activation'), {
-    type: 'line',
-    data: { labels: [], datasets: [{ label: 'Activated', data: [], borderColor: '#1E8E3E', backgroundColor: 'rgba(30,142,62,.1)', fill: true, tension: .4, borderWidth: 2, pointRadius: 3 }] },
-    options: { ...baseOpts }
+    type:'line',
+    data:{ labels:[], datasets:[{ label:'Activated', data:[], borderColor:'#1E8E3E', backgroundColor:'rgba(30,142,62,.1)', fill:true, tension:.4, borderWidth:2, pointRadius:3 }] },
+    options:{ ...baseOpts }
   });
-
   chartBiz = new Chart(document.getElementById('chart-biztype'), {
-    type: 'bar',
-    data: { labels: [], datasets: [
-      { label: 'New', data: [], backgroundColor: 'rgba(71,150,227,.75)', borderRadius: 4 },
-      { label: 'Established', data: [], backgroundColor: 'rgba(145,119,199,.75)', borderRadius: 4 }
+    type:'bar',
+    data:{ labels:[], datasets:[
+      { label:'New', data:[], backgroundColor:'rgba(71,150,227,.75)', borderRadius:4 },
+      { label:'Established', data:[], backgroundColor:'rgba(145,119,199,.75)', borderRadius:4 }
     ]},
-    options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: textColor(), font: { family: 'Google Sans', size: 10 } } } } }
+    options:{ ...baseOpts, plugins:{ legend:{ display:true, labels:{ color:textColor(), font:{family:'Google Sans',size:10} } } } }
   });
-
   chartVol = new Chart(document.getElementById('chart-volume'), {
-    type: 'bar',
-    data: { labels: [], datasets: [
-      { label: 'Registered', data: [], backgroundColor: 'rgba(71,150,227,.7)', borderRadius: 4 },
-      { label: 'Onboarded',  data: [], backgroundColor: 'rgba(145,119,199,.7)', borderRadius: 4 },
-      { label: 'Activated',  data: [], backgroundColor: 'rgba(30,142,62,.7)',   borderRadius: 4 },
+    type:'bar',
+    data:{ labels:[], datasets:[
+      { label:'Registered', data:[], backgroundColor:'rgba(71,150,227,.7)',  borderRadius:4 },
+      { label:'Onboarded',  data:[], backgroundColor:'rgba(145,119,199,.7)', borderRadius:4 },
+      { label:'Activated',  data:[], backgroundColor:'rgba(30,142,62,.7)',   borderRadius:4 },
     ]},
-    options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: textColor(), font: { family: 'Google Sans', size: 10 } } } } }
+    options:{ ...baseOpts, plugins:{ legend:{ display:true, labels:{ color:textColor(), font:{family:'Google Sans',size:10} } } } }
   });
 }
 
@@ -427,14 +554,10 @@ function updateCharts(trendData, bizTrend) {
   const act    = trendData.map(d => parseInt(d.activated)||0);
   const onb    = trendData.map(d => parseInt(d.onboarded)||0);
 
-  chartReg.data.labels = labels;
-  chartReg.data.datasets[0].data = reg;
-  chartReg.update();
+  chartReg.data.labels = labels; chartReg.data.datasets[0].data = reg; chartReg.update();
   document.getElementById('ch-reg-val').textContent = reg.reduce((a,b)=>a+b,0);
 
-  chartAct.data.labels = labels;
-  chartAct.data.datasets[0].data = act;
-  chartAct.update();
+  chartAct.data.labels = labels; chartAct.data.datasets[0].data = act; chartAct.update();
   document.getElementById('ch-act-val').textContent = act.reduce((a,b)=>a+b,0);
 
   chartVol.data.labels = labels;
@@ -450,54 +573,83 @@ function updateCharts(trendData, bizTrend) {
   chartBiz.update();
 }
 
-// ── KPI ──
-function setDateRange(btn) {
-  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+// ── PARTNER KPI ──
+function setKpiRange(btn) {
+  document.querySelectorAll('#kpi-date-row .date-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  activeRange = btn.dataset.range;
-  document.getElementById('custom-date-row').style.display = activeRange === 'custom' ? 'flex' : 'none';
-  if (activeRange !== 'custom') loadKpi();
+  activeKpiRange = btn.dataset.range;
+  document.getElementById('kpi-custom-row').style.display = activeKpiRange === 'custom' ? 'flex' : 'none';
+  if (activeKpiRange !== 'custom') loadPartnerKpi();
 }
 
-async function loadKpi() {
-  const memberId = document.getElementById('kpi-member').value;
-  const params   = { date_range: activeRange };
-  if (memberId) params.team_member_id = memberId;
-  if (activeRange === 'custom') {
-    params.custom_start = document.getElementById('kpi-date-from').value;
-    params.custom_end   = document.getElementById('kpi-date-to').value;
+async function loadPartnerKpi() {
+  const ownerId = document.getElementById('kpi-owner').value;
+  const params  = { date_range: activeKpiRange };
+  if (ownerId) params.owner_id = ownerId;
+  if (activeKpiRange === 'custom') {
+    params.custom_start = document.getElementById('kpi-from').value;
+    params.custom_end   = document.getElementById('kpi-to').value;
   }
 
   const tbody = document.getElementById('kpi-tbody');
-  tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text3)">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text3)">Loading…</td></tr>`;
 
   try {
-    const data = await API.getKpiTable(params);
+    const data = await API.getPartnerKpi(params);
     const rows = data.data || [];
-
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text3)">No data for selected period</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--text3)">No data for selected period</td></tr>`;
       return;
     }
-
     tbody.innerHTML = rows.map(r => `
       <tr>
-        <td style="font-weight:600">${esc(r.name)}</td>
-        <td style="color:var(--text2);font-size:11px">${Auth.roleLabel(r.role)}</td>
-        <td class="kpi-num">${esc(r.partner_name || '—')}</td>
-        <td class="kpi-num">${r.accounts_registered || 0}</td>
-        <td class="kpi-num">${r.accounts_in_review  || 0}</td>
-        <td class="kpi-num">${r.accounts_onboarded  || 0}</td>
-        <td class="kpi-num">${r.accounts_activated  || 0}</td>
-        <td class="kpi-num">${r.business_new        || 0}</td>
-        <td class="kpi-num">${r.business_established|| 0}</td>
-        <td class="kpi-num">${r.vertical_it         || 0}</td>
-        <td class="kpi-num">${r.vertical_ecomm      || 0}</td>
-        <td class="kpi-num">${r.vertical_b2b        || 0}</td>
-        <td class="kpi-num">${r.vertical_freelancer || 0}</td>
+        <td style="font-weight:600">${esc(r.partner_name)}${r.partner_company ? `<div style="font-size:11px;color:var(--text3);font-weight:400">${esc(r.partner_company)}</div>` : ''}</td>
+        <td class="kpi-num">${r.accounts_registered  || 0}</td>
+        <td class="kpi-num">${r.accounts_in_review   || 0}</td>
+        <td class="kpi-num">${r.accounts_onboarded   || 0}</td>
+        <td class="kpi-num">${r.accounts_activated   || 0}</td>
+        <td class="kpi-num">${r.business_new         || 0}</td>
+        <td class="kpi-num">${r.business_established || 0}</td>
+        <td class="kpi-num">${r.vertical_it          || 0}</td>
+        <td class="kpi-num">${r.vertical_ecomm       || 0}</td>
+        <td class="kpi-num">${r.vertical_b2b         || 0}</td>
+        <td class="kpi-num">${r.vertical_freelancer  || 0}</td>
       </tr>`).join('');
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:#D93025">${esc(e.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:24px;color:#D93025">${esc(e.message)}</td></tr>`;
+  }
+}
+
+// ── TICKET REPORT ──
+async function loadTicketReport() {
+  const params = {
+    partner_id:    document.getElementById('tr-partner').value    || '',
+    specialist_id: document.getElementById('tr-specialist').value || '',
+    status:        document.getElementById('tr-status').value     || '',
+  };
+  Object.keys(params).forEach(k => !params[k] && delete params[k]);
+
+  const tbody = document.getElementById('ticket-report-tbody');
+  try {
+    const data = await API.getTicketReport(params);
+    const rows = data.data || [];
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3)">No tickets found</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(t => `
+      <tr>
+        <td style="font-weight:600">#${t.ticket_number}</td>
+        <td>${esc(t.account_name)}</td>
+        <td>${esc(t.partner_name)}</td>
+        <td>${esc(t.specialist_name||'—')}</td>
+        <td style="font-size:11px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(t.query_type)}">${esc(t.query_type)}</td>
+        <td>${Auth.ticketStatusBadge(t.status)}</td>
+        <td style="font-size:11px">${Auth.formatDate(t.created_at)}</td>
+        <td style="font-weight:600;color:${parseInt(t.days_open)>5?'var(--g-pink)':'var(--text)'}">${Math.round(t.days_open)}d</td>
+      </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#D93025">${esc(e.message)}</td></tr>`;
   }
 }
 

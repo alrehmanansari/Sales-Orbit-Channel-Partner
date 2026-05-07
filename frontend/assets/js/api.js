@@ -78,11 +78,12 @@ const API = {
   exportTickets:    (params = {})   => `${API_BASE}/tickets/export?` + new URLSearchParams({ ...params, _t: getToken() }),
 
   // Dashboard
-  getDashboardStats:    (p = {}) => apiFetch('/dashboard/stats?'           + new URLSearchParams(p)),
+  getDashboardStats:    (p = {}) => apiFetch('/dashboard/stats?'                + new URLSearchParams(p)),
   getRegistrationTrend: (p = {}) => apiFetch('/dashboard/trend/registrations?' + new URLSearchParams(p)),
   getBusinessTypeTrend: (p = {}) => apiFetch('/dashboard/trend/business-type?' + new URLSearchParams(p)),
-  getKpiTable:          (p = {}) => apiFetch('/dashboard/kpi?'             + new URLSearchParams(p)),
-  getTicketReport:      (p = {}) => apiFetch('/dashboard/tickets?'         + new URLSearchParams(p)),
+  getKpiTable:          (p = {}) => apiFetch('/dashboard/kpi?'                 + new URLSearchParams(p)),
+  getPartnerKpi:        (p = {}) => apiFetch('/dashboard/partner-kpi?'         + new URLSearchParams(p)),
+  getTicketReport:      (p = {}) => apiFetch('/dashboard/tickets?'             + new URLSearchParams(p)),
 
   // Users
   getUsers:       (params = {})   => apiFetch('/users?' + new URLSearchParams(params)),

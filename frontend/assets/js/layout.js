@@ -59,7 +59,7 @@ function partnerTopnav(activePage, user) {
 
 function internalTopnav(activePage, user) {
   const links = [
-    { page: 'dashboard', href: '/internal/dashboard.html', label: 'Dashboard' },
+    { page: 'dashboard', href: '/internal/dashboard.html', label: 'Team Dashboard' },
     { page: 'accounts',  href: '/internal/accounts.html',  label: 'Accounts' },
     { page: 'tickets',   href: '/internal/tickets.html',   label: 'Tickets' },
   ];
