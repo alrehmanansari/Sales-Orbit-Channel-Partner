@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Internal Dashboard · Sales Orbit</title>
+<link rel="stylesheet" href="../assets/css/design-system.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.filter-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);align-items:flex-end}
+.filter-group{display:flex;flex-direction:column;gap:5px}
+.filter-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3)}
+.filter-select,.filter-input{background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:12px;color:var(--text);outline:none;min-width:130px;appearance:none;-webkit-appearance:none;cursor:pointer;transition:border-color .2s}
+.filter-select:focus,.filter-input:focus{border-color:var(--g-blue)}
+.funnel-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-bottom:20px}
+[data-theme=dark] .funnel-wrap{background:linear-gradient(180deg,#1d1d1d,#141414)}
+.funnel-title{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:16px}
+.funnel-steps{display:flex;flex-direction:column;gap:10px}
+.f-step{border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.f-step-label{font-size:13px;font-weight:600;color:var(--text);position:relative;z-index:1}
+.f-step-nums{text-align:right;position:relative;z-index:1}
+.f-step-count{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.f-step-pct{font-size:11px;color:var(--text2);margin-top:2px}
+.f-step-bg{position:absolute;inset:0;opacity:.12}
+
+.kpi-section{margin-bottom:20px}
+.kpi-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.kpi-title{font-size:16px;font-weight:600;color:var(--text);letter-spacing:-.2px}
+.date-filter-row{display:flex;gap:6px;flex-wrap:wrap}
+.date-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.date-btn.active,.date-btn:hover{background:linear-gradient(90deg,var(--g-blue),var(--g-purple));color:#fff;border-color:transparent}
+.kpi-tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:auto}
+[data-theme=dark] .kpi-tbl-wrap{background:#141414}
+.kpi-tbl{width:100%;border-collapse:collapse;font-family:var(--font);font-size:12px;min-width:900px}
+.kpi-tbl th{font-size:9px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);text-align:left;padding:10px 14px;background:var(--bg2);border-bottom:1px solid var(--border);white-space:nowrap}
+.kpi-tbl td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.kpi-tbl tbody tr:last-child td{border-bottom:none}
+.kpi-tbl tbody tr:hover{background:var(--bg2)}
+.kpi-num{text-align:center;font-variant-numeric:tabular-nums;font-weight:600}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-placeholder"></aside>
+  <div class="main-content">
+    <div id="topbar-placeholder"></div>
+    <div class="page-body">
+
+      <!-- FILTERS -->
+      <div class="filter-row" id="filters-row">
+        <div class="filter-group">
+          <span class="filter-label">Month</span>
+          <input type="month" class="filter-input" id="f-month" style="min-width:140px"/>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Partner</span>
+          <select class="filter-select" id="f-partner"><option value="">All Partners</option></select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Vertical</span>
+          <select class="filter-select" id="f-vertical">
+            <option value="">All Verticals</option>
+            <option value="it_services_provider">IT Services</option>
+            <option value="ecomm_seller">E-comm Seller</option>
+            <option value="b2b_seller">B2B Seller</option>
+            <option value="freelancer">Freelancer</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Account Status</span>
+          <select class="filter-select" id="f-status">
+            <option value="">All Statuses</option>
+            <option value="registered">Registered</option>
+            <option value="in_review">In Review</option>
+            <option value="onboarded">Onboarded</option>
+            <option value="activated">Activated</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Account Owner</span>
+          <select class="filter-select" id="f-owner"><option value="">All Owners</option></select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Business Type</span>
+          <select class="filter-select" id="f-biz">
+            <option value="">All Types</option>
+            <option value="new">New</option>
+            <option value="established">Established</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Reg. Date From</span>
+          <input type="date" class="filter-input" id="f-date-from"/>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Reg. Date To</span>
+          <input type="date" class="filter-input" id="f-date-to"/>
+        </div>
+        <div class="filter-group" style="justify-content:flex-end">
+          <button class="btn btn-grad btn-sm" onclick="applyFilters()">Apply Filters</button>
+          <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="clearFilters()">Clear</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid" id="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="lbl">Total Registered</div>
+          <div class="val text-grad" id="s-total">—</div>
+          <div class="stat-card-accent" style="background:linear-gradient(90deg,var(--g-blue),var(--g-purple))"></div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl">In Review</div>
+          <div class="val" style="color:var(--g-blue)" id="s-review">—</div>
+          <div class="stat-card-accent" style="background:var(--g-blue)"></div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl">Onboarded</div>
+          <div class="val" style="color:var(--g-purple)" id="s-onboarded">—</div>
+          <div class="stat-card-accent" style="background:var(--g-purple)"></div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl">Activated</div>
+          <div class="val" style="color:var(--g-green)" id="s-activated">—</div>
+          <div class="stat-card-accent" style="background:var(--g-green)"></div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl">New Business</div>
+          <div class="val" id="s-biz-new">—</div>
+          <div class="stat-card-accent" style="background:var(--g-blue)"></div>
+        </div>
+        <div class="stat-card">
+          <div class="lbl">Established</div>
+          <div class="val" id="s-biz-est">—</div>
+          <div class="stat-card-accent" style="background:var(--g-purple)"></div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 1 -->
+      <div class="chart-grid" style="margin-bottom:20px">
+        <div class="chart-card">
+          <div class="chart-head">
+            <div>
+              <div class="chart-title">Account Registration Trend</div>
+              <div class="chart-val" style="font-size:18px" id="ch-reg-val">—</div>
+            </div>
+          </div>
+          <canvas id="chart-registration" height="160"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head">
+            <div>
+              <div class="chart-title">Activated Accounts Trend</div>
+              <div class="chart-val" style="font-size:18px" id="ch-act-val">—</div>
+            </div>
+          </div>
+          <canvas id="chart-activation" height="160"></canvas>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 2 -->
+      <div class="chart-grid" style="margin-bottom:20px">
+        <div class="chart-card">
+          <div class="chart-head">
+            <div><div class="chart-title">Business Type Trend</div></div>
+          </div>
+          <canvas id="chart-biztype" height="160"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head">
+            <div><div class="chart-title">Account Volume by Month</div></div>
+          </div>
+          <canvas id="chart-volume" height="160"></canvas>
+        </div>
+      </div>
+
+      <!-- FUNNEL -->
+      <div class="funnel-wrap">
+        <div class="funnel-title">Account Registration Funnel</div>
+        <div class="funnel-steps" id="funnel-steps">
+          <div style="color:var(--text3);font-size:13px">Loading…</div>
+        </div>
+      </div>
+
+      <!-- KPI DASHBOARD -->
+      <div class="kpi-section">
+        <div class="kpi-title-row">
+          <div class="kpi-title">KPI Achievement Dashboard</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <div class="filter-group">
+              <span class="filter-label">Team Member</span>
+              <select class="filter-select" id="kpi-member" onchange="loadKpi()" style="min-width:160px">
+                <option value="">All Team Members</option>
+              </select>
+            </div>
+            <div class="date-filter-row" id="date-filter-row">
+              <button class="date-btn" data-range="last_week"       onclick="setDateRange(this)">Last Week</button>
+              <button class="date-btn active" data-range="current_month" onclick="setDateRange(this)">This Month</button>
+              <button class="date-btn" data-range="last_month"      onclick="setDateRange(this)">Last Month</button>
+              <button class="date-btn" data-range="ytd"             onclick="setDateRange(this)">YTD</button>
+              <button class="date-btn" data-range="current_quarter" onclick="setDateRange(this)">This Qtr</button>
+              <button class="date-btn" data-range="last_quarter"    onclick="setDateRange(this)">Last Qtr</button>
+              <button class="date-btn" data-range="custom"          onclick="setDateRange(this)">Custom</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="custom-date-row" style="display:none;gap:10px;margin-bottom:12px;flex-wrap:wrap" class="flex">
+          <div class="filter-group">
+            <span class="filter-label">From</span>
+            <input type="date" class="filter-input" id="kpi-date-from" onchange="loadKpi()"/>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">To</span>
+            <input type="date" class="filter-input" id="kpi-date-to" onchange="loadKpi()"/>
+          </div>
+        </div>
+
+        <div class="kpi-tbl-wrap">
+          <table class="kpi-tbl">
+            <thead>
+              <tr>
+                <th>Team Member</th>
+                <th>Role</th>
+                <th class="kpi-num">Partner</th>
+                <th class="kpi-num">Registered</th>
+                <th class="kpi-num">In Review</th>
+                <th class="kpi-num">Onboarded</th>
+                <th class="kpi-num">Activated</th>
+                <th class="kpi-num">New Biz</th>
+                <th class="kpi-num">Established</th>
+                <th class="kpi-num">IT</th>
+                <th class="kpi-num">E-comm</th>
+                <th class="kpi-num">B2B</th>
+                <th class="kpi-num">Freelancer</th>
+              </tr>
+            </thead>
+            <tbody id="kpi-tbody">
+              <tr><td colspan="13" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<div class="notif-panel hidden" id="notif-panel">
+  <div class="notif-panel-head">
+    <span class="notif-panel-title">Notifications</span>
+    <button class="btn btn-ghost btn-sm" id="mark-all-read" style="padding:4px 10px;font-size:11px">Mark all read</button>
+  </div>
+  <div class="notif-scroll" id="notif-scroll"><div class="notif-empty">Loading…</div></div>
+</div>
+<div class="toast-container"></div>
+
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/notifications.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script>
+const user = Auth.requireInternalAuth();
+let activeRange = 'current_month';
+let chartReg, chartAct, chartBiz, chartVol;
+
+if (user) {
+  document.getElementById('sidebar-placeholder').outerHTML = Layout.internalSidebar('dashboard', user);
+  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Dashboard', 'Account performance overview', user);
+  Notifications.initNotifications();
+  initCharts();
+  loadDropdowns();
+  loadDashboard();
+  loadKpi();
+}
+
+async function loadDropdowns() {
+  try {
+    const [partners, specialists] = await Promise.all([API.getPartners(), API.getSpecialists()]);
+    const partnerSel = document.getElementById('f-partner');
+    (partners.data || []).forEach(p => {
+      partnerSel.innerHTML += `<option value="${p.id}">${esc(p.name)}${p.company_name ? ' · '+esc(p.company_name) : ''}</option>`;
+    });
+    const ownerSel = document.getElementById('f-owner');
+    (specialists.data || []).forEach(s => {
+      ownerSel.innerHTML += `<option value="${s.id}">${esc(s.name)}</option>`;
+    });
+    // KPI team member
+    const kpiSel = document.getElementById('kpi-member');
+    const allUsers = await API.getUsers({ is_active: true });
+    (allUsers.data || []).forEach(u => {
+      if (u.role !== 'channel_partner') kpiSel.innerHTML += `<option value="${u.id}">${esc(u.name)} · ${Auth.roleLabel(u.role)}</option>`;
+    });
+  } catch (e) { /* silently fail dropdowns */ }
+}
+
+function getFilterParams() {
+  return {
+    month:         document.getElementById('f-month').value || '',
+    partner_id:    document.getElementById('f-partner').value || '',
+    vertical:      document.getElementById('f-vertical').value || '',
+    status:        document.getElementById('f-status').value || '',
+    owner_id:      document.getElementById('f-owner').value || '',
+    business_type: document.getElementById('f-biz').value || '',
+    start_date:    document.getElementById('f-date-from').value || '',
+    end_date:      document.getElementById('f-date-to').value || '',
+  };
+}
+
+async function applyFilters() {
+  await loadDashboard();
+}
+
+function clearFilters() {
+  ['f-month','f-partner','f-vertical','f-status','f-owner','f-biz','f-date-from','f-date-to'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  loadDashboard();
+}
+
+async function loadDashboard() {
+  const params = getFilterParams();
+  Object.keys(params).forEach(k => !params[k] && delete params[k]);
+
+  try {
+    const [stats, trend, bizTrend] = await Promise.all([
+      API.getDashboardStats(params),
+      API.getRegistrationTrend({ months: 12, ...(params.owner_id ? { owner_id: params.owner_id } : {}) }),
+      API.getBusinessTypeTrend({ months: 6 })
+    ]);
+
+    // Stats
+    const s = stats.stats;
+    document.getElementById('s-total').textContent     = s.total     || 0;
+    document.getElementById('s-review').textContent    = s.in_review || 0;
+    document.getElementById('s-onboarded').textContent = s.onboarded || 0;
+    document.getElementById('s-activated').textContent = s.activated || 0;
+    document.getElementById('s-biz-new').textContent   = s.business_new || 0;
+    document.getElementById('s-biz-est').textContent   = s.business_established || 0;
+
+    // Funnel
+    const f = stats.funnel;
+    const total = parseInt(f.total_registered) || 0;
+    renderFunnel(f, total);
+
+    // Charts
+    const trendData = trend.data || [];
+    updateCharts(trendData, bizTrend.data || []);
+  } catch (e) {
+    Auth.showToast('Could not load dashboard data.', 'error');
+  }
+}
+
+function renderFunnel(f, total) {
+  const steps = [
+    { label: 'Total Accounts Registered', count: parseInt(f.total_registered)||0, color: '#4796E3', pct: 100 },
+    { label: 'In Review',                 count: parseInt(f.in_review)||0,         color: '#9177C7', pct: total ? Math.round((f.in_review/total)*100) : 0 },
+    { label: 'Onboarded Accounts',        count: parseInt(f.onboarded)||0,         color: '#CA6673', pct: total ? Math.round((f.onboarded/total)*100) : 0 },
+    { label: 'Activated Accounts',        count: parseInt(f.activated)||0,         color: '#1E8E3E', pct: total ? Math.round((f.activated/total)*100) : 0 },
+  ];
+
+  const widths = [100, 85, 70, 55];
+  document.getElementById('funnel-steps').innerHTML = steps.map((s, i) => `
+    <div class="f-step" style="background:${s.color}1a;border:1px solid ${s.color}30;width:${widths[i]}%;align-self:center">
+      <div class="f-step-bg" style="background:${s.color}"></div>
+      <div class="f-step-label">${s.label}</div>
+      <div class="f-step-nums">
+        <div class="f-step-count" style="color:${s.color}">${s.count.toLocaleString()}</div>
+        ${i > 0 ? `<div class="f-step-pct">${s.pct}% of registered</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function initCharts() {
+  const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = () => isDark() ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
+  const textColor = () => isDark() ? '#5F6368' : '#9AA0A6';
+
+  const baseOpts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Google Sans', size: 10 } } },
+      y: { grid: { color: gridColor }, ticks: { color: textColor, font: { family: 'Google Sans', size: 10 } }, beginAtZero: true }
+    }
+  };
+
+  chartReg = new Chart(document.getElementById('chart-registration'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Registered', data: [], borderColor: '#4796E3', backgroundColor: 'rgba(71,150,227,.12)', fill: true, tension: .4, borderWidth: 2, pointRadius: 3 }] },
+    options: { ...baseOpts, plugins: { legend: { display: false } } }
+  });
+
+  chartAct = new Chart(document.getElementById('chart-activation'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Activated', data: [], borderColor: '#1E8E3E', backgroundColor: 'rgba(30,142,62,.1)', fill: true, tension: .4, borderWidth: 2, pointRadius: 3 }] },
+    options: { ...baseOpts }
+  });
+
+  chartBiz = new Chart(document.getElementById('chart-biztype'), {
+    type: 'bar',
+    data: { labels: [], datasets: [
+      { label: 'New', data: [], backgroundColor: 'rgba(71,150,227,.75)', borderRadius: 4 },
+      { label: 'Established', data: [], backgroundColor: 'rgba(145,119,199,.75)', borderRadius: 4 }
+    ]},
+    options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: textColor(), font: { family: 'Google Sans', size: 10 } } } } }
+  });
+
+  chartVol = new Chart(document.getElementById('chart-volume'), {
+    type: 'bar',
+    data: { labels: [], datasets: [
+      { label: 'Registered', data: [], backgroundColor: 'rgba(71,150,227,.7)', borderRadius: 4 },
+      { label: 'Onboarded',  data: [], backgroundColor: 'rgba(145,119,199,.7)', borderRadius: 4 },
+      { label: 'Activated',  data: [], backgroundColor: 'rgba(30,142,62,.7)',   borderRadius: 4 },
+    ]},
+    options: { ...baseOpts, plugins: { legend: { display: true, labels: { color: textColor(), font: { family: 'Google Sans', size: 10 } } } } }
+  });
+}
+
+function updateCharts(trendData, bizTrend) {
+  const labels = trendData.map(d => d.month);
+  const reg    = trendData.map(d => parseInt(d.registered)||0);
+  const act    = trendData.map(d => parseInt(d.activated)||0);
+  const onb    = trendData.map(d => parseInt(d.onboarded)||0);
+
+  chartReg.data.labels = labels;
+  chartReg.data.datasets[0].data = reg;
+  chartReg.update();
+  document.getElementById('ch-reg-val').textContent = reg.reduce((a,b)=>a+b,0);
+
+  chartAct.data.labels = labels;
+  chartAct.data.datasets[0].data = act;
+  chartAct.update();
+  document.getElementById('ch-act-val').textContent = act.reduce((a,b)=>a+b,0);
+
+  chartVol.data.labels = labels;
+  chartVol.data.datasets[0].data = reg;
+  chartVol.data.datasets[1].data = onb;
+  chartVol.data.datasets[2].data = act;
+  chartVol.update();
+
+  const bizLabels = bizTrend.map(d => d.month);
+  chartBiz.data.labels = bizLabels;
+  chartBiz.data.datasets[0].data = bizTrend.map(d => parseInt(d.business_new)||0);
+  chartBiz.data.datasets[1].data = bizTrend.map(d => parseInt(d.business_established)||0);
+  chartBiz.update();
+}
+
+// ── KPI ──
+function setDateRange(btn) {
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeRange = btn.dataset.range;
+  document.getElementById('custom-date-row').style.display = activeRange === 'custom' ? 'flex' : 'none';
+  if (activeRange !== 'custom') loadKpi();
+}
+
+async function loadKpi() {
+  const memberId = document.getElementById('kpi-member').value;
+  const params   = { date_range: activeRange };
+  if (memberId) params.team_member_id = memberId;
+  if (activeRange === 'custom') {
+    params.custom_start = document.getElementById('kpi-date-from').value;
+    params.custom_end   = document.getElementById('kpi-date-to').value;
+  }
+
+  const tbody = document.getElementById('kpi-tbody');
+  tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text3)">Loading…</td></tr>`;
+
+  try {
+    const data = await API.getKpiTable(params);
+    const rows = data.data || [];
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:var(--text3)">No data for selected period</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td style="font-weight:600">${esc(r.name)}</td>
+        <td style="color:var(--text2);font-size:11px">${Auth.roleLabel(r.role)}</td>
+        <td class="kpi-num">${esc(r.partner_name || '—')}</td>
+        <td class="kpi-num">${r.accounts_registered || 0}</td>
+        <td class="kpi-num">${r.accounts_in_review  || 0}</td>
+        <td class="kpi-num">${r.accounts_onboarded  || 0}</td>
+        <td class="kpi-num">${r.accounts_activated  || 0}</td>
+        <td class="kpi-num">${r.business_new        || 0}</td>
+        <td class="kpi-num">${r.business_established|| 0}</td>
+        <td class="kpi-num">${r.vertical_it         || 0}</td>
+        <td class="kpi-num">${r.vertical_ecomm      || 0}</td>
+        <td class="kpi-num">${r.vertical_b2b        || 0}</td>
+        <td class="kpi-num">${r.vertical_freelancer || 0}</td>
+      </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;padding:24px;color:#D93025">${esc(e.message)}</td></tr>`;
+  }
+}
+
+function esc(s) {
+  if (!s) return '—';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Channel Partner Portal — SalesOrbit</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --so-blue:#4796E3; --so-purple:#9177C7; --so-pink:#CA6673;
+      --so-gradient:linear-gradient(90deg,#4796E3 0%,#9177C7 50%,#CA6673 100%);
+      --so-blue-soft:rgba(71,150,227,0.09); --so-purple-soft:rgba(145,119,199,0.09);
+      --bg-secondary:#F8F9FA; --bg-tertiary:#F1F3F5;
+      --border-color:rgba(0,0,0,0.07); --border-strong-color:rgba(0,0,0,0.12);
+      --text-primary:#1A1A2E; --text-secondary:#5F6368; --text-tertiary:#9AA0A6; --text-hint:#C8CDD2;
+      --bg-base:#F1F3F5; --bg-card:#FFFFFF; --bg-elevated:#F1F3F5; --bg-hover:#E8ECF0;
+      --green:#1E8E3E; --red:#D93025; --orange:#E37400;
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.06),0 4px 12px rgba(0,0,0,0.04);
+      --font:'Google Sans',system-ui,sans-serif; --font-mono:'JetBrains Mono',monospace;
+      --radius:10px; --sidebar-w:240px; --header-h:54px;
+    }
+    [data-theme="dark"] {
+      --so-blue:#6BB5FF; --so-purple:#B49EE8; --so-pink:#E8909B;
+      --so-blue-soft:rgba(107,181,255,0.12); --so-purple-soft:rgba(180,158,232,0.12);
+      --so-gradient:linear-gradient(90deg,#6BB5FF 0%,#B49EE8 50%,#E8909B 100%);
+      --bg-secondary:#131318; --bg-tertiary:#1A1A22;
+      --border-color:rgba(255,255,255,0.06); --border-strong-color:rgba(255,255,255,0.10);
+      --text-primary:#EAEAF0; --text-secondary:#9A9AAF; --text-tertiary:#52525E; --text-hint:#2E2E38;
+      --bg-base:#0C0C0F; --bg-card:#17171E; --bg-elevated:#1A1A22; --bg-hover:#20202A;
+      --green:#34A853; --red:#E8453C;
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.4),0 4px 12px rgba(0,0,0,0.3);
+    }
+    html,body,#root{height:100%}
+    body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background 200ms,color 200ms}
+    ::-webkit-scrollbar{width:4px;height:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border-strong-color);border-radius:4px}
+    input,select,textarea{width:100%;background:var(--bg-tertiary);border:1.5px solid var(--border-strong-color);border-radius:var(--radius);color:var(--text-primary);font-family:var(--font);font-size:13px;padding:8px 12px;outline:none;transition:border-color 200ms,box-shadow 200ms,background 200ms}
+    input:focus,select:focus,textarea:focus{border-color:var(--so-blue);box-shadow:0 0 0 3px var(--so-blue-soft);background:var(--bg-card)}
+    input:hover:not(:focus),select:hover:not(:focus){border-color:var(--text-tertiary)}
+    input::placeholder,textarea::placeholder{color:var(--text-hint)}
+    select option{background:var(--bg-elevated);color:var(--text-primary)}
+    textarea{resize:vertical;min-height:70px}
+    label{display:block;font-size:10px;font-weight:700;color:var(--text-tertiary);margin-bottom:6px;letter-spacing:1.2px;text-transform:uppercase}
+    /* compact table */
+    .dtbl{width:100%;border-collapse:separate;border-spacing:0;font-size:11px}
+    .dtbl th{text-align:left;padding:6px 8px;font-size:9px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border-color);background:linear-gradient(to bottom,var(--bg-secondary),var(--bg-tertiary));white-space:nowrap;position:sticky;top:0;z-index:1}
+    .dtbl td{padding:6px 8px;border-bottom:0.5px solid var(--border-color);vertical-align:middle;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
+    .dtbl tbody tr:hover td{background:var(--so-blue-soft)!important;cursor:pointer}
+    .dtbl tbody tr:last-child td{border-bottom:none}
+    .dtbl tbody tr{animation:fadeIn .2s ease both}
+    @keyframes fanSpin{0%{transform:rotate(0deg)}18%{transform:rotate(540deg)}36%{transform:rotate(810deg)}55%{transform:rotate(960deg)}75%{transform:rotate(1050deg)}90%{transform:rotate(1078deg)}100%{transform:rotate(1080deg)}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    @keyframes scaleIn{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes tagFloat{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .page-anim{animation:fadeUp .3s cubic-bezier(.4,0,.2,1) both}
+    @media(max-width:767px){
+      .g3{grid-template-columns:1fr!important}.g2{grid-template-columns:1fr!important}
+      .drawer-panel{width:100%!important}
+      .modal-sheet{border-radius:18px 18px 0 0!important;max-width:100%!important;max-height:92dvh!important}
+      .modal-wrap{align-items:flex-end!important;padding:0!important}
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef, createContext, useContext } = React
+
+/* ── Constants ───────────────────────────────────────── */
+const VERTICALS      = ['IT Services','Ecom Seller','B2B Seller','Freelancer']
+const NOB_LIST       = ['AI Solutions','App Development','B2B Goods','BPO','Digital Accountancy','Digital Marketing Agency','E-comm Marketplaces','Game Development','HR Management','IT Services','Logistics','Medical Billing','PayPal','Shopify','Software Development','Stripe','Web Development']
+const COUNTRIES      = ['USA','UK','PK','HK','EUR','UAE','SG']
+const BUSINESS_TYPES = ['New','Established']
+const ACCOUNT_STAGES = ['Registered','In Review','Onboarded','Activated','Blocked']
+const VA_STATUSES    = ['Applied','Assigned','Approved','Activated']
+const CARD_STATUSES  = ['Card Required','Card Applied','Card Issued']
+const ROLE_PARTNER    = 'Channel Partner'
+const ROLE_SPECIALIST = 'Customer Onboarding Specialist'
+
+/* ── Storage / utils ─────────────────────────────────── */
+const stor = {
+  get: k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } },
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+}
+const genId  = () => Date.now().toString(36) + Math.random().toString(36).slice(2)
+const genOTP = () => String(Math.floor(100000 + Math.random() * 900000))
+const fmtDate  = d => d ? new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—'
+const fmtDT    = d => d ? new Date(d).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'
+
+/* ── Badge maps ──────────────────────────────────────── */
+const STAGE_MAP = {
+  'Registered':  { bg:'rgba(71,150,227,0.12)',  color:'#4796E3' },
+  'In Review':   { bg:'rgba(227,116,0,0.12)',   color:'#E37400' },
+  'Onboarded':   { bg:'rgba(30,142,62,0.12)',   color:'#1E8E3E' },
+  'Activated':   { bg:'rgba(202,102,115,0.12)', color:'#CA6673' },
+  'Blocked':     { bg:'rgba(217,48,37,0.12)',   color:'#D93025' },
+}
+const VA_MAP = {
+  Applied:   { bg:'rgba(71,150,227,0.1)',  color:'#4796E3' },
+  Assigned:  { bg:'rgba(145,119,199,0.1)', color:'#9177C7' },
+  Approved:  { bg:'rgba(30,142,62,0.1)',   color:'#1E8E3E' },
+  Activated: { bg:'rgba(202,102,115,0.1)', color:'#CA6673' },
+}
+const CARD_MAP = {
+  'Card Required': { bg:'rgba(227,116,0,0.1)',  color:'#E37400' },
+  'Card Applied':  { bg:'rgba(71,150,227,0.1)', color:'#4796E3' },
+  'Card Issued':   { bg:'rgba(30,142,62,0.1)',  color:'#1E8E3E' },
+}
+const BTYPE_MAP = {
+  'New':         { bg:'rgba(71,150,227,0.1)',  color:'#4796E3' },
+  'Established': { bg:'rgba(145,119,199,0.1)', color:'#9177C7' },
+}
+
+/* ── Seed data ───────────────────────────────────────── */
+;(function seed() {
+  const SID = 'spec-001', PG = 'part-001', PH = 'part-002'
+
+  /* ── Always upsert the 3 demo users so login never breaks ── */
+  const DEMO_USERS = [
+    { id:SID, name:'Sarah Mitchell',  company:'SalesOrbit HQ',     email:'sarah.mitchell@salesorbit.com', role:ROLE_SPECIALIST, assignedSpecialistId:null, createdAt:'2025-01-10T08:00:00Z' },
+    { id:PG,  name:'Ahmed Al-Rashid', company:'Gulf Trade Connect', email:'ahmed@gulftrade.ae',            role:ROLE_PARTNER,    assignedSpecialistId:SID,  createdAt:'2025-01-15T09:00:00Z' },
+    { id:PH,  name:'Zara Khan',       company:'Hoptex',             email:'zara@hoptex.io',               role:ROLE_PARTNER,    assignedSpecialistId:SID,  createdAt:'2025-02-01T10:00:00Z' },
+  ]
+  let users = stor.get('cp_users') || []
+  DEMO_USERS.forEach(demo => {
+    const i = users.findIndex(u => u.id === demo.id)
+    if (i === -1) users.push(demo); else users[i] = demo
+  })
+  stor.set('cp_users', users)
+
+  /* ── Seed accounts + notes only when storage is empty ── */
+  if ((stor.get('cp_accounts') || []).length > 0) return
+  const dummy_users = DEMO_USERS   // alias for readability below
+  const mkH = (stages) => stages.map(([s,d,by])=>({ stage:s, date:d, by }))
+  const accounts = [
+    /* Gulf Trade Connect */
+    { id:'g01', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1001', registrationDate:'2025-02-03', companyName:'Nexus Digital LLC',       registrationCountry:'UAE', directorName:'Omar Farooq',       emailId:'omar@nexusdigital.ae',      phone:'+971 50 123 4567', website:'www.nexusdigital.ae',    businessType:'Established', vertical:'IT Services',  natureOfBusiness:'Software Development',     expectedMonthlyVolume:'$120,000', accountStage:'Activated',  vaStatus:'Activated', cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-02-03T10:00:00Z','Ahmed Al-Rashid'],['In Review','2025-02-10T09:00:00Z','Sarah Mitchell'],['Onboarded','2025-02-18T11:00:00Z','Sarah Mitchell'],['Activated','2025-03-01T14:00:00Z','Sarah Mitchell']]), createdAt:'2025-02-03T10:00:00Z' },
+    { id:'g02', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1002', registrationDate:'2025-02-14', companyName:'PakExport Trading Co.',   registrationCountry:'PK',  directorName:'Bilal Chaudhry',    emailId:'bilal@pakexport.pk',        phone:'+92 300 987 6543', website:'www.pakexport.pk',       businessType:'New',         vertical:'B2B Seller',   natureOfBusiness:'B2B Goods',                expectedMonthlyVolume:'$45,000',  accountStage:'Onboarded',  vaStatus:'Approved',  cardStatus:'Card Applied',  stageHistory:mkH([['Registered','2025-02-14T11:30:00Z','Ahmed Al-Rashid'],['In Review','2025-02-20T09:00:00Z','Sarah Mitchell'],['Onboarded','2025-03-02T10:00:00Z','Sarah Mitchell']]), createdAt:'2025-02-14T11:30:00Z' },
+    { id:'g03', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1003', registrationDate:'2025-03-01', companyName:'HK Sourcing Hub Ltd.',    registrationCountry:'HK',  directorName:'Kevin Lam',         emailId:'kevin@hksourcing.hk',       phone:'+852 9012 3456',   website:'www.hksourcing.hk',      businessType:'Established', vertical:'Ecom Seller',  natureOfBusiness:'E-comm Marketplaces',      expectedMonthlyVolume:'$200,000', accountStage:'Activated',  vaStatus:'Activated', cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-03-01T09:15:00Z','Ahmed Al-Rashid'],['In Review','2025-03-07T10:00:00Z','Sarah Mitchell'],['Onboarded','2025-03-15T12:00:00Z','Sarah Mitchell'],['Activated','2025-03-25T15:00:00Z','Sarah Mitchell']]), createdAt:'2025-03-01T09:15:00Z' },
+    { id:'g04', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1004', registrationDate:'2025-03-10', companyName:'BrightMind AI Solutions', registrationCountry:'USA', directorName:'Jessica Hartman',   emailId:'jessica@brightmind.ai',     phone:'+1 415 234 5678',  website:'www.brightmind.ai',      businessType:'New',         vertical:'IT Services',  natureOfBusiness:'AI Solutions',             expectedMonthlyVolume:'$350,000', accountStage:'In Review',  vaStatus:'Assigned',  cardStatus:'Card Applied',  stageHistory:mkH([['Registered','2025-03-10T14:00:00Z','Ahmed Al-Rashid'],['In Review','2025-03-18T09:00:00Z','Sarah Mitchell']]), createdAt:'2025-03-10T14:00:00Z' },
+    { id:'g05', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1005', registrationDate:'2025-03-22', companyName:'EuroLogix GmbH',          registrationCountry:'EUR', directorName:'Hans Müller',       emailId:'hans@eurologix.de',         phone:'+49 30 8765 4321', website:'www.eurologix.de',       businessType:'Established', vertical:'B2B Seller',   natureOfBusiness:'Logistics',                expectedMonthlyVolume:'$95,000',  accountStage:'Registered', vaStatus:'Applied',   cardStatus:'Card Required', stageHistory:mkH([['Registered','2025-03-22T08:45:00Z','Ahmed Al-Rashid']]), createdAt:'2025-03-22T08:45:00Z' },
+    { id:'g06', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1006', registrationDate:'2025-04-02', companyName:'ShopifyPro Agency UK',    registrationCountry:'UK',  directorName:'Emily Clarke',      emailId:'emily@shopifypro.co.uk',    phone:'+44 20 7123 4567', website:'www.shopifypro.co.uk',   businessType:'New',         vertical:'Ecom Seller',  natureOfBusiness:'Shopify',                  expectedMonthlyVolume:'$75,000',  accountStage:'Onboarded',  vaStatus:'Approved',  cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-04-02T10:30:00Z','Ahmed Al-Rashid'],['In Review','2025-04-08T09:00:00Z','Sarah Mitchell'],['Onboarded','2025-04-15T14:00:00Z','Sarah Mitchell']]), createdAt:'2025-04-02T10:30:00Z' },
+    { id:'g07', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1007', registrationDate:'2025-04-08', companyName:'SG FinTech Ventures',     registrationCountry:'SG',  directorName:'Daniel Tan',        emailId:'daniel@sgfintech.sg',       phone:'+65 9123 4567',    website:'www.sgfintech.sg',       businessType:'Established', vertical:'IT Services',  natureOfBusiness:'Digital Accountancy',      expectedMonthlyVolume:'$180,000', accountStage:'Activated',  vaStatus:'Activated', cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-04-08T13:00:00Z','Ahmed Al-Rashid'],['In Review','2025-04-14T10:00:00Z','Sarah Mitchell'],['Onboarded','2025-04-20T11:00:00Z','Sarah Mitchell'],['Activated','2025-04-26T16:00:00Z','Sarah Mitchell']]), createdAt:'2025-04-08T13:00:00Z' },
+    { id:'g08', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1008', registrationDate:'2025-04-11', companyName:'Pixel & Code Studio',     registrationCountry:'PK',  directorName:'Ayesha Siddiqui',   emailId:'ayesha@pixelcode.io',       phone:'+92 321 555 7890', website:'www.pixelcode.io',       businessType:'New',         vertical:'Freelancer',   natureOfBusiness:'Web Development',          expectedMonthlyVolume:'$28,000',  accountStage:'Registered', vaStatus:'Applied',   cardStatus:'Card Required', stageHistory:mkH([['Registered','2025-04-11T11:00:00Z','Ahmed Al-Rashid']]), createdAt:'2025-04-11T11:00:00Z' },
+    { id:'g09', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1009', registrationDate:'2025-04-15', companyName:'Gulf Med BPO Services',   registrationCountry:'UAE', directorName:'Tariq Al-Mansoori', emailId:'tariq@gulfmedbpo.ae',       phone:'+971 55 876 5432', website:'www.gulfmedbpo.ae',      businessType:'Established', vertical:'B2B Seller',   natureOfBusiness:'BPO',                      expectedMonthlyVolume:'$60,000',  accountStage:'In Review',  vaStatus:'Assigned',  cardStatus:'Card Applied',  stageHistory:mkH([['Registered','2025-04-15T09:30:00Z','Ahmed Al-Rashid'],['In Review','2025-04-20T10:00:00Z','Sarah Mitchell']]), createdAt:'2025-04-15T09:30:00Z' },
+    { id:'g10', partnerId:PG, partnerName:'Ahmed Al-Rashid', partnerCompany:'Gulf Trade Connect', assignedSpecialistId:SID, clientId:'CLT-1010', registrationDate:'2025-04-20', companyName:'DigiMark Pro HK',         registrationCountry:'HK',  directorName:'Chloe Wong',        emailId:'chloe@digimarkpro.hk',      phone:'+852 6543 2109',   website:'www.digimarkpro.hk',     businessType:'New',         vertical:'Ecom Seller',  natureOfBusiness:'Digital Marketing Agency', expectedMonthlyVolume:'$140,000', accountStage:'Blocked',    vaStatus:'Applied',   cardStatus:'Card Required', stageHistory:mkH([['Registered','2025-04-20T14:45:00Z','Ahmed Al-Rashid'],['Blocked','2025-04-25T09:00:00Z','Sarah Mitchell']]), createdAt:'2025-04-20T14:45:00Z' },
+    /* Hoptex */
+    { id:'h01', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2001', registrationDate:'2025-02-10', companyName:'AlphaStream Technologies',  registrationCountry:'USA', directorName:'Ryan Foster',      emailId:'ryan@alphastream.io',       phone:'+1 628 345 6789',  website:'www.alphastream.io',     businessType:'Established', vertical:'IT Services',  natureOfBusiness:'App Development',          expectedMonthlyVolume:'$220,000', accountStage:'Activated',  vaStatus:'Activated', cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-02-10T09:00:00Z','Zara Khan'],['In Review','2025-02-17T10:00:00Z','Sarah Mitchell'],['Onboarded','2025-02-25T12:00:00Z','Sarah Mitchell'],['Activated','2025-03-05T15:00:00Z','Sarah Mitchell']]), createdAt:'2025-02-10T09:00:00Z' },
+    { id:'h02', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2002', registrationDate:'2025-02-20', companyName:'Stripe Masters Ltd.',       registrationCountry:'UK',  directorName:'Laura Bennett',    emailId:'laura@stripemasters.co.uk', phone:'+44 161 234 5678', website:'www.stripemasters.co.uk', businessType:'Established', vertical:'Ecom Seller',  natureOfBusiness:'Stripe',                   expectedMonthlyVolume:'$310,000', accountStage:'Activated',  vaStatus:'Activated', cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-02-20T11:00:00Z','Zara Khan'],['In Review','2025-02-26T09:00:00Z','Sarah Mitchell'],['Onboarded','2025-03-06T11:00:00Z','Sarah Mitchell'],['Activated','2025-03-15T14:00:00Z','Sarah Mitchell']]), createdAt:'2025-02-20T11:00:00Z' },
+    { id:'h03', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2003', registrationDate:'2025-03-05', companyName:'MedBill Solutions PK',      registrationCountry:'PK',  directorName:'Dr. Imran Malik',  emailId:'imran@medbill.pk',          phone:'+92 333 111 2222', website:'www.medbill.pk',         businessType:'New',         vertical:'B2B Seller',   natureOfBusiness:'Medical Billing',          expectedMonthlyVolume:'$55,000',  accountStage:'Onboarded',  vaStatus:'Approved',  cardStatus:'Card Applied',  stageHistory:mkH([['Registered','2025-03-05T10:30:00Z','Zara Khan'],['In Review','2025-03-12T09:00:00Z','Sarah Mitchell'],['Onboarded','2025-03-22T11:00:00Z','Sarah Mitchell']]), createdAt:'2025-03-05T10:30:00Z' },
+    { id:'h04', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2004', registrationDate:'2025-03-14', companyName:'PayBridge Global SG',       registrationCountry:'SG',  directorName:'Marcus Lim',       emailId:'marcus@paybridge.sg',       phone:'+65 8765 4321',    website:'www.paybridge.sg',       businessType:'Established', vertical:'IT Services',  natureOfBusiness:'Digital Accountancy',      expectedMonthlyVolume:'$490,000', accountStage:'Activated',  vaStatus:'Activated', cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-03-14T08:00:00Z','Zara Khan'],['In Review','2025-03-20T10:00:00Z','Sarah Mitchell'],['Onboarded','2025-03-28T12:00:00Z','Sarah Mitchell'],['Activated','2025-04-05T15:00:00Z','Sarah Mitchell']]), createdAt:'2025-03-14T08:00:00Z' },
+    { id:'h05', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2005', registrationDate:'2025-03-25', companyName:'GreenCart EU',              registrationCountry:'EUR', directorName:'Sophie Dubois',    emailId:'sophie@greencart.eu',       phone:'+33 1 4567 8901',  website:'www.greencart.eu',       businessType:'New',         vertical:'Ecom Seller',  natureOfBusiness:'E-comm Marketplaces',      expectedMonthlyVolume:'$165,000', accountStage:'In Review',  vaStatus:'Assigned',  cardStatus:'Card Applied',  stageHistory:mkH([['Registered','2025-03-25T13:45:00Z','Zara Khan'],['In Review','2025-04-01T10:00:00Z','Sarah Mitchell']]), createdAt:'2025-03-25T13:45:00Z' },
+    { id:'h06', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2006', registrationDate:'2025-04-01', companyName:'FreelancePro Network',      registrationCountry:'UAE', directorName:'Noor Al-Hassan',   emailId:'noor@freelancepro.ae',      phone:'+971 52 444 5678', website:'www.freelancepro.ae',    businessType:'New',         vertical:'Freelancer',   natureOfBusiness:'Digital Marketing Agency', expectedMonthlyVolume:'$38,000',  accountStage:'Registered', vaStatus:'Applied',   cardStatus:'Card Required', stageHistory:mkH([['Registered','2025-04-01T09:15:00Z','Zara Khan']]), createdAt:'2025-04-01T09:15:00Z' },
+    { id:'h07', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2007', registrationDate:'2025-04-06', companyName:'HK GameDev Studio',         registrationCountry:'HK',  directorName:'Victor Cheung',    emailId:'victor@hkgamedev.hk',       phone:'+852 5543 2211',   website:'www.hkgamedev.hk',       businessType:'Established', vertical:'IT Services',  natureOfBusiness:'Game Development',         expectedMonthlyVolume:'$275,000', accountStage:'Onboarded',  vaStatus:'Approved',  cardStatus:'Card Issued',   stageHistory:mkH([['Registered','2025-04-06T11:30:00Z','Zara Khan'],['In Review','2025-04-12T10:00:00Z','Sarah Mitchell'],['Onboarded','2025-04-20T14:00:00Z','Sarah Mitchell']]), createdAt:'2025-04-06T11:30:00Z' },
+    { id:'h08', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2008', registrationDate:'2025-04-10', companyName:'TalentBridge HR USA',       registrationCountry:'USA', directorName:'Monica Reed',      emailId:'monica@talentbridge.us',    phone:'+1 312 987 6543',  website:'www.talentbridge.us',    businessType:'New',         vertical:'B2B Seller',   natureOfBusiness:'HR Management',            expectedMonthlyVolume:'$88,000',  accountStage:'Registered', vaStatus:'Applied',   cardStatus:'Card Required', stageHistory:mkH([['Registered','2025-04-10T14:00:00Z','Zara Khan']]), createdAt:'2025-04-10T14:00:00Z' },
+    { id:'h09', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2009', registrationDate:'2025-04-17', companyName:'PayPal Experts UK',         registrationCountry:'UK',  directorName:'James Whitfield',  emailId:'james@ppexperts.co.uk',     phone:'+44 113 456 7890', website:'www.ppexperts.co.uk',    businessType:'Established', vertical:'Ecom Seller',  natureOfBusiness:'PayPal',                   expectedMonthlyVolume:'$195,000', accountStage:'In Review',  vaStatus:'Assigned',  cardStatus:'Card Applied',  stageHistory:mkH([['Registered','2025-04-17T10:00:00Z','Zara Khan'],['In Review','2025-04-23T09:00:00Z','Sarah Mitchell']]), createdAt:'2025-04-17T10:00:00Z' },
+    { id:'h10', partnerId:PH, partnerName:'Zara Khan', partnerCompany:'Hoptex', assignedSpecialistId:SID, clientId:'HTX-2010', registrationDate:'2025-04-22', companyName:'CloudScale PK',             registrationCountry:'PK',  directorName:'Usman Ghani',      emailId:'usman@cloudscale.pk',       phone:'+92 311 777 8899', website:'www.cloudscale.pk',      businessType:'New',         vertical:'IT Services',  natureOfBusiness:'Software Development',     expectedMonthlyVolume:'$72,000',  accountStage:'Registered', vaStatus:'Applied',   cardStatus:'Card Required', stageHistory:mkH([['Registered','2025-04-22T08:30:00Z','Zara Khan']]), createdAt:'2025-04-22T08:30:00Z' },
+  ]
+  const notes = [
+    { id:'n01', accountId:'g01', authorId:SID, authorName:'Sarah Mitchell',  authorRole:ROLE_SPECIALIST, content:'Documents verified. KYC complete. Proceeding to activation.',            createdAt:'2025-03-01T14:30:00Z' },
+    { id:'n02', accountId:'g01', authorId:PG,  authorName:'Ahmed Al-Rashid', authorRole:ROLE_PARTNER,    content:'Client confirmed monthly volume of $120k. Ready for card issuance.',     createdAt:'2025-03-02T10:00:00Z' },
+    { id:'n03', accountId:'g04', authorId:SID, authorName:'Sarah Mitchell',  authorRole:ROLE_SPECIALIST, content:'Compliance team reviewing AI business model. ETA 5 business days.',      createdAt:'2025-03-20T11:00:00Z' },
+    { id:'n04', accountId:'g04', authorId:PG,  authorName:'Ahmed Al-Rashid', authorRole:ROLE_PARTNER,    content:'Client is asking for status update. Please expedite review.',             createdAt:'2025-03-22T09:30:00Z' },
+    { id:'n05', accountId:'g10', authorId:SID, authorName:'Sarah Mitchell',  authorRole:ROLE_SPECIALIST, content:'Account blocked due to suspicious transaction pattern. Under investigation.', createdAt:'2025-04-25T09:30:00Z' },
+    { id:'n06', accountId:'h04', authorId:SID, authorName:'Sarah Mitchell',  authorRole:ROLE_SPECIALIST, content:'High-value account. All checks passed. Activated successfully.',          createdAt:'2025-04-05T15:30:00Z' },
+    { id:'n07', accountId:'h04', authorId:PH,  authorName:'Zara Khan',       authorRole:ROLE_PARTNER,    content:'Client very satisfied. Expecting volume to increase to $600k by Q3.',    createdAt:'2025-04-06T10:00:00Z' },
+  ]
+  stor.set('cp_accounts', accounts)
+  stor.set('cp_notes',    notes)
+  if (!stor.get('cp_currentUser')) stor.set('cp_currentUser', DEMO_USERS[1])
+})();
+
+/* ── Shared UI primitives (module scope — never remounts) ── */
+function Badge({ label, map }) {
+  if (!label) return <span style={{color:'var(--text-hint)'}}>—</span>
+  const s = (map && map[label]) || { bg:'rgba(0,0,0,0.05)', color:'#888' }
+  return (
+    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'2px 8px',borderRadius:20,fontSize:10,fontWeight:600,whiteSpace:'nowrap',background:s.bg,color:s.color}}>
+      <span style={{width:4,height:4,borderRadius:'50%',background:'currentColor',opacity:.85,flexShrink:0}}/>
+      {label}
+    </span>
+  )
+}
+function AuthField({ label, children }) {
+  return (
+    <div style={{marginBottom:14}}>
+      <div style={{fontSize:10,fontWeight:700,color:'var(--text-tertiary)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:6}}>{label}</div>
+      {children}
+    </div>
+  )
+}
+function GradBtn({ onClick, disabled, children }) {
+  return (
+    <button onClick={onClick} disabled={disabled}
+      style={{width:'100%',padding:'12px',borderRadius:24,border:'none',background:'linear-gradient(90deg,#4796E3,#9177C7,#CA6673)',color:'#fff',fontFamily:'var(--font)',fontSize:14,fontWeight:600,cursor:disabled?'not-allowed':'pointer',opacity:disabled?0.6:1,transition:'opacity .2s'}}
+      onMouseEnter={e=>{if(!disabled)e.currentTarget.style.opacity='.88'}}
+      onMouseLeave={e=>{if(!disabled)e.currentTarget.style.opacity='1'}}>
+      {children}
+    </button>
+  )
+}
+function FormGroup({ label, required, error, children }) {
+  return (
+    <div style={{display:'flex',flexDirection:'column'}}>
+      <label>{label}{required&&<span style={{color:'var(--so-pink)',marginLeft:2}}>*</span>}</label>
+      {children}
+      {error&&<div style={{color:'var(--red)',fontSize:11,marginTop:4}}>⚠ {error}</div>}
+    </div>
+  )
+}
+function DetailRow({ label, value, badge, map }) {
+  return (
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 0',borderBottom:'0.5px solid var(--border-color)'}}>
+      <span style={{fontSize:11,color:'var(--text-tertiary)',fontWeight:500,minWidth:170,flexShrink:0}}>{label}</span>
+      {badge ? <Badge label={value} map={map}/> : <span style={{fontSize:12,fontWeight:500,color:value?'var(--text-primary)':'var(--text-hint)',textAlign:'right'}}>{value||'—'}</span>}
+    </div>
+  )
+}
+function StatCard({ label, value, color }) {
+  const [h,setH]=useState(false)
+  return (
+    <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:14,padding:18,position:'relative',overflow:'hidden',boxShadow:h?'0 10px 32px rgba(71,150,227,0.14)':'var(--shadow-sm)',transform:h?'translateY(-4px)':'none',transition:'all .28s cubic-bezier(.34,1.56,.64,1)'}}
+      onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)}>
+      <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:'linear-gradient(90deg,#4796E3,#9177C7,#CA6673)',borderRadius:'3px 3px 0 0'}}/>
+      <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1.2px',color:'var(--text-tertiary)',marginBottom:8}}>{label}</div>
+      <div style={{fontSize:28,fontWeight:700,color:color||'var(--text-primary)',letterSpacing:'-.6px'}}>{value}</div>
+    </div>
+  )
+}
+function MonthBarChart({ title, data, color }) {
+  const maxVal = Math.max(...data.map(d=>d.value), 1)
+  const BAR_MAX = 110
+  return (
+    <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:14,padding:18,boxShadow:'var(--shadow-sm)',position:'relative',overflow:'hidden'}}>
+      <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:'linear-gradient(90deg,#4796E3,#9177C7,#CA6673)',borderRadius:'3px 3px 0 0'}}/>
+      <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1.2px',color:'var(--text-tertiary)',marginBottom:14}}>{title}</div>
+      <div style={{display:'flex',alignItems:'flex-end',gap:6,height:BAR_MAX+36}}>
+        {data.map((d,i)=>{
+          const barH = d.value > 0 ? Math.max(Math.round((d.value/maxVal)*BAR_MAX), 24) : 4
+          const showInside = barH >= 22
+          return (
+            <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'flex-end'}}>
+              <div style={{position:'relative',width:'100%',height:barH,background:color,borderRadius:'5px 5px 0 0',transition:'height .4s cubic-bezier(.4,0,.2,1)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                {showInside && <span style={{color:'#fff',fontSize:11,fontWeight:700,lineHeight:1,pointerEvents:'none'}}>{d.value}</span>}
+              </div>
+              {!showInside && <div style={{fontSize:10,fontWeight:700,color:'var(--text-tertiary)',marginBottom:2}}>{d.value}</div>}
+              <div style={{fontSize:10,color:'var(--text-tertiary)',fontWeight:600,marginTop:5,letterSpacing:'.3px'}}>{d.label}</div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+const authInp = {width:'100%',padding:'11px 14px',background:'var(--bg-tertiary)',border:'1px solid var(--border-strong-color)',borderRadius:10,color:'var(--text-primary)',fontFamily:'var(--font)',fontSize:14,outline:'none',transition:'border-color .18s,box-shadow .18s',boxSizing:'border-box'}
+const onFI = e=>{e.target.style.borderColor='var(--so-blue)';e.target.style.boxShadow='0 0 0 3px var(--so-blue-soft)'}
+const onBI = e=>{e.target.style.borderColor='';e.target.style.boxShadow=''}
+
+function StarLogo({size=36}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" style={{animation:'fanSpin 3.5s linear infinite',flexShrink:0}}>
+      <defs><linearGradient id="cpg" x1="40" y1="4" x2="40" y2="76" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#4796E3"/><stop offset="45%" stopColor="#9177C7"/><stop offset="100%" stopColor="#CA6673"/></linearGradient></defs>
+      <path d="M40 4 C40 4 41.6 22 47 35 C53 49 68 40 76 40 C68 40 53 31 47 45 C41.6 58 40 76 40 76 C40 76 38.4 58 33 45 C27 31 12 40 4 40 C12 40 27 49 33 35 C38.4 22 40 4 40 4Z" fill="url(#cpg)" stroke="url(#cpg)" strokeWidth="1"/>
+    </svg>
+  )
+}
+
+/* ── Auth Context ─────────────────────────────────────── */
+const AuthCtx = createContext(null)
+function AuthProvider({children}) {
+  const [currentUser,setCurrentUser] = useState(()=>stor.get('cp_currentUser'))
+  const getUsers       = ()=>stor.get('cp_users')||[]
+  const getSpecialists = ()=>getUsers().filter(u=>u.role===ROLE_SPECIALIST)
+  const signup = ({name,company,email,role,assignedSpecialistId})=>{
+    const users=getUsers()
+    if(users.find(u=>u.email.toLowerCase()===email.toLowerCase())) return {error:'Email already registered.'}
+    const user={id:genId(),name,company,email,role,assignedSpecialistId:assignedSpecialistId||null,createdAt:new Date().toISOString()}
+    stor.set('cp_users',[...users,user]); return {user}
+  }
+  const login = email=>{
+    const user=getUsers().find(u=>u.email.toLowerCase()===email.toLowerCase())
+    return user?{user}:{error:'No account found with this email.'}
+  }
+  const confirmLogin = user=>{stor.set('cp_currentUser',user);setCurrentUser(user)}
+  const logout = ()=>{stor.set('cp_currentUser',null);setCurrentUser(null)}
+  return <AuthCtx.Provider value={{currentUser,signup,login,confirmLogin,logout,getSpecialists}}>{children}</AuthCtx.Provider>
+}
+const useAuth = ()=>useContext(AuthCtx)
+
+/* ── Accounts Context ────────────────────────────────── */
+const AccCtx = createContext(null)
+function AccountsProvider({children}) {
+  const [accounts,setAccounts] = useState(()=>stor.get('cp_accounts')||[])
+  const save = list=>{stor.set('cp_accounts',list);setAccounts(list)}
+  const addAccount = (data,user)=>{
+    const initHistory = data.accountStage ? [{stage:data.accountStage,date:new Date().toISOString(),by:user.name}] : []
+    const acc={id:genId(),partnerId:user.id,partnerName:user.name,partnerCompany:user.company,assignedSpecialistId:user.assignedSpecialistId||null,createdAt:new Date().toISOString(),stageHistory:initHistory,...data}
+    save([...accounts,acc])
+  }
+  const updateAccount = (id,data,user)=>{
+    save(accounts.map(a=>{
+      if(a.id!==id) return a
+      const updated={...a,...data,updatedAt:new Date().toISOString()}
+      if(user && data.accountStage && data.accountStage!==a.accountStage) {
+        updated.stageHistory=[...(a.stageHistory||[]),{stage:data.accountStage,date:new Date().toISOString(),by:user.name}]
+      }
+      return updated
+    }))
+  }
+  const deleteAccount = id=>save(accounts.filter(a=>a.id!==id))
+  return <AccCtx.Provider value={{accounts,addAccount,updateAccount,deleteAccount}}>{children}</AccCtx.Provider>
+}
+const useAccounts = ()=>useContext(AccCtx)
+
+/* ── Notes Context ───────────────────────────────────── */
+const NotesCtx = createContext(null)
+function NotesProvider({children}) {
+  const [notes,setNotes] = useState(()=>stor.get('cp_notes')||[])
+  const save = list=>{stor.set('cp_notes',list);setNotes(list)}
+  const addNote = (accountId,content,user)=>{
+    const note={id:genId(),accountId,authorId:user.id,authorName:user.name,authorRole:user.role,content,createdAt:new Date().toISOString()}
+    save([...notes,note])
+  }
+  const getNotes = accountId=>notes.filter(n=>n.accountId===accountId).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+  return <NotesCtx.Provider value={{addNote,getNotes}}>{children}</NotesCtx.Provider>
+}
+const useNotes = ()=>useContext(NotesCtx)
+
+/* ── Auth Page ───────────────────────────────────────── */
+function AuthPage() {
+  const {signup,login,confirmLogin,getSpecialists}=useAuth()
+  const [mode,setMode]=useState('login')
+  const [pending,setPending]=useState(null)
+  const [otp,setOtp]=useState('')
+  const [otpIn,setOtpIn]=useState('')
+  const [error,setError]=useState('')
+  const [loginEmail,setLoginEmail]=useState('')
+  const [sigName,setSigName]=useState('')
+  const [sigCompany,setSigCompany]=useState('')
+  const [sigRole,setSigRole]=useState('')
+  const [sigSpec,setSigSpec]=useState('')
+  const [sigEmail,setSigEmail]=useState('')
+  const specialists=getSpecialists()
+  const doLogin=()=>{
+    if(!/^\S+@\S+\.\S+$/.test(loginEmail.trim())) return setError('Enter a valid email.')
+    const r=login(loginEmail.trim()); if(r.error) return setError(r.error)
+    const c=genOTP(); setOtp(c); setPending(r.user); setMode('otp')
+  }
+  const doSignup=()=>{
+    if(!sigName.trim()) return setError('Name is required.')
+    if(!sigCompany.trim()) return setError('Company is required.')
+    if(!sigRole) return setError('Select your role.')
+    if(!/^\S+@\S+\.\S+$/.test(sigEmail.trim())) return setError('Enter a valid email.')
+    if(sigRole===ROLE_PARTNER&&!sigSpec) return setError('Select your assigned specialist.')
+    const r=signup({name:sigName,company:sigCompany,email:sigEmail,role:sigRole,assignedSpecialistId:sigSpec||null})
+    if(r.error) return setError(r.error)
+    const c=genOTP(); setOtp(c); setPending(r.user); setMode('otp')
+  }
+  const doOTP=()=>{if(otpIn!==otp) return setError('Incorrect OTP.'); confirmLogin(pending)}
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--bg-base)',padding:20,backgroundImage:'radial-gradient(ellipse at 20% 20%,rgba(71,150,227,0.06) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(202,102,115,0.06) 0%,transparent 60%)'}}>
+      <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:20,padding:'40px 36px',width:'100%',maxWidth:440,boxShadow:'0 20px 60px rgba(0,0,0,0.12)',animation:'scaleIn .3s cubic-bezier(.4,0,.2,1) both'}}>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:28}}>
+          <div style={{display:'flex',alignItems:'center',gap:14}}>
+            <StarLogo size={64}/>
+            <div>
+              <div style={{fontWeight:800,fontSize:24,letterSpacing:'-.5px',lineHeight:1}}>
+                <span style={{background:'linear-gradient(90deg,#4796E3,#9177C7)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Partner </span>
+                <span style={{background:'linear-gradient(90deg,#9177C7,#CA6673)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Portal</span>
+              </div>
+              <div style={{fontSize:11,color:'var(--text-tertiary)',marginTop:4,animation:'tagFloat .5s .2s both'}}>{mode==='otp'?'Verify your identity':'Channel Partner Management'}</div>
+            </div>
+          </div>
+          <div style={{marginTop:22,width:'100%',height:'0.5px',background:'linear-gradient(90deg,transparent,var(--border-color),transparent)'}}/>
+        </div>
+        {error&&<div style={{background:'rgba(217,48,37,0.08)',border:'1px solid rgba(217,48,37,0.25)',borderRadius:8,padding:'9px 12px',fontSize:12,color:'#D93025',marginBottom:16}}>⚠ {error}</div>}
+        {mode==='otp'&&<>
+          <div style={{background:'var(--so-blue-soft)',border:'1px solid rgba(71,150,227,0.2)',borderRadius:10,padding:'12px 14px',marginBottom:20,fontSize:13,color:'var(--text-secondary)',lineHeight:1.6}}>
+            📧 OTP sent to <strong>{pending?.email}</strong>
+            <div style={{marginTop:8,display:'inline-flex',alignItems:'center',gap:8,background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:8,padding:'6px 12px'}}>
+              <span style={{fontSize:11,color:'var(--text-tertiary)'}}>Demo OTP:</span>
+              <span style={{fontFamily:'var(--font-mono)',fontSize:18,fontWeight:800,color:'var(--so-blue)',letterSpacing:4}}>{otp}</span>
+            </div>
+          </div>
+          <AuthField label="Enter 6-Digit OTP">
+            <input style={{...authInp,textAlign:'center',fontSize:20,fontFamily:'var(--font-mono)',fontWeight:700,letterSpacing:8}} value={otpIn} onChange={e=>{setOtpIn(e.target.value.replace(/\D/g,'').slice(0,6));setError('')}} placeholder="000000" maxLength={6} onFocus={onFI} onBlur={onBI}/>
+          </AuthField>
+          <GradBtn onClick={doOTP} disabled={otpIn.length!==6}>Verify & Continue →</GradBtn>
+          <div style={{marginTop:16,textAlign:'center',fontSize:13,display:'flex',gap:16,justifyContent:'center'}}>
+            <button onClick={()=>{const c=genOTP();setOtp(c);setOtpIn('');setError('')}} style={{background:'none',border:'none',color:'var(--so-blue)',cursor:'pointer',fontFamily:'var(--font)',fontWeight:500,fontSize:13}}>Resend OTP</button>
+            <span style={{color:'var(--border-color)'}}>|</span>
+            <button onClick={()=>{setMode('login');setError('')}} style={{background:'none',border:'none',color:'var(--text-tertiary)',cursor:'pointer',fontFamily:'var(--font)',fontSize:13}}>← Back</button>
+          </div>
+        </>}
+        {mode==='login'&&<>
+          <AuthField label="Email Address"><input style={authInp} type="email" value={loginEmail} onChange={e=>{setLoginEmail(e.target.value);setError('')}} placeholder="your@email.com" onKeyDown={e=>e.key==='Enter'&&doLogin()} onFocus={onFI} onBlur={onBI}/></AuthField>
+          <GradBtn onClick={doLogin}>Send OTP →</GradBtn>
+          <div style={{marginTop:20,textAlign:'center',fontSize:13,color:'var(--text-tertiary)'}}>Don't have an account?{' '}<button onClick={()=>{setMode('signup');setError('')}} style={{background:'none',border:'none',color:'var(--so-blue)',cursor:'pointer',fontWeight:600,fontFamily:'var(--font)',fontSize:13}}>Sign Up</button></div>
+        </>}
+        {mode==='signup'&&<>
+          <AuthField label="Full Name"><input style={authInp} value={sigName} onChange={e=>{setSigName(e.target.value);setError('')}} placeholder="John Smith" onFocus={onFI} onBlur={onBI}/></AuthField>
+          <AuthField label="Company"><input style={authInp} value={sigCompany} onChange={e=>{setSigCompany(e.target.value);setError('')}} placeholder="Acme Corp" onFocus={onFI} onBlur={onBI}/></AuthField>
+          <AuthField label="Role"><select style={authInp} value={sigRole} onChange={e=>{setSigRole(e.target.value);setSigSpec('');setError('')}} onFocus={onFI} onBlur={onBI}><option value="">Select role…</option><option value={ROLE_PARTNER}>{ROLE_PARTNER}</option><option value={ROLE_SPECIALIST}>{ROLE_SPECIALIST}</option></select></AuthField>
+          {sigRole===ROLE_PARTNER&&<AuthField label="Assigned Specialist">{specialists.length===0?<div style={{padding:'10px 12px',background:'rgba(227,116,0,0.07)',border:'1px solid rgba(227,116,0,0.2)',borderRadius:8,fontSize:12,color:'#E37400'}}>No specialists registered yet.</div>:<select style={authInp} value={sigSpec} onChange={e=>{setSigSpec(e.target.value);setError('')}} onFocus={onFI} onBlur={onBI}><option value="">Select…</option>{specialists.map(s=><option key={s.id} value={s.id}>{s.name} — {s.company}</option>)}</select>}</AuthField>}
+          <AuthField label="Email"><input style={authInp} type="email" value={sigEmail} onChange={e=>{setSigEmail(e.target.value);setError('')}} placeholder="your@email.com" onFocus={onFI} onBlur={onBI}/></AuthField>
+          <GradBtn onClick={doSignup}>Create Account →</GradBtn>
+          <div style={{marginTop:20,textAlign:'center',fontSize:13,color:'var(--text-tertiary)'}}>Already have an account?{' '}<button onClick={()=>{setMode('login');setError('')}} style={{background:'none',border:'none',color:'var(--so-blue)',cursor:'pointer',fontWeight:600,fontFamily:'var(--font)',fontSize:13}}>Log In</button></div>
+        </>}
+      </div>
+    </div>
+  )
+}
+
+/* ── Stage History Stepper (horizontal) ─────────────── */
+function StageHistory({ history }) {
+  if (!history || history.length === 0) return null
+  return (
+    <div style={{marginBottom:20}}>
+      <div style={{fontSize:10,fontWeight:700,color:'var(--text-tertiary)',textTransform:'uppercase',letterSpacing:'1.2px',marginBottom:12}}>Stage Journey</div>
+      <div style={{overflowX:'auto',paddingBottom:4}}>
+        <div style={{display:'flex',alignItems:'flex-start',gap:0,minWidth:'max-content'}}>
+          {history.map((h,i)=>{
+            const s = STAGE_MAP[h.stage]||{bg:'rgba(0,0,0,0.05)',color:'#888'}
+            const isLast = i===history.length-1
+            return (
+              <div key={i} style={{display:'flex',alignItems:'flex-start'}}>
+                {/* step */}
+                <div style={{display:'flex',flexDirection:'column',alignItems:'center',width:110}}>
+                  {/* dot */}
+                  <div style={{width:26,height:26,borderRadius:'50%',background:s.bg,border:`2.5px solid ${s.color}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:isLast?`0 0 0 4px ${s.bg}`:undefined}}>
+                    <div style={{width:8,height:8,borderRadius:'50%',background:s.color}}/>
+                  </div>
+                  {/* stage name */}
+                  <div style={{marginTop:6,fontSize:11,fontWeight:700,color:s.color,textAlign:'center',lineHeight:1.2}}>{h.stage}</div>
+                  {isLast&&<div style={{fontSize:8,fontWeight:700,background:s.bg,color:s.color,padding:'1px 6px',borderRadius:8,marginTop:3,textTransform:'uppercase',letterSpacing:.4}}>Current</div>}
+                  {/* date + by */}
+                  <div style={{marginTop:4,fontSize:9,color:'var(--text-tertiary)',textAlign:'center',lineHeight:1.4}}>
+                    {fmtDate(h.date)}<br/>
+                    <span style={{color:'var(--text-hint)'}}>{h.by.split(' ')[0]}</span>
+                  </div>
+                </div>
+                {/* connector line */}
+                {!isLast&&<div style={{width:32,height:2.5,background:`linear-gradient(90deg,${s.color},${(STAGE_MAP[history[i+1]?.stage]||{color:'#ccc'}).color})`,marginTop:12,flexShrink:0,borderRadius:2,opacity:.4}}/>}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Notes Section ───────────────────────────────────── */
+function NotesSection({ accountId }) {
+  const { addNote, getNotes } = useNotes()
+  const { currentUser } = useAuth()
+  const [text, setText] = useState('')
+  const notes = getNotes(accountId)
+  const submit = () => {
+    if (!text.trim()) return
+    addNote(accountId, text.trim(), currentUser)
+    setText('')
+  }
+  const isSpec = r => r === ROLE_SPECIALIST
+  return (
+    <div>
+      <div style={{fontSize:10,fontWeight:700,color:'var(--text-tertiary)',textTransform:'uppercase',letterSpacing:'1.2px',marginBottom:12}}>Activity Log & Notes</div>
+      {/* Add note */}
+      <div style={{marginBottom:16}}>
+        <textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Add an update or note…" style={{marginBottom:8,fontSize:12}}/>
+        <button onClick={submit} disabled={!text.trim()}
+          style={{padding:'6px 16px',borderRadius:20,border:'none',background:'linear-gradient(90deg,#4796E3,#9177C7)',color:'#fff',fontSize:12,fontWeight:600,cursor:text.trim()?'pointer':'not-allowed',opacity:text.trim()?1:.5,fontFamily:'var(--font)'}}>
+          Post Note
+        </button>
+      </div>
+      {/* Notes list */}
+      {notes.length===0
+        ? <div style={{textAlign:'center',padding:'20px 0',fontSize:12,color:'var(--text-tertiary)'}}>No notes yet. Be the first to add an update.</div>
+        : <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {notes.map(n=>{
+              const spec = isSpec(n.authorRole)
+              return (
+                <div key={n.id} style={{background:'var(--bg-tertiary)',border:'1px solid var(--border-color)',borderRadius:10,padding:'10px 14px',borderLeft:`3px solid ${spec?'var(--so-purple)':'var(--so-blue)'}`}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6,flexWrap:'wrap',gap:4}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8}}>
+                      <div style={{width:22,height:22,borderRadius:'50%',background:spec?'var(--so-purple-soft)':'var(--so-blue-soft)',border:`1.5px solid ${spec?'var(--so-purple)':'var(--so-blue)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:spec?'var(--so-purple)':'var(--so-blue)',flexShrink:0}}>
+                        {n.authorName.split(' ').map(x=>x[0]).join('').slice(0,2)}
+                      </div>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:600}}>{n.authorName}</div>
+                        <div style={{fontSize:9,color:'var(--text-tertiary)',textTransform:'uppercase',letterSpacing:.5}}>{spec?'Specialist':'Partner'}</div>
+                      </div>
+                    </div>
+                    <div style={{fontSize:10,color:'var(--text-tertiary)',fontFamily:'var(--font-mono)'}}>{fmtDT(n.createdAt)}</div>
+                  </div>
+                  <div style={{fontSize:12,color:'var(--text-primary)',lineHeight:1.6}}>{n.content}</div>
+                </div>
+              )
+            })}
+          </div>
+      }
+    </div>
+  )
+}
+
+/* ── Account Form Modal ──────────────────────────────── */
+function AccountForm({ onClose, editAccount }) {
+  const { addAccount, updateAccount } = useAccounts()
+  const { currentUser } = useAuth()
+  const [clientId,            setClientId]            = useState(editAccount?.clientId||'')
+  const [registrationDate,    setRegistrationDate]    = useState(editAccount?.registrationDate||'')
+  const [companyName,         setCompanyName]         = useState(editAccount?.companyName||'')
+  const [registrationCountry, setRegistrationCountry] = useState(editAccount?.registrationCountry||'')
+  const [directorName,        setDirectorName]        = useState(editAccount?.directorName||'')
+  const [emailId,             setEmailId]             = useState(editAccount?.emailId||'')
+  const [phone,               setPhone]               = useState(editAccount?.phone||'')
+  const [website,             setWebsite]             = useState(editAccount?.website||'')
+  const [businessType,        setBusinessType]        = useState(editAccount?.businessType||'')
+  const [vertical,            setVertical]            = useState(editAccount?.vertical||'')
+  const [natureOfBusiness,    setNatureOfBusiness]    = useState(editAccount?.natureOfBusiness||'')
+  const [expectedMonthlyVolume,setExpectedMonthlyVolume]=useState(editAccount?.expectedMonthlyVolume||'')
+  const [accountStage,        setAccountStage]        = useState(editAccount?.accountStage||'')
+  const [vaStatus,            setVaStatus]            = useState(editAccount?.vaStatus||'')
+  const [cardStatus,          setCardStatus]          = useState(editAccount?.cardStatus||'')
+  const [kycAgent,            setKycAgent]            = useState(editAccount?.kycAgent||'')
+  const [errs,                setErrs]                = useState({})
+  const submit = () => {
+    const e={}
+    if(!clientId.trim()) e.clientId='Required'
+    if(!companyName.trim()) e.companyName='Required'
+    if(!registrationCountry) e.registrationCountry='Required'
+    if(!accountStage) e.accountStage='Required'
+    if(Object.keys(e).length) return setErrs(e)
+    const data={clientId,registrationDate,companyName,registrationCountry,directorName,emailId,phone,website,businessType,vertical,natureOfBusiness,expectedMonthlyVolume,accountStage,vaStatus,cardStatus,kycAgent}
+    if(editAccount) updateAccount(editAccount.id,data,currentUser)
+    else addAccount(data,currentUser)
+    onClose()
+  }
+  return (
+    <div className="modal-wrap" style={{position:'fixed',inset:0,zIndex:1100,background:'rgba(0,0,0,0.55)',backdropFilter:'blur(10px)',display:'flex',alignItems:'center',justifyContent:'center',padding:20,animation:'fadeIn .18s ease'}}>
+      <div className="modal-sheet" style={{background:'var(--bg-secondary)',border:'1px solid var(--border-strong-color)',borderRadius:20,width:'100%',maxWidth:840,maxHeight:'90vh',overflowY:'auto',boxShadow:'0 24px 80px rgba(0,0,0,0.18)',animation:'slideUp .22s cubic-bezier(.34,1.56,.64,1)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 24px',borderBottom:'0.5px solid var(--border-color)',position:'sticky',top:0,background:'var(--bg-secondary)',backdropFilter:'blur(8px)',zIndex:1}}>
+          <div><h3 style={{margin:0,fontSize:15,fontWeight:600}}>{editAccount?'Edit Account':'Add New Account'}</h3><div style={{fontSize:11,color:'var(--text-tertiary)',marginTop:2}}>Fill in the client onboarding details</div></div>
+          <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-tertiary)',fontSize:18,padding:'4px 8px',lineHeight:1}}>✕</button>
+        </div>
+        <div style={{padding:24,display:'grid',gap:14}}>
+          <div className="g3" style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14}}>
+            <FormGroup label="Client ID" required error={errs.clientId}><input value={clientId} onChange={e=>{setClientId(e.target.value);setErrs(p=>({...p,clientId:''}))}  } placeholder="e.g. CLT-001"/></FormGroup>
+            <FormGroup label="Registration Date"><input type="date" value={registrationDate} onChange={e=>setRegistrationDate(e.target.value)}/></FormGroup>
+            <FormGroup label="Registration Country" required error={errs.registrationCountry}><select value={registrationCountry} onChange={e=>{setRegistrationCountry(e.target.value);setErrs(p=>({...p,registrationCountry:''}))} }><option value="">Select…</option>{COUNTRIES.map(c=><option key={c} value={c}>{c}</option>)}</select></FormGroup>
+          </div>
+          <div className="g2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <FormGroup label="Company Name" required error={errs.companyName}><input value={companyName} onChange={e=>{setCompanyName(e.target.value);setErrs(p=>({...p,companyName:''}))} } placeholder="Company Ltd."/></FormGroup>
+            <FormGroup label="Director Name"><input value={directorName} onChange={e=>setDirectorName(e.target.value)} placeholder="Director's full name"/></FormGroup>
+          </div>
+          <div className="g3" style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14}}>
+            <FormGroup label="Email ID"><input type="email" value={emailId} onChange={e=>setEmailId(e.target.value)} placeholder="contact@company.com"/></FormGroup>
+            <FormGroup label="Phone"><input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+1 555 000 0000"/></FormGroup>
+            <FormGroup label="Website"><input value={website} onChange={e=>setWebsite(e.target.value)} placeholder="www.company.com"/></FormGroup>
+          </div>
+          <div className="g2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <FormGroup label="Business Type"><select value={businessType} onChange={e=>setBusinessType(e.target.value)}><option value="">Select…</option>{BUSINESS_TYPES.map(b=><option key={b} value={b}>{b}</option>)}</select></FormGroup>
+            <FormGroup label="Vertical"><select value={vertical} onChange={e=>setVertical(e.target.value)}><option value="">Select…</option>{VERTICALS.map(v=><option key={v} value={v}>{v}</option>)}</select></FormGroup>
+          </div>
+          <div className="g2" style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            <FormGroup label="Nature of Business"><select value={natureOfBusiness} onChange={e=>setNatureOfBusiness(e.target.value)}><option value="">Select…</option>{NOB_LIST.map(n=><option key={n} value={n}>{n}</option>)}</select></FormGroup>
+            <FormGroup label="Expected Monthly Volume"><input value={expectedMonthlyVolume} onChange={e=>setExpectedMonthlyVolume(e.target.value)} placeholder="e.g. $50,000"/></FormGroup>
+          </div>
+          <div style={{height:'0.5px',background:'var(--border-color)',margin:'2px 0'}}/>
+          <div style={{fontSize:10,fontWeight:700,color:'var(--text-tertiary)',textTransform:'uppercase',letterSpacing:'1.2px'}}>Status Fields</div>
+          <div className="g3" style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14}}>
+            <FormGroup label="Account Stage" required error={errs.accountStage}><select value={accountStage} onChange={e=>{setAccountStage(e.target.value);setErrs(p=>({...p,accountStage:''}))} }><option value="">Select…</option>{ACCOUNT_STAGES.map(s=><option key={s} value={s}>{s}</option>)}</select></FormGroup>
+            <FormGroup label="VA Status"><select value={vaStatus} onChange={e=>setVaStatus(e.target.value)}><option value="">Select…</option>{VA_STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></FormGroup>
+            <FormGroup label="Card Status"><select value={cardStatus} onChange={e=>setCardStatus(e.target.value)}><option value="">Select…</option>{CARD_STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></FormGroup>
+          </div>
+          <div style={{height:'0.5px',background:'var(--border-color)',margin:'2px 0'}}/>
+          <div style={{fontSize:10,fontWeight:700,color:'var(--text-tertiary)',textTransform:'uppercase',letterSpacing:'1.2px'}}>KYC</div>
+          <div style={{maxWidth:320}}>
+            <FormGroup label="KYC Agent"><input value={kycAgent} onChange={e=>setKycAgent(e.target.value)} placeholder="Agent name…"/></FormGroup>
+          </div>
+        </div>
+        <div style={{display:'flex',gap:10,justifyContent:'flex-end',padding:'16px 24px',borderTop:'0.5px solid var(--border-color)',background:'var(--bg-tertiary)',borderRadius:'0 0 20px 20px'}}>
+          <button onClick={onClose} style={{padding:'7px 18px',borderRadius:24,border:'1px solid var(--border-strong-color)',background:'var(--bg-tertiary)',color:'var(--text-secondary)',cursor:'pointer',fontSize:13,fontFamily:'var(--font)'}}>Cancel</button>
+          <button onClick={submit} style={{padding:'7px 22px',borderRadius:24,border:'none',background:'linear-gradient(90deg,#4796E3,#9177C7,#CA6673)',color:'#fff',cursor:'pointer',fontSize:13,fontWeight:600,fontFamily:'var(--font)',boxShadow:'0 2px 10px rgba(71,150,227,.35)'}}>
+            {editAccount?'Save Changes':'+ Add Account'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Account Detail Drawer ───────────────────────────── */
+function AccountDetail({ account, onClose, onEdit, onDelete, currentUser }) {
+  const canEdit = currentUser.role===ROLE_PARTNER && currentUser.id===account.partnerId
+  return (
+    <>
+      <div onClick={onClose} style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.4)',backdropFilter:'blur(4px)',animation:'fadeIn .18s ease'}}/>
+      <div className="drawer-panel" style={{position:'fixed',top:0,right:0,bottom:0,zIndex:1001,width:660,background:'var(--bg-secondary)',borderLeft:'0.5px solid var(--border-color)',display:'flex',flexDirection:'column',boxShadow:'-16px 0 60px rgba(0,0,0,0.15)',animation:'slideInRight .28s cubic-bezier(.34,1.36,.64,1)'}}>
+        {/* Drawer header */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 20px',borderBottom:'0.5px solid var(--border-color)',flexShrink:0}}>
+          <div>
+            <h3 style={{margin:0,fontSize:15,fontWeight:600}}>{account.companyName}</h3>
+            <div style={{fontSize:11,color:'var(--text-tertiary)',marginTop:2,fontFamily:'var(--font-mono)'}}>Client ID: {account.clientId}</div>
+          </div>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            {canEdit&&<>
+              <button onClick={()=>{onClose();onEdit(account)}} style={{padding:'5px 14px',borderRadius:20,border:'1px solid var(--border-strong-color)',background:'transparent',color:'var(--text-secondary)',cursor:'pointer',fontSize:12,fontFamily:'var(--font)'}} onMouseEnter={e=>{e.currentTarget.style.background='var(--so-blue-soft)';e.currentTarget.style.color='var(--so-blue)'}} onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--text-secondary)'}}>✏ Edit</button>
+              <button onClick={()=>{if(confirm('Delete this account?')){onDelete(account.id);onClose()}}} style={{padding:'5px 14px',borderRadius:20,border:'1px solid rgba(217,48,37,.3)',background:'transparent',color:'#D93025',cursor:'pointer',fontSize:12,fontFamily:'var(--font)'}} onMouseEnter={e=>e.currentTarget.style.background='rgba(217,48,37,.08)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>🗑 Delete</button>
+            </>}
+            <button onClick={onClose} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-tertiary)',fontSize:18,padding:'4px 8px'}}>✕</button>
+          </div>
+        </div>
+        {/* Scrollable body */}
+        <div style={{flex:1,overflowY:'auto',padding:20}}>
+          {/* Status pills with labels */}
+          <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:20,padding:'12px 16px',background:'var(--bg-tertiary)',borderRadius:12,border:'1px solid var(--border-color)'}}>
+            {[
+              {label:'Account Stage', value:account.accountStage, map:STAGE_MAP},
+              {label:'VA Status',     value:account.vaStatus,     map:VA_MAP},
+              {label:'Card Status',   value:account.cardStatus,   map:CARD_MAP},
+              {label:'Business Type', value:account.businessType, map:BTYPE_MAP},
+            ].map(({label,value,map})=> value ? (
+              <div key={label} style={{display:'flex',flexDirection:'column',gap:4}}>
+                <div style={{fontSize:9,fontWeight:700,color:'var(--text-tertiary)',textTransform:'uppercase',letterSpacing:'1px'}}>{label}</div>
+                <Badge label={value} map={map}/>
+              </div>
+            ) : null)}
+          </div>
+          {/* Horizontal stage journey */}
+          <StageHistory history={account.stageHistory}/>
+          <div style={{height:'0.5px',background:'var(--border-color)',margin:'4px 0 20px'}}/>
+          {/* Notes */}
+          <NotesSection accountId={account.id}/>
+        </div>
+      </div>
+    </>
+  )
+}
+
+/* ── Accounts Page ───────────────────────────────────── */
+function AccountsPage() {
+  const {currentUser}=useAuth()
+  const {accounts,deleteAccount}=useAccounts()
+  const [search,setSearch]=useState('')
+  const [fStage,setFStage]=useState('')
+  const [fCountry,setFCountry]=useState('')
+  const [fVertical,setFVertical]=useState('')
+  const [showForm,setShowForm]=useState(false)
+  const [editAcc,setEditAcc]=useState(null)
+  const [selAcc,setSelAcc]=useState(null)
+  const mine=useMemo(()=>{
+    if(currentUser.role===ROLE_SPECIALIST) return accounts.filter(a=>a.assignedSpecialistId===currentUser.id)
+    return accounts.filter(a=>a.partnerId===currentUser.id)
+  },[accounts,currentUser])
+  const filtered=useMemo(()=>mine.filter(a=>{
+    if(fStage&&a.accountStage!==fStage) return false
+    if(fCountry&&a.registrationCountry!==fCountry) return false
+    if(fVertical&&a.vertical!==fVertical) return false
+    if(search){const s=search.toLowerCase();return [a.companyName,a.clientId,a.directorName,a.emailId].some(v=>v?.toLowerCase().includes(s))}
+    return true
+  }),[mine,search,fStage,fCountry,fVertical])
+  const hasF=search||fStage||fCountry||fVertical
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%'}}>
+      <div style={{flexShrink:0,display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 24px',background:'var(--bg-secondary)',borderBottom:'0.5px solid var(--border-color)'}}>
+        <div>
+          <h2 style={{margin:0}}>Accounts</h2>
+          <div style={{fontSize:12,color:'var(--text-tertiary)',marginTop:2}}>{mine.length} total · {currentUser.role===ROLE_SPECIALIST?'assigned to you':'your submissions'}</div>
+        </div>
+        {currentUser.role===ROLE_PARTNER&&<button onClick={()=>setShowForm(true)} style={{padding:'7px 18px',borderRadius:24,border:'none',background:'linear-gradient(90deg,#4796E3,#9177C7,#CA6673)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font)',boxShadow:'0 2px 10px rgba(71,150,227,.35)'}}>+ Add Account</button>}
+      </div>
+      {/* Filters */}
+      <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',padding:'8px 24px',background:'var(--bg-secondary)',borderBottom:'0.5px solid var(--border-color)'}}>
+        <div style={{position:'relative',flex:1,minWidth:160,maxWidth:240}}>
+          <span style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',color:'var(--text-tertiary)',pointerEvents:'none',fontSize:13}}>⌕</span>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{paddingLeft:30,borderRadius:24,fontSize:11,padding:'5px 10px 5px 30px'}}/>
+        </div>
+        {[{v:fStage,fn:setFStage,opts:ACCOUNT_STAGES,ph:'All Stages'},{v:fCountry,fn:setFCountry,opts:COUNTRIES,ph:'All Countries'},{v:fVertical,fn:setFVertical,opts:VERTICALS,ph:'All Verticals'}].map(({v,fn,opts,ph})=>(
+          <select key={ph} value={v} onChange={e=>fn(e.target.value)} style={{width:'auto',minWidth:110,fontSize:11,padding:'5px 8px'}}>
+            <option value="">{ph}</option>{opts.map(o=><option key={o} value={o}>{o}</option>)}
+          </select>
+        ))}
+        {hasF&&<button onClick={()=>{setSearch('');setFStage('');setFCountry('');setFVertical('')}} style={{padding:'4px 12px',borderRadius:24,border:'1px solid var(--border-strong-color)',background:'var(--bg-tertiary)',color:'var(--text-secondary)',cursor:'pointer',fontSize:11,fontFamily:'var(--font)'}}>✕</button>}
+      </div>
+      {/* Table */}
+      <div style={{flex:1,overflowY:'auto'}} className="page-anim">
+        {filtered.length===0?(
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 20px',color:'var(--text-tertiary)',textAlign:'center'}}>
+            <div style={{fontSize:40,marginBottom:12,opacity:.3}}>🏢</div>
+            <div style={{fontSize:14,fontWeight:600,color:'var(--text-secondary)',marginBottom:6}}>No accounts found</div>
+            <div style={{fontSize:12}}>{hasF?'Try adjusting filters.':currentUser.role===ROLE_PARTNER?'Add your first account.':'No accounts assigned yet.'}</div>
+            {currentUser.role===ROLE_PARTNER&&!hasF&&<button onClick={()=>setShowForm(true)} style={{marginTop:14,padding:'7px 18px',borderRadius:24,border:'none',background:'linear-gradient(90deg,#4796E3,#9177C7,#CA6673)',color:'#fff',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:'var(--font)'}}>+ Add Account</button>}
+          </div>
+        ):(
+          <table className="dtbl">
+            <thead>
+              <tr>
+                {['#','Client ID','Company','Country','Email','Phone','Biz Type','Vertical','NOB','Volume','KYC Agent','Stage','VA Status','Card Status','Reg. Date','Actions'].map(h=><th key={h}>{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((acc,idx)=>(
+                <tr key={acc.id} onClick={()=>setSelAcc(acc)}>
+                  <td style={{fontSize:9,color:'var(--text-tertiary)',fontFamily:'var(--font-mono)',textAlign:'center',maxWidth:28}}>{idx+1}</td>
+                  <td style={{fontFamily:'var(--font-mono)',fontSize:10,color:'var(--so-blue)',fontWeight:600,maxWidth:72}}>{acc.clientId}</td>
+                  <td style={{fontWeight:600,fontSize:11,maxWidth:140}} title={acc.companyName}>{acc.companyName}</td>
+                  <td style={{fontSize:10,maxWidth:36}}>{acc.registrationCountry||'—'}</td>
+                  <td style={{fontSize:10,color:'var(--so-blue)',maxWidth:130}} title={acc.emailId}>{acc.emailId||'—'}</td>
+                  <td style={{fontSize:10,fontFamily:'var(--font-mono)',maxWidth:110}} title={acc.phone}>{acc.phone||'—'}</td>
+                  <td style={{maxWidth:80}}><Badge label={acc.businessType} map={BTYPE_MAP}/></td>
+                  <td style={{fontSize:10,color:'var(--text-secondary)',maxWidth:80}} title={acc.vertical}>{acc.vertical||'—'}</td>
+                  <td style={{fontSize:10,color:'var(--text-secondary)',maxWidth:110}} title={acc.natureOfBusiness}>{acc.natureOfBusiness||'—'}</td>
+                  <td style={{fontSize:10,fontFamily:'var(--font-mono)',maxWidth:72}}>{acc.expectedMonthlyVolume||'—'}</td>
+                  <td style={{fontSize:10,maxWidth:90,color:'var(--text-secondary)'}}>{acc.kycAgent||'—'}</td>
+                  <td style={{maxWidth:90}}><Badge label={acc.accountStage} map={STAGE_MAP}/></td>
+                  <td style={{maxWidth:80}}><Badge label={acc.vaStatus}     map={VA_MAP}/></td>
+                  <td style={{maxWidth:90}}><Badge label={acc.cardStatus}   map={CARD_MAP}/></td>
+                  <td style={{fontSize:10,color:'var(--text-tertiary)',fontFamily:'var(--font-mono)',maxWidth:72}}>{acc.registrationDate?fmtDate(acc.registrationDate):'—'}</td>
+                  <td onClick={e=>e.stopPropagation()} style={{maxWidth:50}}>
+                    {currentUser.role===ROLE_PARTNER&&currentUser.id===acc.partnerId&&(
+                      <div style={{display:'flex',gap:2}}>
+                        <button onClick={()=>setEditAcc(acc)} style={{padding:'2px 6px',borderRadius:5,border:'none',background:'transparent',color:'var(--text-tertiary)',cursor:'pointer',fontSize:10}} onMouseEnter={e=>{e.currentTarget.style.background='var(--so-blue-soft)';e.currentTarget.style.color='var(--so-blue)'}} onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--text-tertiary)'}}>✏</button>
+                        <button onClick={()=>{if(confirm('Delete?'))deleteAccount(acc.id)}} style={{padding:'2px 6px',borderRadius:5,border:'none',background:'transparent',color:'var(--text-tertiary)',cursor:'pointer',fontSize:10}} onMouseEnter={e=>{e.currentTarget.style.background='rgba(217,48,37,.08)';e.currentTarget.style.color='#D93025'}} onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--text-tertiary)'}}>🗑</button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        <div style={{padding:'8px 24px',borderTop:'0.5px solid var(--border-color)',fontSize:11,color:'var(--text-tertiary)',background:'var(--bg-secondary)'}}>Showing {filtered.length} of {mine.length} accounts</div>
+      </div>
+      {showForm&&<AccountForm onClose={()=>setShowForm(false)}/>}
+      {editAcc&&<AccountForm editAccount={editAcc} onClose={()=>setEditAcc(null)}/>}
+      {selAcc&&<AccountDetail account={accounts.find(a=>a.id===selAcc.id)||selAcc} onClose={()=>setSelAcc(null)} onEdit={a=>{setEditAcc(a);setSelAcc(null)}} onDelete={deleteAccount} currentUser={currentUser}/>}
+    </div>
+  )
+}
+
+/* ── Dashboard ───────────────────────────────────────── */
+function Dashboard({onNav}) {
+  const {currentUser}=useAuth()
+  const {accounts}=useAccounts()
+  const mine=useMemo(()=>currentUser.role===ROLE_SPECIALIST?accounts.filter(a=>a.assignedSpecialistId===currentUser.id):accounts.filter(a=>a.partnerId===currentUser.id),[accounts,currentUser])
+  const s=useMemo(()=>({
+    total:mine.length,
+    registered:mine.filter(a=>a.accountStage==='Registered').length,
+    inReview:mine.filter(a=>a.accountStage==='In Review').length,
+    onboarded:mine.filter(a=>a.accountStage==='Onboarded').length,
+    activated:mine.filter(a=>a.accountStage==='Activated').length,
+    blocked:mine.filter(a=>a.accountStage==='Blocked').length,
+  }),[mine])
+  const chartMonths = useMemo(()=>{
+    const now = new Date()
+    return Array.from({length:6},(_,i)=>{
+      const d = new Date(now.getFullYear(), now.getMonth()-5+i, 1)
+      return { key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, label:d.toLocaleString('en-US',{month:'short'}) }
+    })
+  },[])
+  const regData = useMemo(()=>{
+    const map = Object.fromEntries(chartMonths.map(m=>[m.key,0]))
+    mine.forEach(a=>{ if(a.registrationDate){ const k=a.registrationDate.slice(0,7); if(k in map) map[k]++ } })
+    return chartMonths.map(m=>({label:m.label,value:map[m.key]}))
+  },[mine,chartMonths])
+  const actData = useMemo(()=>{
+    const map = Object.fromEntries(chartMonths.map(m=>[m.key,0]))
+    mine.forEach(a=>{ const entry=(a.stageHistory||[]).find(h=>h.stage==='Activated'); if(entry){ const k=entry.date.slice(0,7); if(k in map) map[k]++ } })
+    return chartMonths.map(m=>({label:m.label,value:map[m.key]}))
+  },[mine,chartMonths])
+  return (
+    <div style={{flex:1,overflowY:'auto',padding:24}} className="page-anim">
+      <div style={{marginBottom:22}}>
+        <h2 style={{margin:0,fontSize:20}}>Welcome back, {currentUser.name.split(' ')[0]} 👋</h2>
+        <div style={{fontSize:12,color:'var(--text-tertiary)',marginTop:4}}>{currentUser.company} · {currentUser.role}</div>
+      </div>
+      <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1.4px',color:'var(--text-tertiary)',marginBottom:10}}>Key Metrics</div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14,marginBottom:26}}>
+        <StatCard label="Total Accounts"  value={s.total}/>
+        <StatCard label="Registered"      value={s.registered}  color="#4796E3"/>
+        <StatCard label="In Review"       value={s.inReview}    color="#E37400"/>
+        <StatCard label="Onboarded"       value={s.onboarded}   color="#1E8E3E"/>
+        <StatCard label="Activated"       value={s.activated}   color="#CA6673"/>
+        <StatCard label="Blocked"         value={s.blocked}     color="#D93025"/>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14,marginBottom:26}}>
+        <MonthBarChart title="Registration Trend" data={regData} color="#4796E3"/>
+        <MonthBarChart title="Activated Clients"  data={actData} color="#CA6673"/>
+      </div>
+      {(()=>{
+        const parseVol = v => v ? parseInt(v.replace(/[$,]/g,''),10)||0 : 0
+        const monthsRemaining = reg => {
+          if(!reg) return null
+          const r = new Date(reg), now = new Date()
+          const elapsed = (now.getFullYear()-r.getFullYear())*12+(now.getMonth()-r.getMonth())
+          return Math.max(12-elapsed, 0)
+        }
+        const getActivationDate = a => {
+          const e = (a.stageHistory||[]).find(h=>h.stage==='Activated')
+          return e ? e.date : null
+        }
+        const rows = mine.filter(a=>parseVol(a.expectedMonthlyVolume)>5000)
+        if(!rows.length) return (
+          <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:14,padding:48,textAlign:'center',color:'var(--text-tertiary)'}}>
+            <div style={{fontSize:36,marginBottom:12,opacity:.25}}>🏢</div>
+            <div style={{fontSize:14,fontWeight:600,color:'var(--text-secondary)',marginBottom:6}}>No accounts above $5,000 monthly volume</div>
+          </div>
+        )
+        return (
+          <div style={{background:'var(--bg-card)',border:'1px solid var(--border-color)',borderRadius:14,boxShadow:'var(--shadow-sm)',overflow:'hidden'}}>
+            <div style={{padding:'14px 18px',borderBottom:'0.5px solid var(--border-color)',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div style={{fontWeight:600,fontSize:13}}>Account Overview</div>
+              <button onClick={()=>onNav('accounts')} style={{background:'none',border:'none',color:'var(--so-blue)',cursor:'pointer',fontSize:12,fontFamily:'var(--font)',fontWeight:500}}>View all →</button>
+            </div>
+            <div style={{overflowX:'auto'}}>
+              <table className="dtbl">
+                <thead>
+                  <tr>
+                    <th>Client ID</th>
+                    <th>Company Name</th>
+                    <th>Account Status</th>
+                    <th>Offer Duration</th>
+                    <th>Registration Date</th>
+                    <th>Activation Date</th>
+                    <th>Months Remaining</th>
+                    <th>Monthly Volume</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(acc=>{
+                    const mr = monthsRemaining(acc.registrationDate)
+                    const actDate = getActivationDate(acc)
+                    const mrColor = mr===null?'var(--text-tertiary)':mr<=2?'#D93025':mr<=5?'#E37400':'#1E8E3E'
+                    return (
+                      <tr key={acc.id}>
+                        <td style={{fontFamily:'var(--font-mono)',color:'var(--so-blue)',fontWeight:600}}>{acc.clientId||'—'}</td>
+                        <td style={{fontWeight:600,maxWidth:160}}>{acc.companyName}</td>
+                        <td><Badge label={acc.accountStage} map={STAGE_MAP}/></td>
+                        <td style={{color:'var(--text-secondary)'}}>12 Months</td>
+                        <td style={{fontFamily:'var(--font-mono)',fontSize:11}}>{fmtDate(acc.registrationDate)}</td>
+                        <td style={{fontFamily:'var(--font-mono)',fontSize:11}}>{actDate?fmtDate(actDate):'—'}</td>
+                        <td><span style={{fontWeight:700,color:mrColor}}>{mr!==null?`${mr} mo`:'—'}</span></td>
+                        <td style={{fontFamily:'var(--font-mono)',fontWeight:600,color:'var(--text-primary)'}}>{acc.expectedMonthlyVolume||'—'}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
+    </div>
+  )
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+function Sidebar({page,onNav,onLogout,isMobile,isOpen}) {
+  const {currentUser}=useAuth()
+  const {accounts}=useAccounts()
+  const count=useMemo(()=>currentUser.role===ROLE_SPECIALIST?accounts.filter(a=>a.assignedSpecialistId===currentUser.id).length:accounts.filter(a=>a.partnerId===currentUser.id).length,[accounts,currentUser])
+  const base={width:'var(--sidebar-w)',flexShrink:0,background:'var(--bg-secondary)',borderRight:'0.5px solid var(--border-color)',display:'flex',flexDirection:'column',height:'100%',overflow:'hidden'}
+  const mob={...base,position:'fixed',top:0,left:0,bottom:0,zIndex:201,width:260,transform:isOpen?'translateX(0)':'translateX(-100%)',transition:'transform .28s cubic-bezier(.4,0,.2,1)',boxShadow:isOpen?'8px 0 32px rgba(0,0,0,0.15)':'none'}
+  const NAV=[{id:'dashboard',label:'Dashboard',icon:'▦'},{id:'accounts',label:'Accounts',icon:'◈',badge:count||null}]
+  return (
+    <aside style={isMobile?mob:base}>
+      <div style={{padding:16,borderBottom:'0.5px solid var(--border-color)',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <StarLogo size={34}/>
+          <div>
+            <div style={{fontWeight:700,fontSize:15,letterSpacing:'-.3px',lineHeight:1.2}}>
+              <span style={{background:'linear-gradient(90deg,#4796E3,#9177C7)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Partner </span>
+              <span style={{background:'linear-gradient(90deg,#9177C7,#CA6673)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',backgroundClip:'text'}}>Portal</span>
+            </div>
+            <div style={{fontSize:8,color:'var(--text-tertiary)',letterSpacing:'1.5px',textTransform:'uppercase',marginTop:1}}>by SalesOrbit</div>
+          </div>
+        </div>
+      </div>
+      <nav style={{flex:1,padding:'10px 8px',overflowY:'auto'}}>
+        <div style={{fontSize:9,color:'var(--text-hint)',fontWeight:700,letterSpacing:'1.8px',textTransform:'uppercase',padding:'6px 12px 10px'}}>Main Menu</div>
+        {NAV.map(item=>{
+          const active=page===item.id
+          return (
+            <button key={item.id} onClick={()=>onNav(item.id)}
+              style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'8px 12px',borderRadius:10,background:active?'linear-gradient(90deg,var(--so-blue-soft),rgba(145,119,199,0.06))':'transparent',border:'none',borderLeft:active?'2px solid var(--so-blue)':'2px solid transparent',color:active?'var(--so-blue)':'var(--text-secondary)',cursor:'pointer',fontSize:13,fontWeight:active?600:400,marginBottom:2,textAlign:'left',fontFamily:'var(--font)',transition:'all 180ms ease'}}
+              onMouseEnter={e=>{if(!active){e.currentTarget.style.background='var(--bg-tertiary)';e.currentTarget.style.color='var(--text-primary)'}}}
+              onMouseLeave={e=>{if(!active){e.currentTarget.style.background='transparent';e.currentTarget.style.color='var(--text-secondary)'}}}>
+              <span style={{fontSize:14,width:20,textAlign:'center',flexShrink:0,opacity:active?1:0.7}}>{item.icon}</span>
+              <span style={{flex:1}}>{item.label}</span>
+              {item.badge&&<span style={{background:'linear-gradient(90deg,#4796E3,#9177C7,#CA6673)',color:'#fff',fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:10,minWidth:18,textAlign:'center'}}>{item.badge}</span>}
+            </button>
+          )
+        })}
+      </nav>
+      {currentUser.role===ROLE_SPECIALIST&&<div style={{margin:'0 10px 10px',padding:'8px 10px',background:'rgba(145,119,199,0.08)',border:'1px solid rgba(145,119,199,0.2)',borderRadius:10,fontSize:11,color:'var(--so-purple)',fontWeight:500}}>🎯 Specialist View</div>}
+      <div style={{padding:'12px 16px',borderTop:'0.5px solid var(--border-color)',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:30,height:30,borderRadius:'50%',background:'var(--so-blue-soft)',border:'1.5px solid var(--so-blue)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:600,color:'var(--so-blue)',flexShrink:0}}>{currentUser.name?.split(' ').map(n=>n[0]).join('').slice(0,2)||'U'}</div>
+          <div style={{overflow:'hidden',flex:1}}>
+            <div style={{fontSize:12,fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{currentUser.name}</div>
+            <div style={{fontSize:9,color:'var(--text-tertiary)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{currentUser.role}</div>
+          </div>
+          <button onClick={onLogout} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-tertiary)',fontSize:14,padding:4,borderRadius:6,transition:'color .15s'}} onMouseEnter={e=>e.currentTarget.style.color='#D93025'} onMouseLeave={e=>e.currentTarget.style.color='var(--text-tertiary)'}>⏻</button>
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+/* ── Header ──────────────────────────────────────────── */
+function Header({page,theme,toggleTheme,isMobile,onMenuToggle}) {
+  const {currentUser}=useAuth()
+  return (
+    <div style={{height:'var(--header-h)',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'0 20px',background:'var(--bg-secondary)',borderBottom:'0.5px solid var(--border-color)',flexShrink:0,position:'relative'}}>
+      <div style={{position:'absolute',bottom:0,left:0,right:0,height:'0.5px',background:'linear-gradient(90deg,var(--so-blue),var(--so-purple) 40%,transparent 80%)',opacity:.25}}/>
+      <div style={{display:'flex',alignItems:'center',gap:12}}>
+        {isMobile&&<button onClick={onMenuToggle} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-secondary)',fontSize:18,padding:4}}>☰</button>}
+        <div style={{fontWeight:600,fontSize:15}}>{{dashboard:'Dashboard',accounts:'Accounts'}[page]||'Portal'}</div>
+      </div>
+      <div style={{display:'flex',alignItems:'center',gap:12}}>
+        <div style={{fontSize:11,color:'var(--text-tertiary)',display:'flex',alignItems:'center',gap:6}}><span style={{width:6,height:6,borderRadius:'50%',background:'#1E8E3E',display:'inline-block'}}/>{currentUser?.company}</div>
+        <button onClick={toggleTheme} style={{background:'var(--bg-tertiary)',border:'1px solid var(--border-strong-color)',borderRadius:8,padding:'5px 10px',cursor:'pointer',color:'var(--text-secondary)',fontSize:13,fontFamily:'var(--font)',transition:'all .15s'}} onMouseEnter={e=>{e.currentTarget.style.background='var(--bg-hover)';e.currentTarget.style.color='var(--text-primary)'}} onMouseLeave={e=>{e.currentTarget.style.background='var(--bg-tertiary)';e.currentTarget.style.color='var(--text-secondary)'}}>
+          {theme==='dark'?'☀':'◑'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ── App Shell ───────────────────────────────────────── */
+function AppContent() {
+  const {currentUser,logout}=useAuth()
+  const [page,setPage]=useState('dashboard')
+  const [theme,setTheme]=useState(()=>localStorage.getItem('cp_theme')||'light')
+  const [isMobile,setIsMobile]=useState(()=>window.innerWidth<768)
+  const [sidebarOpen,setSidebarOpen]=useState(false)
+  useEffect(()=>{document.documentElement.setAttribute('data-theme',theme);localStorage.setItem('cp_theme',theme)},[theme])
+  useEffect(()=>{const fn=()=>setIsMobile(window.innerWidth<768);window.addEventListener('resize',fn);return()=>window.removeEventListener('resize',fn)},[])
+  if(!currentUser) return <AuthPage/>
+  const navigate=id=>{setPage(id);if(isMobile)setSidebarOpen(false)}
+  return (
+    <div style={{display:'flex',height:'100dvh',overflow:'hidden'}}>
+      {isMobile&&sidebarOpen&&<div onClick={()=>setSidebarOpen(false)} style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,0.5)',backdropFilter:'blur(2px)',animation:'fadeIn .18s ease'}}/>}
+      <Sidebar page={page} onNav={navigate} onLogout={logout} isMobile={isMobile} isOpen={sidebarOpen}/>
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minWidth:0}}>
+        <Header page={page} theme={theme} toggleTheme={()=>setTheme(t=>t==='dark'?'light':'dark')} isMobile={isMobile} onMenuToggle={()=>setSidebarOpen(o=>!o)}/>
+        <main style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+          {page==='accounts'?<AccountsPage/>:<Dashboard onNav={navigate}/>}
+        </main>
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AccountsProvider>
+        <NotesProvider>
+          <AppContent/>
+        </NotesProvider>
+      </AccountsProvider>
+    </AuthProvider>
+  )
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>)
+</script>
+</body>
+</html>

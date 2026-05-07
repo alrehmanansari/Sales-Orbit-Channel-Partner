@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head><title>Resetting…</title></head>
+<body>
+<script>
+  ['cp_users','cp_accounts','cp_notes','cp_currentUser','cp_seed_v2','cp_seed_v3']
+    .forEach(k => localStorage.removeItem(k));
+  window.location.href = '/';
+</script>
+<p>Resetting seed data and redirecting…</p>
+</body>
+</html>

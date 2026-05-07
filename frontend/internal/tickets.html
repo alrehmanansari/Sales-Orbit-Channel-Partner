@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ticket Resolution · Sales Orbit</title>
+<link rel="stylesheet" href="../assets/css/design-system.css"/>
+<style>
+.ticket-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;transition:border-color .2s,box-shadow .2s;cursor:pointer}
+.ticket-card:hover{border-color:var(--border2);box-shadow:0 4px 16px -8px rgba(0,0,0,.12)}
+[data-theme=dark] .ticket-card:hover{box-shadow:0 4px 16px -4px rgba(0,0,0,.5)}
+.ticket-card.selected{border-color:var(--g-purple);box-shadow:0 0 0 3px var(--g-purple-soft)}
+.ticket-num{font-size:10px;font-weight:600;letter-spacing:.6px;color:var(--text3);margin-bottom:4px}
+.ticket-query{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.4}
+.ticket-meta-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--text2)}
+.detail-pane{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;position:sticky;top:80px}
+[data-theme=dark] .detail-pane{background:linear-gradient(180deg,#1d1d1d,#141414)}
+.two-col{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;align-items:start}
+.status-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.stat-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;background:var(--bg3);border:1.5px solid var(--border2);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text2)}
+.stat-chip:hover{border-color:var(--g-purple);color:var(--g-purple)}
+.stat-chip.selected{background:var(--g-purple-soft);border-color:var(--g-purple);color:var(--g-purple)}
+.stats-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+.s-chip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.s-chip .num{font-size:22px;font-weight:600;letter-spacing:-.5px;color:var(--text)}
+.s-chip .lbl{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-placeholder"></aside>
+  <div class="main-content">
+    <div id="topbar-placeholder"></div>
+    <div class="page-body">
+
+      <!-- Summary chips -->
+      <div class="stats-summary" id="ticket-stats">
+        <div class="s-chip"><div class="num" id="ts-total">—</div><div class="lbl">Total</div></div>
+        <div class="s-chip"><div class="num" id="ts-open" style="color:var(--g-blue)">—</div><div class="lbl">Open</div></div>
+        <div class="s-chip"><div class="num" id="ts-review" style="color:var(--g-purple)">—</div><div class="lbl">In Review</div></div>
+        <div class="s-chip"><div class="num" id="ts-resolved" style="color:var(--g-green)">—</div><div class="lbl">Resolved</div></div>
+        <div class="s-chip"><div class="num" id="ts-declined" style="color:var(--g-pink)">—</div><div class="lbl">Declined</div></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row" style="margin-bottom:16px">
+        <div class="filter-group">
+          <span class="filter-label">Status</span>
+          <select class="filter-select" id="f-status" onchange="loadTickets()">
+            <option value="">All</option>
+            <option value="open">Open</option>
+            <option value="in_review">In Review</option>
+            <option value="pending_partner">Pending Partner</option>
+            <option value="pending_customer">Pending Customer</option>
+            <option value="resolved">Resolved</option>
+            <option value="declined">Declined</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Query Type</span>
+          <select class="filter-select" id="f-query-type" onchange="loadTickets()">
+            <option value="">All Types</option>
+            <option>Account Approval – Document Approval</option>
+            <option>Account Approval – EDD Alert</option>
+            <option>Account Approval – VA Issuance &amp; Approval</option>
+            <option>Account Approval – Nature of Business Review</option>
+            <option>Account Approval – Funds Flow Info for Receiving and Payout</option>
+            <option>Payment Review – Incoming Payment</option>
+            <option>Payment Declined</option>
+            <option>Payout not received in Local Bank</option>
+            <option>Product Activation – Pay by Link/Card</option>
+            <option>Product Information – Checkout/ Additional Currency Account/ Currency Conversion</option>
+            <option>Price Reduction Request</option>
+          </select>
+        </div>
+        <div class="filter-group" id="partner-filter-grp">
+          <span class="filter-label">Partner</span>
+          <select class="filter-select" id="f-partner" onchange="loadTickets()">
+            <option value="">All Partners</option>
+          </select>
+        </div>
+        <div class="filter-group" id="specialist-filter-grp">
+          <span class="filter-label">Specialist</span>
+          <select class="filter-select" id="f-specialist" onchange="loadTickets()">
+            <option value="">All Specialists</option>
+          </select>
+        </div>
+        <div class="filter-group" style="justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" onclick="triggerExport()">
+            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export XLS
+          </button>
+        </div>
+      </div>
+
+      <!-- Main layout -->
+      <div class="two-col" id="main-layout">
+
+        <!-- Left: Ticket list -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Tickets <span class="table-count" id="tbl-count">0</span></div>
+          </div>
+          <div id="tickets-list">
+            <div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Loading…</div>
+          </div>
+          <div class="table-foot" style="background:transparent;border:none;padding:12px 0">
+            <span id="tbl-showing"></span>
+            <div class="pgr" id="pgr"></div>
+          </div>
+        </div>
+
+        <!-- Right: Detail pane -->
+        <div id="detail-wrap">
+          <div class="detail-pane" id="detail-pane">
+            <div style="text-align:center;padding:40px 20px;color:var(--text3)">
+              <svg style="width:40px;height:40px;margin-bottom:12px;opacity:.4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+              <div style="font-size:13px">Select a ticket to view details and update status</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Ticket Report Table -->
+      <div style="margin-top:32px">
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:14px;letter-spacing:-.2px">Ticket Resolution Report</div>
+        <div class="table-wrap">
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Account</th>
+                  <th>Partner</th>
+                  <th>Specialist</th>
+                  <th>Query Type</th>
+                  <th>Status</th>
+                  <th>Opened</th>
+                  <th>Days Open</th>
+                </tr>
+              </thead>
+              <tbody id="report-tbody">
+                <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<div class="notif-panel hidden" id="notif-panel">
+  <div class="notif-panel-head">
+    <span class="notif-panel-title">Notifications</span>
+    <button class="btn btn-ghost btn-sm" id="mark-all-read" style="padding:4px 10px;font-size:11px">Mark all read</button>
+  </div>
+  <div class="notif-scroll" id="notif-scroll"><div class="notif-empty">Loading…</div></div>
+</div>
+<div class="toast-container"></div>
+
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/notifications.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script>
+const user = Auth.requireInternalAuth();
+let currentPage = 1;
+let selectedTicketId = null;
+
+if (user) {
+  document.getElementById('sidebar-placeholder').outerHTML = Layout.internalSidebar('tickets', user);
+  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Ticket Resolution', 'Manage and resolve partner queries', user);
+  Notifications.initNotifications();
+  loadDropdowns();
+  loadTickets();
+  loadTicketReport();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('id')) openTicket(params.get('id'));
+}
+
+async function loadDropdowns() {
+  try {
+    const [partners, specialists] = await Promise.all([API.getPartners(), API.getSpecialists()]);
+    const ps = document.getElementById('f-partner');
+    (partners.data || []).forEach(p => { ps.innerHTML += `<option value="${p.id}">${esc(p.name)}</option>`; });
+    const ss = document.getElementById('f-specialist');
+    (specialists.data || []).forEach(s => { ss.innerHTML += `<option value="${s.id}">${esc(s.name)}</option>`; });
+  } catch {}
+}
+
+async function loadTickets() {
+  const params = {
+    status:        document.getElementById('f-status').value      || '',
+    query_type:    document.getElementById('f-query-type').value  || '',
+    partner_id:    document.getElementById('f-partner').value     || '',
+    specialist_id: document.getElementById('f-specialist').value  || '',
+    page: currentPage, limit: 15
+  };
+  Object.keys(params).forEach(k => !params[k] && delete params[k]);
+
+  const container = document.getElementById('tickets-list');
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">Loading…</div>';
+
+  try {
+    const data = await API.getTickets(params);
+    const tickets = data.data || [];
+    const total   = data.total || 0;
+
+    document.getElementById('tbl-count').textContent    = total;
+    document.getElementById('tbl-showing').textContent  = `${((currentPage-1)*15)+1}–${Math.min(currentPage*15,total)} of ${total}`;
+
+    // Stats
+    const allData = await API.getTickets({ limit: 999 });
+    const all = allData.data || [];
+    document.getElementById('ts-total').textContent    = allData.total || 0;
+    document.getElementById('ts-open').textContent     = all.filter(t => t.status === 'open').length;
+    document.getElementById('ts-review').textContent   = all.filter(t => t.status === 'in_review').length;
+    document.getElementById('ts-resolved').textContent = all.filter(t => t.status === 'resolved').length;
+    document.getElementById('ts-declined').textContent = all.filter(t => t.status === 'declined').length;
+
+    if (!tickets.length) {
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px">No tickets found.</div>';
+      renderPagination(0, 15);
+      return;
+    }
+
+    container.innerHTML = tickets.map(t => `
+      <div class="ticket-card${t.id === selectedTicketId ? ' selected' : ''}" onclick="openTicket('${t.id}')">
+        <div class="ticket-num">#${t.ticket_number} · ${Auth.formatDate(t.created_at)}</div>
+        <div class="ticket-query">${esc(t.query_type)}</div>
+        <div class="ticket-meta-row">
+          ${Auth.ticketStatusBadge(t.status)}
+          <span>${esc(t.account_name)}</span>
+          <span>Partner: ${esc(t.partner_name)}</span>
+          ${t.specialist_name ? `<span>Specialist: ${esc(t.specialist_name)}</span>` : ''}
+          <span style="margin-left:auto;font-weight:600;color:${parseInt(t.days_to_resolve) > 5 ? 'var(--g-pink)' : 'var(--text3)'}">${Math.round(t.days_to_resolve)}d open</span>
+        </div>
+      </div>`).join('');
+
+    renderPagination(total, 15);
+  } catch (e) {
+    container.innerHTML = `<div style="color:#D93025;font-size:13px;padding:20px">${esc(e.message)}</div>`;
+  }
+}
+
+function renderPagination(total, limit) {
+  const pages = Math.ceil(total / limit);
+  const pgr = document.getElementById('pgr');
+  if (pages <= 1) { pgr.innerHTML = ''; return; }
+  let html = `<button onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for (let i = 1; i <= Math.min(pages, 5); i++) {
+    html += `<button class="${i===currentPage?'act':''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  html += `<button onclick="changePage(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
+  pgr.innerHTML = html;
+}
+function changePage(p) { currentPage = p; loadTickets(); }
+
+async function openTicket(id) {
+  selectedTicketId = id;
+  document.querySelectorAll('.ticket-card').forEach(c => c.classList.toggle('selected', c.onclick?.toString().includes(id)));
+
+  const pane = document.getElementById('detail-pane');
+  pane.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)">Loading…</div>`;
+
+  try {
+    const data = await API.getTicket(id);
+    const t    = data.data;
+
+    pane.innerHTML = `
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <span style="font-size:10px;font-weight:600;letter-spacing:.6px;color:var(--text3)">#${t.ticket_number}</span>
+          ${Auth.ticketStatusBadge(t.status)}
+        </div>
+        <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;line-height:1.4">${esc(t.query_type)}</div>
+
+        <div class="info-grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          ${[
+            ['Account',     t.account_name],
+            ['Partner',     t.partner_name],
+            ['Specialist',  t.specialist_name || 'Unassigned'],
+            ['Resolution',  t.expected_resolution || '—'],
+            ['Opened',      Auth.formatDate(t.created_at)],
+            ['Days Open',   Math.round(t.days_to_resolve) + ' days'],
+          ].map(([l,v]) => `
+            <div>
+              <div style="font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:3px">${l}</div>
+              <div style="font-size:13px;font-weight:500;color:var(--text)">${esc(String(v))}</div>
+            </div>`).join('')}
+        </div>
+
+        ${t.remarks ? `
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:16px">
+            <div style="font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Partner Remarks</div>
+            <div style="font-size:13px;color:var(--text);line-height:1.5">${esc(t.remarks)}</div>
+          </div>` : ''}
+
+        <hr class="div-grad"/>
+
+        <div style="font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:12px">Update Status</div>
+
+        <div class="form-group">
+          <label class="form-label">New Status</label>
+          <select class="form-input" id="detail-status">
+            <option value="open"             ${t.status==='open'             ?'selected':''}>Open</option>
+            <option value="in_review"        ${t.status==='in_review'        ?'selected':''}>In Review</option>
+            <option value="pending_partner"  ${t.status==='pending_partner'  ?'selected':''}>Pending at Partner End</option>
+            <option value="pending_customer" ${t.status==='pending_customer' ?'selected':''}>Pending at Customer End</option>
+            <option value="resolved"         ${t.status==='resolved'         ?'selected':''}>Resolved</option>
+            <option value="declined"         ${t.status==='declined'         ?'selected':''}>Declined</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="decline-row" style="display:${t.status==='declined'?'flex':'none'};flex-direction:column;gap:6px">
+          <label class="form-label">Decline Reason *</label>
+          <select class="form-input" id="detail-decline">
+            <option value="">Select reason</option>
+            <option ${t.decline_reason==='NOB Not Supported'?'selected':''}>NOB Not Supported</option>
+            <option ${t.decline_reason==='Risk & Compliance'?'selected':''}>Risk &amp; Compliance</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notes to Partner</label>
+          <textarea class="form-input" id="detail-notes" rows="3" style="resize:vertical" placeholder="Explain the update or next steps…">${esc(t.specialist_notes || '')}</textarea>
+        </div>
+
+        <button class="btn btn-grad w-full" onclick="submitUpdate('${t.id}')">Update Ticket</button>
+      </div>`;
+
+    document.getElementById('detail-status').addEventListener('change', function() {
+      document.getElementById('decline-row').style.display = this.value === 'declined' ? 'flex' : 'none';
+    });
+  } catch (e) {
+    pane.innerHTML = `<div style="color:#D93025;font-size:13px;padding:20px">${esc(e.message)}</div>`;
+  }
+}
+
+async function submitUpdate(ticketId) {
+  const status         = document.getElementById('detail-status').value;
+  const decline_reason = document.getElementById('detail-decline')?.value || '';
+  const specialist_notes = document.getElementById('detail-notes')?.value.trim() || '';
+
+  if (status === 'declined' && !decline_reason) {
+    Auth.showToast('Please select a decline reason.', 'error');
+    return;
+  }
+
+  try {
+    await API.updateTicketStatus(ticketId, { status, decline_reason, specialist_notes });
+    Auth.showToast('Ticket updated. Partner notified.', 'success');
+    loadTickets();
+    openTicket(ticketId);
+    loadTicketReport();
+  } catch (e) { Auth.showToast(e.message, 'error'); }
+}
+
+async function loadTicketReport() {
+  const params = {
+    status:        document.getElementById('f-status').value || '',
+    query_type:    document.getElementById('f-query-type').value || '',
+    partner_id:    document.getElementById('f-partner').value || '',
+    specialist_id: document.getElementById('f-specialist').value || '',
+  };
+  Object.keys(params).forEach(k => !params[k] && delete params[k]);
+
+  const tbody = document.getElementById('report-tbody');
+  try {
+    const data = await API.getTicketReport(params);
+    const rows = data.data || [];
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text3)">No tickets</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(t => `
+      <tr onclick="openTicket('${t.ticket_id || ''}')" style="cursor:pointer">
+        <td style="font-weight:600">#${t.ticket_number}</td>
+        <td>${esc(t.account_name)}</td>
+        <td>${esc(t.partner_name)}</td>
+        <td>${esc(t.specialist_name || '—')}</td>
+        <td style="font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.query_type)}</td>
+        <td>${Auth.ticketStatusBadge(t.status)}</td>
+        <td>${Auth.formatDate(t.created_at)}</td>
+        <td style="font-weight:600;color:${parseInt(t.days_open)>5?'var(--g-pink)':'var(--text)'}">${Math.round(t.days_open)}d</td>
+      </tr>`).join('');
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#D93025">${esc(e.message)}</td></tr>`;
+  }
+}
+
+function triggerExport() {
+  const url = API.exportTickets({
+    status:        document.getElementById('f-status').value,
+    query_type:    document.getElementById('f-query-type').value,
+    partner_id:    document.getElementById('f-partner').value,
+    specialist_id: document.getElementById('f-specialist').value,
+  });
+  fetch(url, { headers: { Authorization: `Bearer ${Auth.getToken()}` } })
+    .then(r => r.blob()).then(blob => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tickets.xlsx'; a.click();
+    });
+}
+
+function esc(s) {
+  if (!s) return '—';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

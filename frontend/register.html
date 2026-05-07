@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Register · Sales Orbit</title>
+<link rel="stylesheet" href="assets/css/design-system.css"/>
+<style>
+body{min-height:100vh;display:flex;align-items:center;justify-content:center}
+.auth-wrap{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.auth-card{width:480px;max-width:100%;background:rgba(255,255,255,.6);backdrop-filter:blur(32px) saturate(180%);-webkit-backdrop-filter:blur(32px) saturate(180%);border:1px solid rgba(255,255,255,.65);border-radius:24px;box-shadow:0 32px 60px -20px rgba(31,38,135,.2),0 0 0 1px rgba(145,119,199,.08);overflow:hidden}
+[data-theme=dark] .auth-card{background:rgba(20,20,22,.65);border:1px solid rgba(255,255,255,.08);box-shadow:0 32px 60px -8px rgba(0,0,0,.75),0 0 0 1px rgba(145,119,199,.2),0 0 60px -16px rgba(145,119,199,.4)}
+.auth-logo-h{display:flex;align-items:center;gap:12px;padding:18px 28px;border-bottom:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.7);backdrop-filter:blur(20px)}
+[data-theme=dark] .auth-logo-h{background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1)}
+.auth-brand-name{font-family:'Google Sans Display','DM Sans',sans-serif;font-size:24px;font-weight:500;letter-spacing:-.4px;background:linear-gradient(90deg,#4796E3,#9177C7,#CA6673);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-body{padding:24px 28px}
+.auth-title{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-.3px;margin-bottom:4px}
+.auth-sub{font-size:12px;color:var(--text2);margin-bottom:20px}
+.auth-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.auth-field label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text2)}
+.auth-input{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.6);border:1px solid var(--border2);transition:all .2s}
+[data-theme=dark] .auth-input{background:rgba(255,255,255,.05)}
+.auth-input:focus-within{border-color:var(--g-purple);box-shadow:0 0 0 3px var(--g-purple-soft)}
+.auth-input input,.auth-input select{flex:1;border:none;outline:none;background:transparent;font-family:var(--font);font-size:13px;color:var(--text)}
+.auth-input input::placeholder{color:var(--text3)}
+.auth-input select{appearance:none;-webkit-appearance:none;cursor:pointer}
+.auth-input svg{flex-shrink:0;color:var(--text3)}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.auth-cta{width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--g-blue),var(--g-purple));color:#fff;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 20px -6px rgba(145,119,199,.5);transition:transform .2s,opacity .2s;margin-top:6px}
+.auth-cta:hover{transform:translateY(-1px)}
+.auth-cta:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.auth-foot{text-align:center;font-size:12px;color:var(--text2);margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.auth-foot a{color:var(--g-purple);text-decoration:none;font-weight:500}
+.error-msg{background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none}
+.error-msg.show{display:block}
+.terms-row{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);margin-top:8px;margin-bottom:16px;line-height:1.5}
+.cb{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;flex-shrink:0;margin-top:1px}
+.cb.on{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent}
+.cb.on::after{content:'';width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.terms-row a{color:var(--g-purple);text-decoration:none}
+.theme-corner{position:fixed;top:16px;right:16px}
+</style>
+</head>
+<body class="aurora-bg">
+<span class="aurora-orb" style="width:240px;height:240px;background:#9177C7;top:-60px;right:-40px"></span>
+<span class="aurora-orb" style="width:200px;height:200px;background:#CA6673;bottom:-50px;left:-30px;animation-delay:-5s"></span>
+<span class="aurora-orb" style="width:180px;height:180px;background:#4796E3;top:40%;left:20%;animation-delay:-8s"></span>
+
+<div class="theme-corner">
+  <button class="theme-btn" onclick="Auth.toggleTheme()" title="Toggle theme" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2)">
+    <svg class="sun-icon" style="width:16px;height:16px;position:absolute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    <svg class="moon-icon" style="width:16px;height:16px;position:absolute" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+  </button>
+</div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo-h">
+      <svg width="32" height="32" viewBox="0 0 80 80" fill="none">
+        <defs><linearGradient id="lg" x1="40" y1="4" x2="40" y2="76" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#4796E3"/><stop offset="45%" stop-color="#9177C7"/><stop offset="100%" stop-color="#CA6673"/></linearGradient></defs>
+        <path d="M40 4C40 4 41.6 22 47 35C53 49 68 40 76 40C68 40 53 31 47 45C41.6 58 40 76 40 76C40 76 38.4 58 33 45C27 31 12 40 4 40C12 40 27 49 33 35C38.4 22 40 4 40 4Z" fill="url(#lg)"/>
+      </svg>
+      <span class="auth-brand-name">Sales Orbit · Partner Registration</span>
+    </div>
+
+    <div class="auth-body">
+      <div class="auth-title">Start selling faster.</div>
+      <div class="auth-sub">Register as a Channel Partner to start submitting accounts.</div>
+
+      <div class="error-msg" id="reg-error"></div>
+
+      <div class="auth-grid">
+        <div class="auth-field">
+          <label>First name *</label>
+          <label class="auth-input"><input type="text" id="first_name" placeholder="Ariya"/></label>
+        </div>
+        <div class="auth-field">
+          <label>Last name *</label>
+          <label class="auth-input"><input type="text" id="last_name" placeholder="Reyes"/></label>
+        </div>
+      </div>
+
+      <div class="auth-field">
+        <label>Company / Partner name *</label>
+        <label class="auth-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <input type="text" id="company_name" placeholder="Globex Partners LLC"/>
+        </label>
+      </div>
+
+      <div class="auth-field">
+        <label>Designation</label>
+        <label class="auth-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <select id="designation">
+            <option value="">Select designation</option>
+            <option>Business Development Manager</option>
+            <option>Sales Development Representative</option>
+            <option>Country Head</option>
+            <option>Senior Business Development Manager</option>
+            <option>Manager Partnerships</option>
+          </select>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none"><path d="m6 9 6 6 6-6"/></svg>
+        </label>
+      </div>
+
+      <div class="auth-field">
+        <label>Work email *</label>
+        <label class="auth-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+          <input type="email" id="email" placeholder="you@company.com" autocomplete="email"/>
+        </label>
+      </div>
+
+      <div class="auth-field">
+        <label>Phone</label>
+        <label class="auth-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92V20a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+          <input type="tel" id="phone" placeholder="+1 555 000 0000"/>
+        </label>
+      </div>
+
+      <div class="auth-field">
+        <label>Password *</label>
+        <label class="auth-input">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="password" placeholder="Min. 8 characters"/>
+        </label>
+      </div>
+
+      <div class="terms-row">
+        <span class="cb on" id="terms-cb" onclick="this.classList.toggle('on')"></span>
+        I agree to the <a href="#">Terms of Service</a> &amp; <a href="#">Privacy Policy</a>
+      </div>
+
+      <button class="auth-cta" id="reg-btn" onclick="doRegister()">Create Partner Account</button>
+
+      <div class="auth-foot">Already have an account? <a href="index.html">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/api.js"></script>
+<script>
+const _u = Auth.getUser();
+if (_u) window.location.href = '/partner/dashboard.html';
+
+async function doRegister() {
+  const firstName   = document.getElementById('first_name').value.trim();
+  const lastName    = document.getElementById('last_name').value.trim();
+  const company     = document.getElementById('company_name').value.trim();
+  const designation = document.getElementById('designation').value;
+  const email       = document.getElementById('email').value.trim();
+  const phone       = document.getElementById('phone').value.trim();
+  const password    = document.getElementById('password').value;
+  const terms       = document.getElementById('terms-cb').classList.contains('on');
+  const btn         = document.getElementById('reg-btn');
+  const errEl       = document.getElementById('reg-error');
+
+  errEl.classList.remove('show');
+
+  if (!firstName || !lastName || !email || !password || !company) {
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (password.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!terms) {
+    errEl.textContent = 'Please accept the Terms of Service.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account…';
+
+  try {
+    const result = await API.register({
+      name: `${firstName} ${lastName}`,
+      email, password, company_name: company, phone, designation
+    });
+    Auth.setSession(result.token, result.user);
+    window.location.href = '/partner/dashboard.html';
+  } catch (err) {
+    errEl.textContent = err.message || 'Registration failed. Please try again.';
+    errEl.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Create Partner Account';
+  }
+}
+</script>
+</body>
+</html>

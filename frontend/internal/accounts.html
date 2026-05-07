@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Accounts · Sales Orbit Internal</title>
+<link rel="stylesheet" href="../assets/css/design-system.css"/>
+<style>
+.acct-detail-panel{position:fixed;right:0;top:0;height:100vh;width:580px;background:var(--surface);border-left:1px solid var(--border2);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+[data-theme=dark] .acct-detail-panel{box-shadow:-8px 0 32px rgba(0,0,0,.6)}
+.acct-detail-panel.open{transform:translateX(0)}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;gap:10px}
+.panel-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:18px;transition:all .2s}
+.panel-close:hover{background:var(--border2)}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);position:relative;flex-shrink:0;padding:0 20px;overflow-x:auto}
+.tab-btn{padding:10px 14px;border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:color .2s;position:relative;white-space:nowrap}
+.tab-btn.active{color:var(--text)}
+.tab-indicator{position:absolute;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--g-blue),var(--g-purple));transition:all .35s cubic-bezier(.2,.8,.2,1)}
+.panel-body{flex:1;overflow-y:auto;padding:20px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.info-item .info-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.info-item .info-value{font-size:13px;color:var(--text);font-weight:500}
+.edit-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.edit-section-title{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.notes-list{display:flex;flex-direction:column;gap:10px}
+.note-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.note-item.partner-note{border-left:3px solid var(--g-blue)}
+.note-item.internal-note{border-left:3px solid var(--g-purple)}
+.note-author{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;display:flex;justify-content:space-between}
+.note-content{font-size:13px;color:var(--text);line-height:1.55}
+.note-input-row{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.note-textarea{flex:1;border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);resize:none;outline:none;transition:border-color .2s}
+.note-textarea:focus{border-color:var(--g-purple);box-shadow:0 0 0 3px var(--g-purple-soft)}
+.audit-list{display:flex;flex-direction:column;gap:0}
+.audit-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.audit-item:last-child{border-bottom:none}
+.audit-dot{width:8px;height:8px;border-radius:50%;background:var(--g-purple);flex-shrink:0;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar-placeholder"></aside>
+  <div class="main-content">
+    <div id="topbar-placeholder"></div>
+    <div class="page-body">
+
+      <!-- Toolbar -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="search-box" style="min-width:220px">
+            <svg style="width:15px;height:15px;color:var(--text3)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="search-input" placeholder="Search accounts…" oninput="debounceSearch()"/>
+          </div>
+          <select id="f-status" class="filter-select" onchange="loadAccounts()">
+            <option value="">All Statuses</option>
+            <option value="registered">Registered</option>
+            <option value="in_review">In Review</option>
+            <option value="onboarded">Onboarded</option>
+            <option value="activated">Activated</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <select id="f-vertical" class="filter-select" onchange="loadAccounts()">
+            <option value="">All Verticals</option>
+            <option value="it_services_provider">IT Services</option>
+            <option value="ecomm_seller">E-comm Seller</option>
+            <option value="b2b_seller">B2B Seller</option>
+            <option value="freelancer">Freelancer</option>
+          </select>
+          <select id="f-biz" class="filter-select" onchange="loadAccounts()">
+            <option value="">All Types</option>
+            <option value="new">New</option>
+            <option value="established">Established</option>
+          </select>
+          <select id="f-partner" class="filter-select" onchange="loadAccounts()">
+            <option value="">All Partners</option>
+          </select>
+          <select id="f-owner" class="filter-select" onchange="loadAccounts()">
+            <option value="">All Owners</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="triggerExport()">
+            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export XLS
+          </button>
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer">
+            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Bulk Upload
+            <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="doBulkUpload(this)"/>
+          </label>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <span class="table-name">All Accounts</span>
+            <span class="table-count" id="tbl-count">0</span>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Partner</th>
+                <th>Vertical</th>
+                <th>Biz Type</th>
+                <th>Status</th>
+                <th>KYC Agent</th>
+                <th>Owner</th>
+                <th>Registered</th>
+                <th style="text-align:center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="accounts-tbody">
+              <tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-foot">
+          <span id="tbl-showing">Showing 0</span>
+          <div class="pgr" id="pgr"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="acct-detail-panel" id="detail-panel">
+  <div class="panel-header">
+    <div>
+      <div style="font-size:15px;font-weight:600;color:var(--text)" id="panel-title">Account</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px" id="panel-sub"></div>
+    </div>
+    <div id="panel-status"></div>
+    <button class="panel-close" onclick="closePanel()">×</button>
+  </div>
+  <div class="panel-tabs">
+    <button class="tab-btn active" data-tab="info"    onclick="switchTab('info')">Info</button>
+    <button class="tab-btn"        data-tab="edit"    onclick="switchTab('edit')">Edit</button>
+    <button class="tab-btn"        data-tab="notes"   onclick="switchTab('notes')">Notes</button>
+    <button class="tab-btn"        data-tab="tickets" onclick="switchTab('tickets')">Tickets</button>
+    <button class="tab-btn"        data-tab="history" onclick="switchTab('history')">History</button>
+    <span class="tab-indicator" id="tab-ind" style="width:38px;left:0"></span>
+  </div>
+  <div class="panel-body">
+
+    <!-- INFO TAB -->
+    <div id="tab-info">
+      <div class="info-grid" id="info-grid"></div>
+    </div>
+
+    <!-- EDIT TAB (COS editable fields) -->
+    <div id="tab-edit" class="hidden">
+      <div id="edit-err" style="background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none"></div>
+
+      <div class="edit-section">
+        <div class="edit-section-title">Account Information</div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" id="e-company"/></div>
+          <div class="form-group"><label class="form-label">Trading Name</label><input class="form-input" id="e-trading"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Business Type</label>
+            <select class="form-input" id="e-biz"><option value="">—</option><option value="new">New</option><option value="established">Established</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vertical</label>
+            <select class="form-input" id="e-vertical">
+              <option value="">—</option>
+              <option value="it_services_provider">IT Services Provider</option>
+              <option value="ecomm_seller">E-comm Seller</option>
+              <option value="b2b_seller">B2B Seller</option>
+              <option value="freelancer">Freelancer</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Contact Name</label><input class="form-input" id="e-contact-name"/></div>
+          <div class="form-group"><label class="form-label">Contact Email</label><input class="form-input" type="email" id="e-contact-email"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="e-phone"/></div>
+          <div class="form-group"><label class="form-label">Country</label><input class="form-input" id="e-country"/></div>
+        </div>
+      </div>
+
+      <div class="edit-section">
+        <div class="edit-section-title">Internal Fields</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Account Status</label>
+            <select class="form-input" id="e-status">
+              <option value="registered">Registered</option>
+              <option value="in_review">In Review</option>
+              <option value="onboarded">Onboarded</option>
+              <option value="activated">Activated</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">KYC Agent</label>
+            <input class="form-input" id="e-kyc" placeholder="Agent name"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Account Number</label>
+            <input class="form-input" id="e-acct-num" placeholder="Account number"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assign to Owner</label>
+            <select class="form-input" id="e-owner"><option value="">Unassigned</option></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rejection Reason</label>
+          <textarea class="form-input" id="e-rejection" rows="2" style="resize:vertical" placeholder="If rejected, state reason…"></textarea>
+        </div>
+      </div>
+
+      <button class="btn btn-grad w-full" onclick="saveAccount()">Save Changes</button>
+    </div>
+
+    <!-- NOTES TAB -->
+    <div id="tab-notes" class="hidden">
+      <div class="notes-list" id="notes-list"></div>
+      <div class="note-input-row">
+        <textarea class="note-textarea" id="note-input" rows="3" placeholder="Add an internal or partner-facing note…"></textarea>
+        <button class="btn btn-grad" onclick="submitNote()" style="align-self:flex-end">Post</button>
+      </div>
+    </div>
+
+    <!-- TICKETS TAB -->
+    <div id="tab-tickets" class="hidden">
+      <div id="tickets-list"></div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tab-history" class="hidden">
+      <div class="audit-list" id="audit-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<div class="notif-panel hidden" id="notif-panel">
+  <div class="notif-panel-head">
+    <span class="notif-panel-title">Notifications</span>
+    <button class="btn btn-ghost btn-sm" id="mark-all-read" style="padding:4px 10px;font-size:11px">Mark all read</button>
+  </div>
+  <div class="notif-scroll" id="notif-scroll"><div class="notif-empty">Loading…</div></div>
+</div>
+<div class="toast-container"></div>
+
+<script src="../assets/js/auth.js"></script>
+<script src="../assets/js/api.js"></script>
+<script src="../assets/js/notifications.js"></script>
+<script src="../assets/js/layout.js"></script>
+<script>
+const user = Auth.requireInternalAuth();
+let currentPage = 1;
+let currentAccountId = null;
+let searchTimer = null;
+
+if (user) {
+  document.getElementById('sidebar-placeholder').outerHTML = Layout.internalSidebar('accounts', user);
+  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Accounts', 'Manage all registered accounts', user);
+  Notifications.initNotifications();
+  loadDropdowns();
+  loadAccounts();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('id')) openPanel(params.get('id'));
+}
+
+async function loadDropdowns() {
+  try {
+    const [partners, specialists] = await Promise.all([API.getPartners(), API.getSpecialists()]);
+    const partnerSel = document.getElementById('f-partner');
+    (partners.data || []).forEach(p => {
+      partnerSel.innerHTML += `<option value="${p.id}">${esc(p.name)}${p.company_name ? ' · '+esc(p.company_name) : ''}</option>`;
+    });
+    const ownerSel = document.getElementById('f-owner');
+    const editOwnerSel = document.getElementById('e-owner');
+    (specialists.data || []).forEach(s => {
+      const opt = `<option value="${s.id}">${esc(s.name)}</option>`;
+      ownerSel.innerHTML    += opt;
+      editOwnerSel.innerHTML += opt;
+    });
+  } catch {}
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { currentPage = 1; loadAccounts(); }, 350);
+}
+
+async function loadAccounts() {
+  const params = {
+    page: currentPage, limit: 20,
+    status:        document.getElementById('f-status').value   || '',
+    vertical:      document.getElementById('f-vertical').value || '',
+    business_type: document.getElementById('f-biz').value      || '',
+    search:        document.getElementById('search-input').value.trim() || '',
+    partner_id:    document.getElementById('f-partner').value  || '',
+    owner_id:      document.getElementById('f-owner').value    || '',
+  };
+  Object.keys(params).forEach(k => !params[k] && delete params[k]);
+
+  const tbody = document.getElementById('accounts-tbody');
+  tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>`;
+
+  try {
+    const data = await API.getAccounts(params);
+    const accounts = data.data || [];
+    const total    = data.total || 0;
+
+    document.getElementById('tbl-count').textContent    = total;
+    document.getElementById('tbl-showing').textContent  = `Showing ${((currentPage-1)*20)+1}–${Math.min(currentPage*20,total)} of ${total}`;
+
+    if (!accounts.length) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text3)">No accounts found</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = accounts.map(a => `
+      <tr onclick="openPanel('${a.id}')">
+        <td>
+          <div class="td-primary">${esc(a.company_name)}</div>
+          <div class="td-sub">${esc(a.account_number || '—')}</div>
+        </td>
+        <td>
+          <div class="td-primary">${esc(a.partner_name || '—')}</div>
+          <div class="td-sub">${esc(a.partner_company || '')}</div>
+        </td>
+        <td>${Auth.verticalLabel(a.vertical)}</td>
+        <td>${Auth.businessTypeLabel(a.business_type)}</td>
+        <td>${Auth.statusBadge(a.status)}</td>
+        <td>${esc(a.kyc_agent || '—')}</td>
+        <td>${esc(a.owner_name || 'Unassigned')}</td>
+        <td>${Auth.formatDate(a.registration_date)}</td>
+        <td style="text-align:center">
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openPanel('${a.id}','edit')">Edit</button>
+        </td>
+      </tr>`).join('');
+
+    renderPagination(total, 20);
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:#D93025">${esc(e.message)}</td></tr>`;
+  }
+}
+
+function renderPagination(total, limit) {
+  const pages = Math.ceil(total / limit);
+  const pgr = document.getElementById('pgr');
+  if (pages <= 1) { pgr.innerHTML = ''; return; }
+  let html = `<button onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for (let i = 1; i <= Math.min(pages, 7); i++) {
+    html += `<button class="${i===currentPage?'act':''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  html += `<button onclick="changePage(${currentPage+1})" ${currentPage===pages?'disabled':''}>›</button>`;
+  pgr.innerHTML = html;
+}
+function changePage(p) { currentPage = p; loadAccounts(); }
+
+// ── PANEL ──
+async function openPanel(id, defaultTab = 'info') {
+  currentAccountId = id;
+  document.getElementById('detail-panel').classList.add('open');
+  switchTab(defaultTab);
+
+  try {
+    const data = await API.getAccount(id);
+    const a = data.data;
+
+    document.getElementById('panel-title').textContent = a.company_name;
+    document.getElementById('panel-sub').textContent   = `${Auth.verticalLabel(a.vertical)} · Ref: ${a.account_number || '—'}`;
+    document.getElementById('panel-status').innerHTML  = Auth.statusBadge(a.status);
+
+    // Info tab
+    document.getElementById('info-grid').innerHTML = [
+      ['Contact Name',    a.contact_name],
+      ['Contact Email',   a.contact_email],
+      ['Phone',           a.contact_phone || '—'],
+      ['Country',         a.country || '—'],
+      ['Partner',         a.partner_name || '—'],
+      ['Partner Email',   a.partner_email || '—'],
+      ['Assigned Owner',  a.owner_name   || 'Unassigned'],
+      ['KYC Agent',       a.kyc_agent    || '—'],
+      ['Account No.',     a.account_number || '—'],
+      ['Business Type',   Auth.businessTypeLabel(a.business_type)],
+      ['Registered',      Auth.formatDate(a.registration_date)],
+      ['Onboarded',       Auth.formatDate(a.onboarded_at)],
+      ['Activated',       Auth.formatDate(a.activated_at)],
+      ['Status',          Auth.statusBadge(a.status)],
+    ].map(([l, v]) => `<div class="info-item"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join('');
+
+    if (a.remarks) {
+      document.getElementById('info-grid').innerHTML += `<div class="info-item" style="grid-column:1/-1"><div class="info-label">Remarks</div><div class="info-value">${esc(a.remarks)}</div></div>`;
+    }
+
+    // Populate edit fields
+    document.getElementById('e-company').value      = a.company_name    || '';
+    document.getElementById('e-trading').value      = a.trading_name    || '';
+    document.getElementById('e-biz').value          = a.business_type   || '';
+    document.getElementById('e-vertical').value     = a.vertical        || '';
+    document.getElementById('e-contact-name').value = a.contact_name    || '';
+    document.getElementById('e-contact-email').value= a.contact_email   || '';
+    document.getElementById('e-phone').value        = a.contact_phone   || '';
+    document.getElementById('e-country').value      = a.country         || '';
+    document.getElementById('e-status').value       = a.status          || 'registered';
+    document.getElementById('e-kyc').value          = a.kyc_agent       || '';
+    document.getElementById('e-acct-num').value     = a.account_number  || '';
+    document.getElementById('e-owner').value        = a.owner_id        || '';
+    document.getElementById('e-rejection').value    = a.rejection_reason|| '';
+  } catch (e) {
+    Auth.showToast('Could not load account.', 'error');
+  }
+}
+
+function closePanel() {
+  document.getElementById('detail-panel').classList.remove('open');
+  currentAccountId = null;
+}
+
+function switchTab(tab) {
+  ['info','edit','notes','tickets','history'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  setTimeout(positionTabInd, 50);
+
+  if (tab === 'notes')   loadNotes();
+  if (tab === 'tickets') loadTickets();
+  if (tab === 'history') loadAuditLog();
+}
+
+function positionTabInd() {
+  const active = document.querySelector('.panel-tabs .tab-btn.active');
+  const ind    = document.getElementById('tab-ind');
+  if (active && ind) { ind.style.width = active.offsetWidth + 'px'; ind.style.left = active.offsetLeft + 'px'; }
+}
+
+async function saveAccount() {
+  const errEl = document.getElementById('edit-err');
+  errEl.style.display = 'none';
+
+  const body = {
+    company_name:     document.getElementById('e-company').value.trim(),
+    trading_name:     document.getElementById('e-trading').value.trim(),
+    business_type:    document.getElementById('e-biz').value,
+    vertical:         document.getElementById('e-vertical').value,
+    contact_name:     document.getElementById('e-contact-name').value.trim(),
+    contact_email:    document.getElementById('e-contact-email').value.trim(),
+    contact_phone:    document.getElementById('e-phone').value.trim(),
+    country:          document.getElementById('e-country').value.trim(),
+    status:           document.getElementById('e-status').value,
+    kyc_agent:        document.getElementById('e-kyc').value.trim(),
+    account_number:   document.getElementById('e-acct-num').value.trim(),
+    owner_id:         document.getElementById('e-owner').value || null,
+    rejection_reason: document.getElementById('e-rejection').value.trim(),
+  };
+
+  try {
+    await API.updateAccount(currentAccountId, body);
+    Auth.showToast('Account updated successfully.', 'success');
+    loadAccounts();
+    openPanel(currentAccountId);
+  } catch (e) {
+    errEl.textContent   = e.message || 'Update failed.';
+    errEl.style.display = 'block';
+  }
+}
+
+async function loadNotes() {
+  const list = document.getElementById('notes-list');
+  list.innerHTML = '<div style="color:var(--text3);font-size:12px">Loading…</div>';
+  try {
+    const data  = await API.getNotes(currentAccountId);
+    const notes = data.data || [];
+    if (!notes.length) { list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">No notes yet.</div>'; return; }
+    list.innerHTML = notes.map(n => {
+      const isPartner = n.author_role === 'channel_partner';
+      return `<div class="note-item ${isPartner ? 'partner-note' : 'internal-note'}">
+        <div class="note-author">
+          <span>${esc(n.author_name)} <span style="font-weight:400;opacity:.7">(${Auth.roleLabel(n.author_role)})</span></span>
+          <span style="font-weight:400;color:var(--text3)">${Auth.timeAgo(n.created_at)}</span>
+        </div>
+        <div class="note-content">${esc(n.content)}</div>
+      </div>`;
+    }).join('');
+  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px">Could not load notes.</div>'; }
+}
+
+async function submitNote() {
+  const input = document.getElementById('note-input');
+  const content = input.value.trim();
+  if (!content) return;
+  try {
+    await API.createNote(currentAccountId, { content });
+    input.value = '';
+    loadNotes();
+    Auth.showToast('Note posted. Partner notified.', 'success');
+  } catch (e) { Auth.showToast(e.message, 'error'); }
+}
+
+async function loadTickets() {
+  const list = document.getElementById('tickets-list');
+  list.innerHTML = '<div style="color:var(--text3);font-size:12px">Loading…</div>';
+  try {
+    const data    = await API.getTickets({ account_id: currentAccountId, limit: 50 });
+    const tickets = data.data || [];
+    if (!tickets.length) { list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">No tickets for this account.</div>'; return; }
+    list.innerHTML = tickets.map(t => `
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:10px;font-weight:600;color:var(--text3)">#${t.ticket_number}</span>
+          ${Auth.ticketStatusBadge(t.status)}
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">${esc(t.query_type)}</div>
+        <div style="font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap">
+          <span>Resolution: ${esc(t.expected_resolution || '—')}</span>
+          <span>Partner: ${esc(t.partner_name)}</span>
+          <span>${Math.round(t.days_to_resolve)} days open</span>
+        </div>
+        ${t.specialist_notes ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">${esc(t.specialist_notes)}</div>` : ''}
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+          <select id="ts-${t.id}" class="filter-select" style="font-size:11px;padding:4px 8px;min-width:140px">
+            <option value="open"             ${t.status==='open'             ?'selected':''}>Open</option>
+            <option value="in_review"        ${t.status==='in_review'        ?'selected':''}>In Review</option>
+            <option value="pending_partner"  ${t.status==='pending_partner'  ?'selected':''}>Pending Partner</option>
+            <option value="pending_customer" ${t.status==='pending_customer' ?'selected':''}>Pending Customer</option>
+            <option value="resolved"         ${t.status==='resolved'         ?'selected':''}>Resolved</option>
+            <option value="declined"         ${t.status==='declined'         ?'selected':''}>Declined</option>
+          </select>
+          <select id="td-${t.id}" class="filter-select" style="font-size:11px;padding:4px 8px;min-width:160px;display:${document.getElementById('ts-'+t.id)?.value==='declined'?'block':'none'}">
+            <option value="">Decline reason…</option>
+            <option value="NOB Not Supported">NOB Not Supported</option>
+            <option value="Risk &amp; Compliance">Risk &amp; Compliance</option>
+          </select>
+          <button class="btn btn-grad btn-sm" onclick="updateTicket('${t.id}')">Update</button>
+        </div>
+        <div style="margin-top:6px"><input class="form-input" id="tn-${t.id}" placeholder="Add notes to partner…" style="font-size:12px;padding:6px 10px"/></div>
+      </div>`).join('');
+
+    // Show/hide decline reason on status change
+    tickets.forEach(t => {
+      const sel = document.getElementById('ts-'+t.id);
+      const decSel = document.getElementById('td-'+t.id);
+      if (sel && decSel) sel.addEventListener('change', () => {
+        decSel.style.display = sel.value === 'declined' ? 'block' : 'none';
+      });
+    });
+  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px">Could not load tickets.</div>'; }
+}
+
+async function updateTicket(ticketId) {
+  const status        = document.getElementById('ts-'+ticketId).value;
+  const decline_reason= document.getElementById('td-'+ticketId)?.value || '';
+  const specialist_notes = document.getElementById('tn-'+ticketId)?.value.trim() || '';
+  try {
+    await API.updateTicketStatus(ticketId, { status, decline_reason, specialist_notes });
+    Auth.showToast('Ticket updated. Partner notified.', 'success');
+    loadTickets();
+  } catch (e) { Auth.showToast(e.message, 'error'); }
+}
+
+async function loadAuditLog() {
+  const list = document.getElementById('audit-list');
+  list.innerHTML = '<div style="color:var(--text3);font-size:12px">Loading…</div>';
+  try {
+    const data = await API.getAuditLog(currentAccountId);
+    const logs = data.data || [];
+    if (!logs.length) { list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">No history yet.</div>'; return; }
+    list.innerHTML = logs.map(l => `
+      <div class="audit-item">
+        <div class="audit-dot"></div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:500;color:var(--text)">${actionLabel(l.action)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(l.user_name||'System')} · ${Auth.timeAgo(l.created_at)}</div>
+        </div>
+      </div>`).join('');
+  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px">Could not load history.</div>'; }
+}
+
+function actionLabel(a) {
+  return { account_created:'Account created', account_updated:'Account updated', note_added:'Note added' }[a] || a;
+}
+
+async function doBulkUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData(); fd.append('file', file);
+  try {
+    const result = await API.bulkUpload(fd);
+    Auth.showToast(`Bulk upload: ${result.created} created, ${result.errors?.length||0} errors.`, result.errors?.length?'error':'success', 6000);
+    loadAccounts();
+  } catch (e) { Auth.showToast(e.message, 'error'); }
+  input.value = '';
+}
+
+function triggerExport() {
+  const url = API.exportAccounts({
+    status: document.getElementById('f-status').value,
+    vertical: document.getElementById('f-vertical').value
+  });
+  fetch(url, { headers: { Authorization: `Bearer ${Auth.getToken()}` } })
+    .then(r => r.blob()).then(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'accounts.xlsx';
+      a.click();
+    });
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
