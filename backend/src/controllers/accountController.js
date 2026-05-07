@@ -131,7 +131,8 @@ async function createAccount(req, res, next) {
       company_name, trading_name, business_type, vertical,
       contact_name, contact_email, contact_phone, country,
       website, nature_of_business, onboarding_specialist,
-      va_status, card_status, registration_date, remarks
+      va_status, card_status, registration_date, remarks,
+      account_number, status
     } = req.body;
 
     if (!company_name || !contact_name || !contact_email) {
@@ -148,20 +149,23 @@ async function createAccount(req, res, next) {
     );
     const ownerId = cosResult.rows[0]?.id || null;
 
+    const validStatuses = ['registered','in_review','onboarded','activated','rejected'];
+    const accountStatus = validStatuses.includes(status) ? status : 'registered';
+
     const result = await client.query(
       `INSERT INTO accounts
          (company_name, trading_name, business_type, vertical, contact_name,
           contact_email, contact_phone, country, website, nature_of_business,
           onboarding_specialist, va_status, card_status, registration_date,
-          remarks, partner_id, owner_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+          remarks, account_number, status, partner_id, owner_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
        RETURNING *`,
       [company_name, trading_name || null, business_type || null, vertical || null,
        contact_name, contact_email, contact_phone || null, country || null,
        website || null, nature_of_business || null, onboarding_specialist || null,
        va_status || null, card_status || null,
        registration_date || null,
-       remarks || null, req.user.id, ownerId]
+       remarks || null, account_number || null, accountStatus, req.user.id, ownerId]
     );
 
     const account = result.rows[0];
@@ -249,26 +253,74 @@ async function updateAccount(req, res, next) {
   }
 }
 
+function parseCsvRows(filePath) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return null;
+  const parseRow = (line) => {
+    const cells = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '"' && !inQ) { inQ = true; }
+      else if (line[i] === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else if (line[i] === '"' && inQ) { inQ = false; }
+      else if (line[i] === ',' && !inQ) { cells.push(cur.trim()); cur = ''; }
+      else { cur += line[i]; }
+    }
+    cells.push(cur.trim());
+    return cells;
+  };
+  const headerCells = parseRow(lines[0]);
+  const headers = {};
+  headerCells.forEach((h, i) => { headers[h.trim()] = i; });
+  const rows = lines.slice(1).map((line, idx) => {
+    const cells = parseRow(line);
+    return { rowNum: idx + 2, get: (col) => (headers[col] !== undefined ? (cells[headers[col]] || '') : '') };
+  });
+  return { headers, rows };
+}
+
 async function bulkUploadAccounts(req, res, next) {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile(req.file.path);
-    fs.unlinkSync(req.file.path);
+    const isCsv = req.file.originalname.toLowerCase().endsWith('.csv') ||
+                  req.file.mimetype === 'text/csv' ||
+                  req.file.mimetype === 'text/plain' ||
+                  req.file.mimetype === 'application/csv';
 
-    const sheet = workbook.worksheets[0];
-    if (!sheet || sheet.rowCount < 2) {
-      return res.status(400).json({ error: 'Spreadsheet is empty' });
+    let dataRows = [];
+    let headers = {};
+
+    if (isCsv) {
+      const parsed = parseCsvRows(req.file.path);
+      fs.unlinkSync(req.file.path);
+      if (!parsed || !parsed.rows.length) {
+        return res.status(400).json({ error: 'CSV file is empty' });
+      }
+      headers  = parsed.headers;
+      dataRows = parsed.rows;
+    } else {
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.readFile(req.file.path);
+      fs.unlinkSync(req.file.path);
+      const sheet = workbook.worksheets[0];
+      if (!sheet || sheet.rowCount < 2) {
+        return res.status(400).json({ error: 'Spreadsheet is empty' });
+      }
+      sheet.getRow(1).eachCell((cell, colNum) => {
+        headers[String(cell.value).trim()] = colNum;
+      });
+      sheet.eachRow((row, rowNum) => {
+        if (rowNum === 1) return;
+        const get = (col) => {
+          const idx = headers[col];
+          return idx ? String(row.getCell(idx).value ?? '').trim() : '';
+        };
+        dataRows.push({ rowNum, get });
+      });
     }
-
-    // Build header map from row 1
-    const headers = {};
-    sheet.getRow(1).eachCell((cell, colNum) => {
-      headers[String(cell.value).trim()] = colNum;
-    });
 
     const required = ['company_name', 'contact_name', 'contact_email'];
     for (const f of required) {
@@ -284,16 +336,6 @@ async function bulkUploadAccounts(req, res, next) {
 
     const created = [];
     const errors = [];
-    const dataRows = [];
-
-    sheet.eachRow((row, rowNum) => {
-      if (rowNum === 1) return;
-      const get = (col) => {
-        const idx = headers[col];
-        return idx ? String(row.getCell(idx).value ?? '').trim() : '';
-      };
-      dataRows.push({ rowNum, get });
-    });
 
     for (const { rowNum, get } of dataRows) {
       const company_name  = get('company_name');
@@ -307,12 +349,16 @@ async function bulkUploadAccounts(req, res, next) {
         const result = await query(
           `INSERT INTO accounts
              (company_name, trading_name, business_type, vertical, contact_name,
-              contact_email, contact_phone, country, remarks, partner_id, owner_id)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id, company_name`,
+              contact_email, contact_phone, country, website, nature_of_business,
+              onboarding_specialist, va_status, card_status, remarks, partner_id, owner_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id, company_name`,
           [company_name, get('trading_name') || null, get('business_type') || null,
            get('vertical') || null, contact_name, contact_email,
-           get('contact_phone') || null, get('country') || null, get('remarks') || null,
-           req.user.id, defaultOwnerId]
+           get('contact_phone') || null, get('country') || null,
+           get('website') || null, get('nature_of_business') || null,
+           get('onboarding_specialist') || null,
+           get('va_status') || null, get('card_status') || null,
+           get('remarks') || null, req.user.id, defaultOwnerId]
         );
         created.push(result.rows[0]);
       } catch (e) {

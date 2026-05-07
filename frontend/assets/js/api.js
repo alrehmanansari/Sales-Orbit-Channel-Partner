@@ -46,6 +46,8 @@ const API = {
   // Auth
   login:          (body)            => apiFetch('/auth/login',           { method: 'POST', body: JSON.stringify(body) }),
   register:       (body)            => apiFetch('/auth/register',        { method: 'POST', body: JSON.stringify(body) }),
+  verifyOtp:      (body)            => apiFetch('/auth/verify-otp',      { method: 'POST', body: JSON.stringify(body) }),
+  resendOtp:      (body)            => apiFetch('/auth/resend-otp',      { method: 'POST', body: JSON.stringify(body) }),
   getMe:          ()                => apiFetch('/auth/me'),
   changePassword: (body)            => apiFetch('/auth/change-password', { method: 'PUT',  body: JSON.stringify(body) }),
 

@@ -519,15 +519,26 @@ async function openDetailPanel(id) {
     document.getElementById('panel-title').textContent = a.company_name;
     document.getElementById('panel-sub').textContent   = `${Auth.verticalLabel(a.vertical)} · ${Auth.businessTypeLabel(a.business_type)}`;
 
+    const vaLabels   = { applied:'Applied', issued:'Issued', activated:'Activated' };
+    const cardLabels = { required:'Required', applied:'Applied', issued:'Issued' };
+
     document.getElementById('info-grid').innerHTML = [
-      ['Contact Name', a.contact_name],
-      ['Contact Email', a.contact_email],
-      ['Phone', a.contact_phone || '—'],
-      ['Country', a.country || '—'],
-      ['Trading Name', a.trading_name || '—'],
-      ['Status', Auth.statusBadge(a.status)],
-      ['Registered', Auth.formatDate(a.registration_date)],
-      ['Account Owner', a.owner_name || 'Unassigned'],
+      ['Client ID',             esc(a.account_number || '—')],
+      ['Company Name',          esc(a.company_name)],
+      ['Reg Country',           esc(a.country || '—')],
+      ['Director Name',         esc(a.contact_name)],
+      ['Email ID',              esc(a.contact_email)],
+      ['Phone',                 esc(a.contact_phone || '—')],
+      ['Website',               a.website ? `<a href="${esc(a.website)}" target="_blank" style="color:var(--g-blue)">${esc(a.website)}</a>` : '—'],
+      ['Account Reg Date',      Auth.formatDate(a.registration_date)],
+      ['Business Type',         Auth.businessTypeLabel(a.business_type)],
+      ['Vertical',              Auth.verticalLabel(a.vertical)],
+      ['Nature of Business',    esc(a.nature_of_business || '—')],
+      ['Channel Partner',       esc(a.partner_name || '—')],
+      ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
+      ['Account Status',        Auth.statusBadge(a.status)],
+      ['VA Status',             esc(vaLabels[a.va_status] || a.va_status || '—')],
+      ['Card Status',           esc(cardLabels[a.card_status] || a.card_status || '—')],
     ].map(([l, v]) => `
       <div class="info-item">
         <div class="info-label">${l}</div>

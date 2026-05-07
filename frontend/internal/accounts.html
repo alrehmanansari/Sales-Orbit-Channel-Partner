@@ -491,21 +491,31 @@ async function openPanel(id, defaultTab = 'info') {
     document.getElementById('panel-status').innerHTML  = Auth.statusBadge(a.status);
 
     // Info tab
+    const _vaL   = { applied:'Applied', issued:'Issued', activated:'Activated' };
+    const _cardL = { required:'Required', applied:'Applied', issued:'Issued' };
+
     document.getElementById('info-grid').innerHTML = [
-      ['Contact Name',    a.contact_name],
-      ['Contact Email',   a.contact_email],
-      ['Phone',           a.contact_phone || '—'],
-      ['Country',         a.country || '—'],
-      ['Partner',         a.partner_name || '—'],
-      ['Partner Email',   a.partner_email || '—'],
-      ['Assigned Owner',  a.owner_name   || 'Unassigned'],
-      ['KYC Agent',       a.kyc_agent    || '—'],
-      ['Account No.',     a.account_number || '—'],
-      ['Business Type',   Auth.businessTypeLabel(a.business_type)],
-      ['Registered',      Auth.formatDate(a.registration_date)],
-      ['Onboarded',       Auth.formatDate(a.onboarded_at)],
-      ['Activated',       Auth.formatDate(a.activated_at)],
-      ['Status',          Auth.statusBadge(a.status)],
+      ['Client ID',             esc(a.account_number || '—')],
+      ['Company Name',          esc(a.company_name)],
+      ['Reg Country',           esc(a.country || '—')],
+      ['Director Name',         esc(a.contact_name)],
+      ['Email ID',              esc(a.contact_email)],
+      ['Phone',                 esc(a.contact_phone || '—')],
+      ['Website',               a.website ? `<a href="${esc(a.website)}" target="_blank" style="color:var(--g-blue)">${esc(a.website)}</a>` : '—'],
+      ['Account Reg Date',      Auth.formatDate(a.registration_date)],
+      ['Business Type',         Auth.businessTypeLabel(a.business_type)],
+      ['Vertical',              Auth.verticalLabel(a.vertical)],
+      ['Nature of Business',    esc(a.nature_of_business || '—')],
+      ['Channel Partner',       esc(a.partner_name || '—')],
+      ['Partner Email',         esc(a.partner_email || '—')],
+      ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
+      ['Assigned Owner',        esc(a.owner_name || 'Unassigned')],
+      ['Account Status',        Auth.statusBadge(a.status)],
+      ['VA Status',             esc(_vaL[a.va_status] || a.va_status || '—')],
+      ['Card Status',           esc(_cardL[a.card_status] || a.card_status || '—')],
+      ['KYC Agent',             esc(a.kyc_agent || '—')],
+      ['Onboarded',             Auth.formatDate(a.onboarded_at)],
+      ['Activated',             Auth.formatDate(a.activated_at)],
     ].map(([l, v]) => `<div class="info-item"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join('');
 
     if (a.remarks) {

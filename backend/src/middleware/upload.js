@@ -33,7 +33,10 @@ const bulkUpload = multer({
   fileFilter: fileFilter([
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
-    'text/csv'
+    'text/csv',
+    'application/csv',
+    'text/plain',       // some OS/browser combos emit this for .csv
+    'application/octet-stream' // generic binary fallback for .xlsx
   ])
 });
 

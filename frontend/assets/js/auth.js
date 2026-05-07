@@ -132,7 +132,7 @@ function verticalLabel(v) {
 }
 
 function businessTypeLabel(bt) {
-  const map = { new: 'New Business', established: 'Established' };
+  const map = { new: 'New', established: 'Established' };
   return map[bt] || bt || '—';
 }
 
