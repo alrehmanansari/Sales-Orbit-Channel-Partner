@@ -200,10 +200,11 @@ async function updateAccount(req, res, next) {
     const partnerFields = ['company_name','trading_name','business_type','vertical',
                            'contact_name','contact_email','contact_phone','country',
                            'website','nature_of_business','onboarding_specialist',
-                           'va_status','card_status','registration_date','remarks'];
+                           'va_status','card_status','registration_date','remarks',
+                           'account_number','status'];
 
     // Fields only internal staff can edit
-    const internalFields = ['kyc_agent','account_number','status','owner_id','rejection_reason'];
+    const internalFields = ['kyc_agent','owner_id','rejection_reason'];
 
     const allowedFields = req.user.role === ROLES.CHANNEL_PARTNER
       ? partnerFields

@@ -182,11 +182,11 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Client ID</label>
-          <input class="form-input" id="f-client-id" placeholder="Auto-assigned" disabled style="opacity:.55;cursor:default"/>
+          <input class="form-input" id="f-client-id" placeholder="Enter client ID"/>
         </div>
         <div class="form-group">
           <label class="form-label">Company Name *</label>
-          <input class="form-input" id="f-company" placeholder="Globex Inc."/>
+          <input class="form-input" id="f-company" placeholder="Write registered company name"/>
         </div>
       </div>
 
@@ -228,7 +228,7 @@
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Website</label>
-          <input class="form-input" id="f-website" placeholder="Store Link in case of Ecomm Seller"/>
+          <input class="form-input" id="f-website" placeholder="Website URL or Ecomm Store Link"/>
         </div>
         <div class="form-group">
           <label class="form-label">Account Reg Date</label>
@@ -303,7 +303,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">Account Status</label>
-          <select class="form-input" id="f-status" disabled style="opacity:.7;cursor:default">
+          <select class="form-input" id="f-status">
             <option value="registered">Registered</option>
             <option value="in_review">In Review</option>
             <option value="onboarded">Onboarded</option>
@@ -771,6 +771,7 @@ async function submitAccount() {
   const btn = document.getElementById('modal-submit-btn');
 
   const body = {
+    account_number:        document.getElementById('f-client-id').value.trim() || null,
     company_name:          document.getElementById('f-company').value.trim(),
     business_type:         document.getElementById('f-biz').value,
     vertical:              document.getElementById('f-vertical').value,
@@ -781,6 +782,7 @@ async function submitAccount() {
     website:               document.getElementById('f-website').value.trim(),
     nature_of_business:    document.getElementById('f-nob').value,
     onboarding_specialist: getOSValue(),
+    status:                document.getElementById('f-status').value,
     va_status:             document.getElementById('f-va-status').value || null,
     card_status:           document.getElementById('f-card-status').value || null,
     registration_date:     document.getElementById('f-reg-date').value || null,
