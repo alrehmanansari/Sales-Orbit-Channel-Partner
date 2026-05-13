@@ -31,7 +31,7 @@ async function apiFetch(path, options = {}) {
     localStorage.removeItem('so_token');
     localStorage.removeItem('so_user');
     window.location.href = '/index.html';
-    return;
+    throw new Error('Session expired. Please log in again.');
   }
 
   const data = await response.json().catch(() => ({}));
