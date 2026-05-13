@@ -9,32 +9,12 @@ const { testConnection } = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 3002;
 
-// Security middleware — CSP disabled because frontend uses inline scripts/handlers
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-  crossOriginOpenerPolicy: false,
-}));
+// Helmet — CSP disabled (frontend uses inline scripts + onclick handlers throughout)
+app.use(helmet({ contentSecurityPolicy: false }));
 
-// CORS — allow the production domain, localhost, and any value in FRONTEND_URL
-const allowedOrigins = [
-  'https://partner.salesorbit.tech',
-  'http://localhost:3000',
-  'http://localhost:3002',
-  'http://localhost:8080',
-];
-if (process.env.FRONTEND_URL && process.env.FRONTEND_URL !== '*') {
-  allowedOrigins.push(process.env.FRONTEND_URL);
-}
+// CORS — allow all origins (all API endpoints require JWT auth anyway)
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no Origin header (curl, Postman, same-origin)
-    // and any origin in the allowedOrigins list
-    if (!origin || allowedOrigins.includes(origin) || process.env.FRONTEND_URL === '*') {
-      return callback(null, origin || '*');
-    }
-    return callback(null, origin); // reflect origin — API is JWT-protected anyway
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -44,7 +24,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static uploads folder
+// Static uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API routes
@@ -55,16 +35,16 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Static frontend (served from the same origin as the API)
+// Serve frontend static files
 const frontendDir = path.join(__dirname, '../../frontend');
 app.use(express.static(frontendDir));
 
-// 404 handler — only for unknown /api/* and other non-static paths
+// Fallback — serve index.html for non-API routes
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'Route not found' });
   }
-  res.status(404).sendFile(path.join(frontendDir, 'index.html'));
+  res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
 // Global error handler
@@ -75,7 +55,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
 async function start() {
   await testConnection();
   app.listen(PORT, () => {
