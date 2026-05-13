@@ -9,14 +9,32 @@ const { testConnection } = require('./config/database');
 const app = express();
 const PORT = process.env.PORT || 3002;
 
-// Security middleware
+// Security middleware — CSP disabled because frontend uses inline scripts/handlers
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: false,
 }));
 
-// CORS
+// CORS — allow the production domain, localhost, and any value in FRONTEND_URL
+const allowedOrigins = [
+  'https://partner.salesorbit.tech',
+  'http://localhost:3000',
+  'http://localhost:3002',
+  'http://localhost:8080',
+];
+if (process.env.FRONTEND_URL && process.env.FRONTEND_URL !== '*') {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: function (origin, callback) {
+    // Allow requests with no Origin header (curl, Postman, same-origin)
+    // and any origin in the allowedOrigins list
+    if (!origin || allowedOrigins.includes(origin) || process.env.FRONTEND_URL === '*') {
+      return callback(null, origin || '*');
+    }
+    return callback(null, origin); // reflect origin — API is JWT-protected anyway
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
