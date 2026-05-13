@@ -1,12 +1,18 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const smtpConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+
+const transporter = smtpConfigured
+  ? nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: String(process.env.SMTP_SECURE).toLowerCase() === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
+  : null;
 
 function generateOTP() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -45,6 +51,11 @@ async function sendOTP(toEmail, otp, purpose = 'login') {
       <p style="font-size:11px;color:#9AA0A6;margin:0;text-align:center">Sales Orbit · Channel Partners Platform</p>
     </div>
   </div>`;
+
+  if (!transporter) {
+    console.log(`[dev OTP] ${purpose} code for ${toEmail}: ${otp}`);
+    return;
+  }
 
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
