@@ -816,8 +816,8 @@ async function submitAccount() {
     registration_date:     document.getElementById('f-reg-date').value || null,
   };
 
-  if (!body.company_name || !body.contact_email) {
-    errEl.textContent = 'Company name and email are required.';
+  if (!body.company_name || !body.contact_name || !body.contact_email) {
+    errEl.textContent = 'Company name, director name and email are required.';
     errEl.style.display = 'block';
     return;
   }
