@@ -98,7 +98,7 @@ npm start
 Edit `frontend/assets/js/api.js`, line 2:
 
 ```js
-const API_BASE = window.API_BASE || 'http://localhost:3000/api';
+const API_BASE = window.API_BASE || 'http://localhost:3002/api';
 ```
 
 For production, change to your domain:
@@ -255,7 +255,7 @@ sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 
 | Variable | Description |
 |---|---|
-| `PORT` | API server port (default: 3000) |
+| `PORT` | API server port (default: 3002) |
 | `NODE_ENV` | `development` or `production` |
 | `DB_HOST` | PostgreSQL host |
 | `DB_PORT` | PostgreSQL port |

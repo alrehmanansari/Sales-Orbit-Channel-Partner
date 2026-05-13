@@ -86,7 +86,7 @@ async function markAllRead() {
   await loadNotifications();
 }
 
-function startPolling(intervalMs = 30000) {
+function startPolling(intervalMs = 30020) {
   fetchUnreadCount();
   _pollInterval = setInterval(fetchUnreadCount, intervalMs);
 }

@@ -257,7 +257,7 @@ async function doResend() {
   try {
     await API.resendOtp({ email: _pendingEmail, purpose: 'register' });
     link.textContent = 'Code sent!';
-    setTimeout(() => { link.textContent = 'Resend code'; }, 3000);
+    setTimeout(() => { link.textContent = 'Resend code'; }, 3002);
   } catch (err) {
     errEl.textContent = err.message || 'Could not resend.';
     errEl.classList.add('show');

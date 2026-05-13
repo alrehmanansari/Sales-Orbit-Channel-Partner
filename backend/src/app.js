@@ -7,7 +7,7 @@ const routes = require('./routes/index');
 const { testConnection } = require('./config/database');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
 // Security middleware
 app.use(helmet({
@@ -37,9 +37,16 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// 404 handler
+// Static frontend (served from the same origin as the API)
+const frontendDir = path.join(__dirname, '../../frontend');
+app.use(express.static(frontendDir));
+
+// 404 handler — only for unknown /api/* and other non-static paths
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Route not found' });
+  }
+  res.status(404).sendFile(path.join(frontendDir, 'index.html'));
 });
 
 // Global error handler

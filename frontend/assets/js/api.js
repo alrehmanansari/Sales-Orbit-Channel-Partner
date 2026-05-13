@@ -1,5 +1,5 @@
 // Sales Orbit – API client
-const API_BASE = window.API_BASE || 'http://localhost:3000/api';
+const API_BASE = window.API_BASE || 'http://localhost:3002/api';
 
 function getToken() {
   return localStorage.getItem('so_token');
