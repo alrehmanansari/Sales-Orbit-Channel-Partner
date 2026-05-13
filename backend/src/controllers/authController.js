@@ -64,7 +64,9 @@ async function register(req, res, next) {
     );
 
     const code = await _saveOTP(email, 'register');
-    await sendOTP(email, code, 'register');
+    sendOTP(email, code, 'register').catch(err =>
+      console.error('[email] register OTP send failed for', email, ':', err.message)
+    );
 
     res.status(201).json({ status: 'otp_required', email: email.toLowerCase() });
   } catch (err) {
@@ -102,7 +104,9 @@ async function login(req, res, next) {
     }
 
     const code = await _saveOTP(email, 'login');
-    await sendOTP(email, code, 'login');
+    sendOTP(email, code, 'login').catch(err =>
+      console.error('[email] login OTP send failed for', email, ':', err.message)
+    );
 
     res.json({ status: 'otp_required', email: email.toLowerCase() });
   } catch (err) {
