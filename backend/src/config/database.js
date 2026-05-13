@@ -13,17 +13,25 @@ const pool = new Pool({
 
 pool.on('error', (err) => {
   console.error('Unexpected database error', err);
-  process.exit(-1);
+  // Don't exit — PM2 will restart if needed; log and continue
 });
 
 async function testConnection() {
-  try {
-    const client = await pool.connect();
-    console.log('Database connected successfully');
-    client.release();
-  } catch (err) {
-    console.error('Database connection failed:', err.message);
-    process.exit(1);
+  const MAX_RETRIES = 5;
+  for (let i = 1; i <= MAX_RETRIES; i++) {
+    try {
+      const client = await pool.connect();
+      console.log('Database connected successfully');
+      client.release();
+      return;
+    } catch (err) {
+      console.error(`Database connection attempt ${i}/${MAX_RETRIES} failed:`, err.message);
+      if (i === MAX_RETRIES) {
+        console.error('Could not connect to database after', MAX_RETRIES, 'attempts. Exiting.');
+        process.exit(1);
+      }
+      await new Promise(r => setTimeout(r, 3000 * i));
+    }
   }
 }
 
