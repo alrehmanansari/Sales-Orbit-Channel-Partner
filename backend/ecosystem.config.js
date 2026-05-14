@@ -2,8 +2,9 @@ module.exports = {
   apps: [{
     name: 'sales-orbit-api',
     script: 'src/app.js',
-    instances: 'max',
-    exec_mode: 'cluster',
+    cwd: __dirname,
+    instances: 1,
+    exec_mode: 'fork',
     env: {
       NODE_ENV: 'development',
       PORT: 3002
@@ -18,6 +19,6 @@ module.exports = {
     time: true,
     watch: false,
     max_memory_restart: '1G',
-    restart_delay: 3002
+    restart_delay: 5000
   }]
 };
