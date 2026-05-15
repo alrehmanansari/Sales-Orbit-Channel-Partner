@@ -5,13 +5,11 @@ const fs = require('fs');
 
 // Helper – build role-based WHERE clause
 function accountAccessClause(user, alias = 'a') {
+  // Channel partners see only their own submitted accounts
   if (user.role === ROLES.CHANNEL_PARTNER) {
     return { where: `${alias}.partner_id = $1`, params: [user.id] };
   }
-  if (user.role === ROLES.CUSTOMER_ONBOARDING_SPECIALIST) {
-    return { where: `${alias}.owner_id = $1`, params: [user.id] };
-  }
-  // Management roles see all
+  // Every internal team member (COS, Manager, Head, etc.) sees all accounts
   return { where: '1=1', params: [] };
 }
 
