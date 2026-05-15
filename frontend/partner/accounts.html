@@ -22,10 +22,11 @@
 .info-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3)}
 .info-value{font-size:13px;color:var(--text);font-weight:500}
 .form-section{border-bottom:1px solid var(--border)}
-.form-section-head{display:flex;align-items:center;gap:8px;padding:13px 20px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text2)}
-.form-section-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.form-section-body{padding:0 20px 16px;display:flex;flex-direction:column;gap:12px}
+.form-section-head{display:flex;align-items:center;gap:7px;padding:9px 16px 7px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text2)}
+.form-section-icon{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.form-section-body{padding:0 16px 12px;display:flex;flex-direction:column;gap:8px}
 .req{color:#D93025;font-size:12px}
+.form-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .date-chip{padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-family:var(--font);font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
 .date-chip:hover{border-color:var(--g-purple);color:var(--g-purple)}
 .date-chip.active{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent;color:#fff}
@@ -60,13 +61,33 @@
     <div id="topbar-placeholder"></div>
     <div class="page-body">
 
-      <!-- Toolbar Row 1: Search + Filters + Actions -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <!-- Period chips — top right, minimal -->
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--text3);margin-right:2px">Period:</span>
+        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
+        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
+        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
+        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
+        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Qtr</button>
+        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Qtr</button>
+        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Qtr</button>
+        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">YTD</button>
+        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+          <span style="color:var(--text3);font-size:11px">–</span>
+          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+        </span>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px;border-radius:6px">✕</button>
+      </div>
+
+      <!-- Toolbar: Search + Filters + Actions -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div class="search-box" style="min-width:220px">
           <svg style="width:15px;height:15px;color:var(--text3)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           <input id="search-input" placeholder="Search by company, director, email, client ID…" oninput="debounceSearch()"/>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
           <select id="filter-status" class="filter-select" onchange="loadAccounts()">
             <option value="">All Stages</option>
             <option value="registered">Registered</option>
@@ -107,44 +128,32 @@
             <option value="new">New</option>
             <option value="established">Established</option>
           </select>
-          <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()" title="Download bulk upload template">
-            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Template
-          </button>
           <button class="btn btn-ghost btn-sm" onclick="triggerExport()">
-            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h6M3 15h6"/></svg>
-            Export XLS
+            <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
           </button>
-          <label class="btn btn-ghost btn-sm" style="cursor:pointer">
-            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Bulk Upload
-            <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="doBulkUpload(this)"/>
-          </label>
+          <!-- Bulk Upload + Template split button -->
+          <div style="position:relative;display:inline-flex">
+            <label class="btn btn-ghost btn-sm" for="bulk-file" style="cursor:pointer;border-radius:8px 0 0 8px;border-right:none;margin:0">
+              <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Bulk Upload
+              <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="doBulkUpload(this)"/>
+            </label>
+            <button class="btn btn-ghost btn-sm" onclick="toggleUploadMenu(event)" style="border-radius:0 8px 8px 0;padding:0 7px;border-left:1px solid var(--border2);margin:0">
+              <svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div id="upload-menu" style="display:none;position:absolute;top:calc(100%+4px);right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px -4px rgba(0,0,0,.15);min-width:160px;z-index:300;overflow:hidden;margin-top:4px">
+              <button onclick="downloadTemplate();document.getElementById('upload-menu').style.display='none'" style="width:100%;text-align:left;padding:9px 14px;border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='transparent'">
+                <svg style="width:13px;height:13px;color:var(--g-blue)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Template
+              </button>
+            </div>
+          </div>
           <button class="btn btn-grad btn-sm" onclick="openAddModal()">
-            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
             Add Account
           </button>
         </div>
-      </div>
-
-      <!-- Toolbar Row 2: Date Filter Chips -->
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">
-        <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-right:4px;white-space:nowrap">Period</span>
-        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
-        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
-        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
-        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
-        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Quarter</button>
-        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Quarter</button>
-        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Quarter</button>
-        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">Year to Date</button>
-        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
-        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
-          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
-          <span style="color:var(--text3);font-size:11px">to</span>
-          <input type="date" id="custom-end"   class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
-        </span>
-        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);padding:3px 6px;border-radius:6px;margin-left:auto" title="Clear date filter">✕ Clear</button>
       </div>
 
       <!-- Table -->
@@ -252,149 +261,131 @@
     <div class="modal-body" style="max-height:76vh;overflow-y:auto;padding:0">
       <div id="modal-err" style="background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin:16px 20px -4px;display:none"></div>
 
-      <!-- ── SECTION 1: Company Information ───────────────────────────── -->
+      <!-- ── §1 Company ─────────────────────────────────────────────────── -->
       <div class="form-section">
         <div class="form-section-head">
-          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(71,150,227,.15),rgba(71,150,227,.05));color:var(--g-blue)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-          </div>
+          <div class="form-section-icon" style="background:rgba(71,150,227,.1);color:var(--g-blue)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
           <span>Company Information</span>
         </div>
         <div class="form-section-body">
-          <div class="form-row">
-            <div class="form-group">
+          <div class="form-3col">
+            <div class="form-group" style="grid-column:1/3">
               <label class="form-label">Company Name <span class="req">*</span></label>
               <input class="form-input" id="f-company" placeholder="Registered company name"/>
             </div>
             <div class="form-group">
-              <label class="form-label">Client ID <span style="font-weight:400;color:var(--text3)">(optional)</span></label>
-              <input class="form-input" id="f-client-id" placeholder="Auto-assigned if blank"/>
+              <label class="form-label">Client ID <span class="req">*</span></label>
+              <input class="form-input" id="f-client-id" placeholder="e.g. CL-001"/>
             </div>
           </div>
-          <div class="form-row">
+          <div class="form-3col">
             <div class="form-group">
               <label class="form-label">Registration Country</label>
               <select class="form-input" id="f-country" onchange="toggleCountryOther()">
                 <option value="">Select country</option>
-                <option value="United Arab Emirates">🇦🇪 United Arab Emirates</option>
+                <option value="United Arab Emirates">🇦🇪 UAE</option>
                 <option value="United States">🇺🇸 United States</option>
                 <option value="United Kingdom">🇬🇧 United Kingdom</option>
                 <option value="Singapore">🇸🇬 Singapore</option>
                 <option value="Hong Kong">🇭🇰 Hong Kong</option>
                 <option value="Pakistan">🇵🇰 Pakistan</option>
-                <option value="__other__">🌍 Other (type manually)</option>
+                <option value="__other__">🌍 Other</option>
               </select>
-              <input class="form-input" id="f-country-other" placeholder="Type country name…" style="margin-top:6px;display:none"/>
+              <input class="form-input" id="f-country-other" placeholder="Type country…" style="margin-top:5px;display:none"/>
             </div>
             <div class="form-group">
-              <label class="form-label">Website / Store Link</label>
-              <input class="form-input" id="f-website" placeholder="https://yourcompany.com"/>
+              <label class="form-label">Website / Store</label>
+              <input class="form-input" id="f-website" placeholder="https://example.com"/>
             </div>
-          </div>
-          <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Account Registration Date</label>
+              <label class="form-label">Reg Date</label>
               <input class="form-input" type="date" id="f-reg-date"/>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Expected Monthly Volume ($)</label>
-              <input class="form-input" type="number" id="f-monthly-volume" placeholder="e.g. 50,000" min="0" step="1"/>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- ── SECTION 2: Business Profile ─────────────────────────────── -->
+      <!-- ── §2 Business ──────────────────────────────────────────────── -->
       <div class="form-section">
         <div class="form-section-head">
-          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(145,119,199,.15),rgba(145,119,199,.05));color:var(--g-purple)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>
-          </div>
+          <div class="form-section-icon" style="background:rgba(145,119,199,.1);color:var(--g-purple)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="7" rx="1"/><rect x="3" y="14" width="18" height="7" rx="1"/></svg></div>
           <span>Business Profile</span>
         </div>
         <div class="form-section-body">
-          <div class="form-row">
+          <div class="form-3col">
             <div class="form-group">
-              <label class="form-label">Business Type</label>
+              <label class="form-label">Biz Type</label>
               <select class="form-input" id="f-biz">
-                <option value="">Select type</option>
-                <option value="new">🌱 New Business</option>
-                <option value="established">🏆 Established Business</option>
+                <option value="">Select</option>
+                <option value="new">🌱 New</option>
+                <option value="established">🏆 Established</option>
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Vertical / Industry</label>
+              <label class="form-label">Vertical</label>
               <select class="form-input" id="f-vertical">
-                <option value="">Select vertical</option>
+                <option value="">Select</option>
                 <option value="it_services_provider">💻 IT Services</option>
-                <option value="ecomm_seller">🛒 E-commerce Seller</option>
-                <option value="b2b_seller">🤝 B2B Seller</option>
+                <option value="ecomm_seller">🛒 E-commerce</option>
+                <option value="b2b_seller">🤝 B2B</option>
                 <option value="freelancer">👤 Freelancer</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Monthly Volume ($)</label>
+              <input class="form-input" type="number" id="f-monthly-volume" placeholder="e.g. 50000" min="0"/>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Nature of Business</label>
             <select class="form-input" id="f-nob">
               <option value="">Select nature of business</option>
-              <option value="Ai Solutions">Ai Solutions</option>
-              <option value="App Development">App Development</option>
-              <option value="B2B Goods">B2B Goods</option>
-              <option value="BPO">BPO</option>
-              <option value="Digital Accountancy">Digital Accountancy</option>
-              <option value="Digital Marketing Agency">Digital Marketing Agency</option>
-              <option value="E-comm Marketplaces">E-comm Marketplaces</option>
-              <option value="Game Development">Game Development</option>
-              <option value="HR Management">HR Management</option>
-              <option value="IT Services">IT Services</option>
-              <option value="Logistics">Logistics</option>
-              <option value="Medical Billing">Medical Billing</option>
-              <option value="PayPal">PayPal</option>
-              <option value="Shopify">Shopify</option>
-              <option value="Software Development">Software Development</option>
-              <option value="Stripe">Stripe</option>
-              <option value="Web Development">Web Development</option>
+              <option>Ai Solutions</option><option>App Development</option><option>B2B Goods</option>
+              <option>BPO</option><option>Digital Accountancy</option><option>Digital Marketing Agency</option>
+              <option>E-comm Marketplaces</option><option>Game Development</option><option>HR Management</option>
+              <option>IT Services</option><option>Logistics</option><option>Medical Billing</option>
+              <option>PayPal</option><option>Shopify</option><option>Software Development</option>
+              <option>Stripe</option><option>Web Development</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- ── SECTION 3: Director / Contact ───────────────────────────── -->
+      <!-- ── §3 Director / Contact ────────────────────────────────────── -->
       <div class="form-section">
         <div class="form-section-head">
-          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(52,168,83,.15),rgba(52,168,83,.05));color:var(--g-green)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-          </div>
+          <div class="form-section-icon" style="background:rgba(52,168,83,.1);color:var(--g-green)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
           <span>Director / Contact</span>
         </div>
         <div class="form-section-body">
-          <div class="form-row">
+          <div class="form-3col">
             <div class="form-group">
               <label class="form-label">Director Name <span class="req">*</span></label>
               <input class="form-input" id="f-contact-name" placeholder="Full legal name"/>
             </div>
             <div class="form-group">
-              <label class="form-label">Email Address <span class="req">*</span></label>
+              <label class="form-label">Email <span class="req">*</span></label>
               <input class="form-input" type="email" id="f-contact-email" placeholder="director@company.com"/>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">WhatsApp / Phone</label>
-            <input class="form-input" id="f-phone" placeholder="+971 50 000 0000 — active WhatsApp number"/>
+            <div class="form-group">
+              <label class="form-label">WhatsApp / Phone</label>
+              <div style="position:relative">
+                <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text2);font-weight:600;pointer-events:none;z-index:1">+92</span>
+                <input class="form-input" id="f-phone" placeholder="300 000 0000" style="padding-left:40px"/>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- ── SECTION 4: Account Settings ─────────────────────────────── -->
+      <!-- ── §4 Account Settings ──────────────────────────────────────── -->
       <div class="form-section" style="border-bottom:none">
         <div class="form-section-head">
-          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(202,102,115,.15),rgba(202,102,115,.05));color:var(--g-pink)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-          </div>
+          <div class="form-section-icon" style="background:rgba(202,102,115,.1);color:var(--g-pink)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></div>
           <span>Account Settings</span>
         </div>
         <div class="form-section-body">
-          <div class="form-row">
+          <div class="form-3col">
             <div class="form-group">
               <label class="form-label">Channel Partner</label>
               <input class="form-input" id="f-partner-display" disabled style="opacity:.6;cursor:default;background:var(--bg3)"/>
@@ -406,12 +397,10 @@
                 <option value="Anum Farooq">Anum Farooq</option>
                 <option value="Muhammad Shoaib">Muhammad Shoaib</option>
                 <option value="Khushbu Fatima">Khushbu Fatima</option>
-                <option value="__other__">Other (Add manually)</option>
+                <option value="__other__">Other</option>
               </select>
-              <input class="form-input" id="f-os-other" placeholder="Enter specialist name…" style="margin-top:6px;display:none"/>
+              <input class="form-input" id="f-os-other" placeholder="Enter name…" style="margin-top:5px;display:none"/>
             </div>
-          </div>
-          <div class="form-row">
             <div class="form-group">
               <label class="form-label">Account Stage</label>
               <select class="form-input" id="f-status">
@@ -421,6 +410,8 @@
                 <option value="activated">⚡ Activated</option>
               </select>
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label class="form-label">VA Status</label>
               <select class="form-input" id="f-va-status">
@@ -431,15 +422,15 @@
                 <option value="activated">Activated</option>
               </select>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Card Status</label>
-            <select class="form-input" id="f-card-status">
-              <option value="">— Not set</option>
-              <option value="required">Required</option>
-              <option value="applied">Applied</option>
-              <option value="issued">Issued</option>
-            </select>
+            <div class="form-group">
+              <label class="form-label">Card Status</label>
+              <select class="form-input" id="f-card-status">
+                <option value="">— Not set</option>
+                <option value="required">Required</option>
+                <option value="applied">Applied</option>
+                <option value="issued">Issued</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -801,6 +792,16 @@ function renderPagination(total, limit) {
 
 function changePage(p) { currentPage = p; loadAccounts(); }
 
+function toggleUploadMenu(e) {
+  e.stopPropagation();
+  const m = document.getElementById('upload-menu');
+  m.style.display = m.style.display === 'none' ? '' : 'none';
+}
+document.addEventListener('click', () => {
+  const m = document.getElementById('upload-menu');
+  if (m) m.style.display = 'none';
+});
+
 // ── JOURNEY TIMELINE ──
 function buildJourney(a) {
   const order   = ['registered','in_review','onboarded','activated'];
@@ -838,7 +839,7 @@ function buildJourney(a) {
         ${s.date ? `<div style="font-size:8.5px;color:var(--text3);text-align:center;margin-top:1px">${Auth.formatDate(s.date)}</div>` : ''}
       </div>`;
   }).join('');
-  return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 12px;margin-bottom:16px">
+  return `<div style="grid-column:1/-1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 12px;margin-bottom:4px">
     <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:12px">Account Journey</div>
     <div style="display:flex;align-items:flex-start">${items}</div>
   </div>`;
@@ -996,27 +997,86 @@ async function loadTickets() {
   } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px">Could not load tickets.</div>'; }
 }
 
+const AUDIT_FIELD_LABELS = {
+  status:'Account Stage', company_name:'Company Name', contact_name:'Director Name',
+  contact_email:'Email', contact_phone:'Phone', country:'Country',
+  business_type:'Business Type', vertical:'Vertical',
+  nature_of_business:'Nature of Business', onboarding_specialist:'Specialist',
+  va_status:'VA Status', card_status:'Card Status', monthly_volume:'Monthly Volume',
+  website:'Website', account_number:'Client ID', registration_date:'Reg Date',
+  remarks:'Remarks', kyc_agent:'KYC Agent', owner_id:'Assigned COS',
+  rejection_reason:'Rejection Reason'
+};
+
+function auditChangeSummary(action, oldV, newV) {
+  try {
+    const old = oldV ? (typeof oldV === 'string' ? JSON.parse(oldV) : oldV) : {};
+    const nw  = newV ? (typeof newV === 'string' ? JSON.parse(newV) : newV) : {};
+    if (action === 'note_added') {
+      const content = nw.content || '';
+      return `<div style="margin-top:5px;padding:6px 10px;background:var(--bg3);border-radius:7px;font-size:11px;color:var(--text2);font-style:italic">"${esc(content.substring(0,120))}${content.length>120?'…':''}"</div>`;
+    }
+    if (action === 'account_updated' || action === 'account_created') {
+      const changes = [];
+      for (const [key, label] of Object.entries(AUDIT_FIELD_LABELS)) {
+        const ov = old[key], nwv = nw[key];
+        if (action === 'account_updated' && String(ov||'') !== String(nwv||'') && (ov!==undefined||nwv!==undefined)) {
+          changes.push(`<div style="display:flex;gap:6px;align-items:baseline;font-size:11px;padding:2px 0">
+            <span style="font-weight:600;color:var(--text2);min-width:100px">${label}</span>
+            <span style="color:var(--text3);text-decoration:line-through">${esc(String(ov||'—'))}</span>
+            <span style="color:var(--text3)">→</span>
+            <span style="color:var(--text);font-weight:500">${esc(String(nwv||'—'))}</span>
+          </div>`);
+        }
+      }
+      if (!changes.length) return '';
+      return `<div style="margin-top:6px;padding:8px 10px;background:var(--bg3);border-radius:8px;display:flex;flex-direction:column;gap:2px">${changes.join('')}</div>`;
+    }
+  } catch { return ''; }
+  return '';
+}
+
 async function loadAuditLog() {
   const list = document.getElementById('audit-list');
-  list.innerHTML = '<div style="color:var(--text3);font-size:12px">Loading…</div>';
+  list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Loading…</div>';
   try {
     const data = await API.getAuditLog(currentAccountId);
     const logs = data.data || [];
-    if (!logs.length) { list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">No audit history yet.</div>'; return; }
-    list.innerHTML = `<div class="audit-item" style="flex-direction:column;gap:0;padding:0;border:none">${logs.map(l => `
-      <div class="audit-item">
-        <div class="audit-dot"></div>
-        <div class="audit-body">
-          <div class="audit-action">${actionLabel(l.action)}</div>
-          <div class="audit-meta">${esc(l.user_name || 'System')} · ${Auth.timeAgo(l.created_at)}</div>
-        </div>
-      </div>`).join('')}</div>`;
-  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px">Could not load history.</div>'; }
-}
-
-function actionLabel(a) {
-  const map = { account_created: 'Account created', account_updated: 'Account updated', note_added: 'Note added' };
-  return map[a] || a;
+    if (!logs.length) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:24px">No activity history yet.</div>';
+      return;
+    }
+    const actionLabelMap = {
+      account_created: '🟢 Account Created',
+      account_updated: '✏️ Account Updated',
+      note_added:      '💬 Note Added'
+    };
+    list.innerHTML = logs.map((l, i) => {
+      const summary = auditChangeSummary(l.action, l.old_values, l.new_values);
+      const dt = new Date(l.created_at);
+      const dateStr = dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+      const timeStr = dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+      return `
+        <div style="display:flex;gap:10px;padding:12px 0;border-bottom:${i<logs.length-1?'1px solid var(--border)':'none'}">
+          <div style="display:flex;flex-direction:column;align-items:center;padding-top:2px">
+            <div style="width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--g-blue),var(--g-purple));flex-shrink:0"></div>
+            ${i<logs.length-1?'<div style="width:1px;flex:1;background:var(--border);margin-top:4px"></div>':''}
+          </div>
+          <div style="flex:1;min-width:0;padding-bottom:${i<logs.length-1?'4px':'0'}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <span style="font-size:12px;font-weight:600;color:var(--text)">${actionLabelMap[l.action]||l.action}</span>
+              <span style="font-size:10px;color:var(--text3);white-space:nowrap">${dateStr} · ${timeStr}</span>
+            </div>
+            <div style="font-size:11px;color:var(--text2);margin-top:3px">
+              <strong>${esc(l.user_name||'System')}</strong>
+              ${l.user_role ? `<span style="color:var(--text3)"> · ${Auth.roleLabel(l.user_role)}</span>` : ''}
+              <span style="color:var(--text3)"> · ${Auth.timeAgo(l.created_at)}</span>
+            </div>
+            ${summary}
+          </div>
+        </div>`;
+    }).join('');
+  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px;text-align:center">Could not load history.</div>'; }
 }
 
 // ── ADD / EDIT MODAL ──

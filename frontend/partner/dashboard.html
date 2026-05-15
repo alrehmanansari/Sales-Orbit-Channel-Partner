@@ -62,8 +62,28 @@
         </div>
       </div>
 
+      <!-- Period chips — top right, minimal -->
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--text3);margin-right:2px">Period:</span>
+        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
+        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
+        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
+        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
+        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Qtr</button>
+        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Qtr</button>
+        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Qtr</button>
+        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">YTD</button>
+        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+          <span style="color:var(--text3);font-size:11px">–</span>
+          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+        </span>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px;border-radius:6px">✕</button>
+      </div>
+
       <!-- Filters -->
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <select id="dash-stage" class="filter-select" onchange="loadDashboard()">
           <option value="">All Stages</option>
           <option value="registered">Registered</option>
@@ -104,26 +124,6 @@
           <option value="new">New</option>
           <option value="established">Established</option>
         </select>
-      </div>
-
-      <!-- Date Filter Row -->
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:20px;flex-wrap:wrap;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">
-        <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-right:4px">Period</span>
-        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
-        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
-        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
-        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
-        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Quarter</button>
-        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Quarter</button>
-        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Quarter</button>
-        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">Year to Date</button>
-        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
-        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
-          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
-          <span style="color:var(--text3);font-size:11px">to</span>
-          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
-        </span>
-        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);padding:3px 6px;border-radius:6px;margin-left:auto">✕ Clear</button>
       </div>
 
       <!-- Stats (no Open Tickets box) -->
