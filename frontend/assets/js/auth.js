@@ -50,7 +50,7 @@ function requirePartnerAuth() {
 function requireInternalAuth() {
   const user = requireAuth();
   if (!user) return null;
-  if (!INTERNAL_ROLES.includes(user.role)) {
+  if (user.role === PARTNER_ROLE) {
     window.location.href = '/partner/dashboard.html';
     return null;
   }
@@ -58,7 +58,7 @@ function requireInternalAuth() {
 }
 
 function isInternal(user) {
-  return INTERNAL_ROLES.includes(user?.role);
+  return !!user?.role && user.role !== PARTNER_ROLE;
 }
 
 function isManagement(user) {

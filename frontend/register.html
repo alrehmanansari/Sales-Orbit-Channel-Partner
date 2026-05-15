@@ -86,12 +86,19 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
           <select id="designation" onchange="toggleCPName()">
             <option value="">Select designation</option>
-            <option>Business Development Manager</option>
-            <option>Sales Development Representative</option>
-            <option>Country Head</option>
-            <option>Senior Business Development Manager</option>
-            <option>Manager Partnerships</option>
-            <option value="Channel Partner">Channel Partner</option>
+            <optgroup label="─ Internal Team ─">
+              <option>Business Development Manager</option>
+              <option>Sales Development Representative</option>
+              <option>Senior Business Development Manager</option>
+              <option>Manager Partnerships</option>
+              <option>Customer Onboarding Specialist</option>
+              <option>Head of Sales</option>
+              <option>Head of MENA</option>
+              <option>Country Head</option>
+            </optgroup>
+            <optgroup label="─ Channel Partner ─">
+              <option value="Channel Partner">Channel Partner</option>
+            </optgroup>
           </select>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none"><path d="m6 9 6 6 6-6"/></svg>
         </label>
@@ -126,7 +133,7 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center}
         I agree to the <a href="#">Terms of Service</a> &amp; <a href="#">Privacy Policy</a>
       </div>
 
-      <button class="auth-cta" id="reg-btn" onclick="doRegister()">Create Partner Account</button>
+      <button class="auth-cta" id="reg-btn" onclick="doRegister()">Create Account</button>
 
       <!-- OTP step (shown after successful registration) -->
       <div id="step-otp" style="display:none;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
@@ -160,14 +167,17 @@ body{min-height:100vh;display:flex;align-items:center;justify-content:center}
 <script src="assets/js/api.js?v=3"></script>
 <script>
 const _u = Auth.getUser();
-if (_u) window.location.href = '/partner/dashboard.html';
+if (_u) window.location.href = Auth.isInternal(_u) ? '/internal/dashboard.html' : '/partner/dashboard.html';
 
 let _pendingEmail = '';
 
 function toggleCPName() {
   const sel = document.getElementById('designation');
-  document.getElementById('cp-name-field').style.display =
-    sel.value === 'Channel Partner' ? '' : 'none';
+  const isPartner = sel.value === 'Channel Partner';
+  document.getElementById('cp-name-field').style.display = isPartner ? '' : 'none';
+  document.getElementById('reg-btn').textContent = isPartner
+    ? 'Create Partner Account'
+    : (sel.value ? 'Create Internal Account' : 'Create Account');
 }
 
 async function doRegister() {
@@ -241,7 +251,7 @@ async function doVerifyOTP() {
   try {
     const result = await API.verifyOtp({ email: _pendingEmail, code, purpose: 'register' });
     Auth.setSession(result.token, result.user);
-    window.location.href = '/partner/dashboard.html';
+    window.location.href = Auth.isInternal(result.user) ? '/internal/dashboard.html' : '/partner/dashboard.html';
   } catch (err) {
     errEl.textContent = err.message || 'Invalid code. Please try again.';
     errEl.classList.add('show');

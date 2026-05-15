@@ -57,10 +57,25 @@ async function register(req, res, next) {
     }
 
     const hash = await bcrypt.hash(password, 10);
+
+    // Map designation to the correct role — everything except Channel Partner is internal
+    const DESIGNATION_ROLE_MAP = {
+      'Channel Partner':                     ROLES.CHANNEL_PARTNER,
+      'Customer Onboarding Specialist':      ROLES.CUSTOMER_ONBOARDING_SPECIALIST,
+      'Senior Business Development Manager': ROLES.SENIOR_BDM,
+      'Manager Partnerships':                ROLES.MANAGER_PARTNERSHIPS,
+      'Head of Sales':                       ROLES.HEAD_OF_SALES,
+      'Head of MENA':                        ROLES.HEAD_OF_MENA,
+      'Business Development Manager':        ROLES.SENIOR_BDM,
+      'Sales Development Representative':    ROLES.SENIOR_BDM,
+      'Country Head':                        ROLES.HEAD_OF_SALES,
+    };
+    const assignedRole = DESIGNATION_ROLE_MAP[designation] || ROLES.SENIOR_BDM;
+
     await query(
       `INSERT INTO users (name, email, password_hash, role, designation, company_name, phone)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [name, email.toLowerCase(), hash, ROLES.CHANNEL_PARTNER, designation || null, company_name || null, phone || null]
+      [name, email.toLowerCase(), hash, assignedRole, designation || null, company_name || null, phone || null]
     );
 
     const code = await _saveOTP(email, 'register');
