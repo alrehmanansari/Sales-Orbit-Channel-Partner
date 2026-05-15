@@ -9,7 +9,11 @@ function accountAccessClause(user, alias = 'a') {
   if (user.role === ROLES.CHANNEL_PARTNER) {
     return { where: `${alias}.partner_id = $1`, params: [user.id] };
   }
-  // Every internal team member (COS, Manager, Head, etc.) sees all accounts
+  // COS: see only accounts assigned to them (owner_id = their.id)
+  if (user.role === ROLES.CUSTOMER_ONBOARDING_SPECIALIST) {
+    return { where: `${alias}.owner_id = $1`, params: [user.id] };
+  }
+  // All other internal roles (Manager, Head, etc.) see all accounts
   return { where: '1=1', params: [] };
 }
 
@@ -110,7 +114,7 @@ async function listAccounts(req, res, next) {
               a.contact_name, a.contact_email, a.contact_phone, a.country, a.city,
               a.website, a.nature_of_business, a.onboarding_specialist,
               a.va_status, a.card_status, a.monthly_volume,
-              a.status, a.registration_date, a.onboarded_at, a.activated_at,
+              a.status, a.registration_date, a.in_review_at, a.onboarded_at, a.activated_at, a.rejected_at,
               a.account_number, a.updated_at,
               p.name AS partner_name, p.company_name AS partner_company,
               o.name AS owner_name,
@@ -277,19 +281,18 @@ async function updateAccount(req, res, next) {
     const old = current.rows[0];
     await client.query('BEGIN');
 
-    // Fields partners can edit
+    const isPartner = req.user.role === ROLES.CHANNEL_PARTNER;
+
+    // Partners can edit account info but NOT the stage (status)
     const partnerFields = ['company_name','trading_name','business_type','vertical',
                            'contact_name','contact_email','contact_phone','country','city',
                            'website','nature_of_business','onboarding_specialist',
                            'va_status','card_status','registration_date','remarks',
-                           'account_number','status','monthly_volume'];
+                           'account_number','monthly_volume'];
 
-    // Fields only internal staff can edit
-    const internalFields = ['kyc_agent','owner_id','rejection_reason'];
+    // Internal staff can also edit status, internal-only fields
+    const internalFields = ['status','kyc_agent','owner_id','rejection_reason'];
 
-    // Channel partners get the partner field list; every other role (COS, BDM,
-    // Manager, Head, etc.) gets full field access including internal-only fields.
-    const isPartner   = req.user.role === ROLES.CHANNEL_PARTNER;
     const allowedFields = isPartner ? partnerFields : [...partnerFields, ...internalFields];
 
     const updates = {};
@@ -303,12 +306,14 @@ async function updateAccount(req, res, next) {
       return res.status(400).json({ error: 'No valid fields to update' });
     }
 
-    // Set timestamps for status transitions
-    if (updates.status === ACCOUNT_STATUS.ONBOARDED && old.status !== ACCOUNT_STATUS.ONBOARDED) {
-      updates.onboarded_at = new Date();
-    }
-    if (updates.status === ACCOUNT_STATUS.ACTIVATED && old.status !== ACCOUNT_STATUS.ACTIVATED) {
-      updates.activated_at = new Date();
+    // Use stage_date (from Move Stage date picker) or NOW() for stage timestamps
+    const stageDate = req.body.stage_date ? new Date(req.body.stage_date) : new Date();
+
+    if (updates.status && updates.status !== old.status) {
+      if (updates.status === 'in_review')  updates.in_review_at  = stageDate;
+      if (updates.status === ACCOUNT_STATUS.ONBOARDED) updates.onboarded_at = stageDate;
+      if (updates.status === ACCOUNT_STATUS.ACTIVATED) updates.activated_at = stageDate;
+      if (updates.status === 'rejected')   updates.rejected_at   = stageDate;
     }
 
     const setClauses = Object.keys(updates).map((k, i) => `${k} = $${i + 2}`).join(', ');

@@ -49,25 +49,26 @@
   <div class="main-content">
     <div id="topbar-placeholder"></div>
     <div class="page-body">
-
-      <!-- Period chips — top right, minimal -->
-      <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:8px;flex-wrap:wrap">
-        <span style="font-size:10px;color:var(--text3);margin-right:2px">Period:</span>
-        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
-        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
-        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
-        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
-        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Qtr</button>
-        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Qtr</button>
-        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Qtr</button>
-        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">YTD</button>
-        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+      <!-- Period filter — compact select matching other filters -->
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <select class="filter-select" id="period-filter" onchange="handlePeriodSelect(this.value)" style="min-width:150px">
+          <option value="">All Time</option>
+          <option value="current_week">This Week</option>
+          <option value="last_week">Last Week</option>
+          <option value="current_month">This Month</option>
+          <option value="last_month">Last Month</option>
+          <option value="current_quarter">This Quarter</option>
+          <option value="prev_quarter">Prev Quarter</option>
+          <option value="next_quarter">Next Quarter</option>
+          <option value="ytd">Year to Date</option>
+          <option value="custom">Custom Range…</option>
+        </select>
         <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
           <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
           <span style="color:var(--text3);font-size:11px">–</span>
           <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
         </span>
-        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px;border-radius:6px">✕</button>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px">✕ Clear</button>
       </div>
 
       <!-- Toolbar -->
@@ -392,6 +393,11 @@
     </div>
     <div class="modal-body">
       <div id="stage-err" style="background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none"></div>
+      <div style="margin-bottom:14px;padding:12px;background:var(--bg2);border-radius:10px;border:1px solid var(--border)">
+        <label style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);display:block;margin-bottom:6px">Stage Date</label>
+        <input type="date" id="stage-date-input" class="form-input" style="width:100%"/>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">Date when this stage change occurred. Defaults to today.</div>
+      </div>
       <div id="stage-options" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div class="modal-footer">
@@ -438,20 +444,17 @@ function getDateRange(key) {
     default: return [null, null];
   }
 }
-function setDateFilter(key) {
-  if (key === 'custom') {
-    document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
-    document.getElementById('dc-cu').classList.add('active');
+function handlePeriodSelect(val) {
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  document.getElementById('dc-clear').style.display = 'none';
+  if (!val) { clearDateFilter(); return; }
+  if (val === 'custom') {
     document.getElementById('custom-date-wrap').style.display = 'flex';
     document.getElementById('dc-clear').style.display = 'inline-block';
     return;
   }
-  document.getElementById('custom-date-wrap').style.display = 'none';
-  const [start, end] = getDateRange(key);
-  activeDateFilter = { key, start, end };
-  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
-  const idMap = { current_week:'cw', last_week:'lw', current_month:'cm', last_month:'lm', current_quarter:'cq', prev_quarter:'pq', next_quarter:'nq', ytd:'ytd' };
-  document.getElementById('dc-' + idMap[key]).classList.add('active');
+  const [start, end] = getDateRange(val);
+  activeDateFilter = { key: val, start, end };
   document.getElementById('dc-clear').style.display = 'inline-block';
   currentPage = 1; loadAccounts();
 }
@@ -461,7 +464,8 @@ function applyCustomDate() {
 }
 function clearDateFilter() {
   activeDateFilter = { key:null, start:null, end:null };
-  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  const pf = document.getElementById('period-filter');
+  if (pf) pf.value = '';
   document.getElementById('custom-date-wrap').style.display = 'none';
   document.getElementById('dc-clear').style.display = 'none';
   document.getElementById('custom-start').value = '';
@@ -624,7 +628,7 @@ function buildJourney(a) {
   const curIdx   = rejected ? 1 : order.indexOf(a.status);
   const stages   = [
     { key:'registered', label:'Registered', date: a.registration_date },
-    { key:'in_review',  label: rejected ? 'Rejected' : 'In Review', date: null },
+    { key:'in_review',  label: rejected ? 'Rejected' : 'In Review', date: rejected ? a.rejected_at : a.in_review_at },
     { key:'onboarded',  label:'Onboarded',  date: a.onboarded_at },
     { key:'activated',  label:'Activated',  date: a.activated_at },
   ];
@@ -936,6 +940,8 @@ function openStageModal(accountId, currentStatus, companyName) {
   currentAccountId = accountId;
   document.getElementById('stage-modal-sub').textContent = `${companyName} — current: ${STAGES.find(s=>s.value===currentStatus)?.label||currentStatus}`;
   document.getElementById('stage-err').style.display = 'none';
+  // Default date = today
+  document.getElementById('stage-date-input').value = new Date().toISOString().split('T')[0];
   document.getElementById('stage-options').innerHTML = STAGES.map(s => {
     const isCurrent = s.value === currentStatus;
     return `<button onclick="moveStage('${accountId}','${s.value}')" style="
@@ -957,10 +963,11 @@ function openStageModal(accountId, currentStatus, companyName) {
 function closeStageModal() { document.getElementById('stage-modal').classList.add('hidden'); }
 
 async function moveStage(accountId, newStatus) {
-  const errEl = document.getElementById('stage-err');
+  const errEl     = document.getElementById('stage-err');
+  const stageDate = document.getElementById('stage-date-input').value;
   errEl.style.display = 'none';
   try {
-    await API.updateAccount(accountId, { status: newStatus });
+    await API.updateAccount(accountId, { status: newStatus, stage_date: stageDate });
     closeStageModal();
     Auth.showToast(`Stage moved to ${STAGES.find(s=>s.value===newStatus)?.label}.`, 'success');
     openPanel(accountId);

@@ -49,25 +49,26 @@
   <div class="main-content">
     <div id="topbar-placeholder"></div>
     <div class="page-body">
-
-      <!-- Period chips — top right, minimal -->
-      <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:8px;flex-wrap:wrap">
-        <span style="font-size:10px;color:var(--text3);margin-right:2px">Period:</span>
-        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
-        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
-        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
-        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
-        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Qtr</button>
-        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Qtr</button>
-        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Qtr</button>
-        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">YTD</button>
-        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+      <!-- Period filter — compact select matching other filters -->
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <select class="filter-select" id="period-filter" onchange="handlePeriodSelect(this.value)" style="min-width:150px">
+          <option value="">All Time</option>
+          <option value="current_week">This Week</option>
+          <option value="last_week">Last Week</option>
+          <option value="current_month">This Month</option>
+          <option value="last_month">Last Month</option>
+          <option value="current_quarter">This Quarter</option>
+          <option value="prev_quarter">Prev Quarter</option>
+          <option value="next_quarter">Next Quarter</option>
+          <option value="ytd">Year to Date</option>
+          <option value="custom">Custom Range…</option>
+        </select>
         <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
           <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
           <span style="color:var(--text3);font-size:11px">–</span>
           <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
         </span>
-        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px;border-radius:6px">✕</button>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px">✕ Clear</button>
       </div>
 
       <!-- Filters -->
@@ -183,20 +184,17 @@ function getDateRange(key) {
     default: return [null,null];
   }
 }
-function setDateFilter(key) {
-  if (key === 'custom') {
-    document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
-    document.getElementById('dc-cu').classList.add('active');
+function handlePeriodSelect(val) {
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  document.getElementById('dc-clear').style.display = 'none';
+  if (!val) { clearDateFilter(); return; }
+  if (val === 'custom') {
     document.getElementById('custom-date-wrap').style.display = 'flex';
     document.getElementById('dc-clear').style.display = 'inline-block';
     return;
   }
-  document.getElementById('custom-date-wrap').style.display = 'none';
-  const [start, end] = getDateRange(key);
-  activeDateFilter = { key, start, end };
-  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
-  const ids = { current_week:'cw',last_week:'lw',current_month:'cm',last_month:'lm',current_quarter:'cq',prev_quarter:'pq',next_quarter:'nq',ytd:'ytd' };
-  document.getElementById('dc-' + ids[key]).classList.add('active');
+  const [start, end] = getDateRange(val);
+  activeDateFilter = { key: val, start, end };
   document.getElementById('dc-clear').style.display = 'inline-block';
   loadOBS();
 }
@@ -206,11 +204,12 @@ function applyCustomDate() {
 }
 function clearDateFilter() {
   activeDateFilter = { key:null, start:null, end:null };
-  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  const pf = document.getElementById('period-filter');
+  if (pf) pf.value = '';
   document.getElementById('custom-date-wrap').style.display = 'none';
   document.getElementById('dc-clear').style.display = 'none';
   document.getElementById('custom-start').value = '';
-  document.getElementById('custom-end').value   = '';
+  document.getElementById('custom-end').value = '';
   loadOBS();
 }
 

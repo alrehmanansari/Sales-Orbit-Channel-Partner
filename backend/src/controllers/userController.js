@@ -141,6 +141,7 @@ async function listSpecialists(req, res, next) {
        FROM users u
        LEFT JOIN accounts a ON a.owner_id = u.id
        WHERE u.role = 'customer_onboarding_specialist' AND u.is_active = TRUE
+         AND u.email NOT LIKE '%@salesorbit.app'
        GROUP BY u.id ORDER BY u.name`,
       []
     );

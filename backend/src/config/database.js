@@ -89,6 +89,8 @@ async function runMigrations() {
   const schemaMigrations = [
     ['add_monthly_volume', `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS monthly_volume NUMERIC(15,2)`],
     ['add_city',          `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS city VARCHAR(100)`],
+    ['add_in_review_at',  `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS in_review_at TIMESTAMPTZ`],
+    ['add_rejected_at',   `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ`],
   ];
   for (const [id, sql] of schemaMigrations) {
     try { await pool.query(sql); await mark(id); }
