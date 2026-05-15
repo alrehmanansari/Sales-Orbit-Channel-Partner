@@ -142,18 +142,17 @@ async function listAccounts(req, res, next) {
 async function getAccount(req, res, next) {
   try {
     const { id } = req.params;
-    const access = accountAccessClause(req.user);
+    // Partners can only fetch their own accounts; all internal roles can fetch any
+    let findQuery, findParams;
+    if (req.user.role === ROLES.CHANNEL_PARTNER) {
+      findQuery  = `SELECT a.*, p.name AS partner_name, p.company_name AS partner_company, p.email AS partner_email, o.name AS owner_name, o.email AS owner_email FROM accounts a LEFT JOIN users p ON p.id = a.partner_id LEFT JOIN users o ON o.id = a.owner_id WHERE a.id = $1 AND a.partner_id = $2`;
+      findParams = [id, req.user.id];
+    } else {
+      findQuery  = `SELECT a.*, p.name AS partner_name, p.company_name AS partner_company, p.email AS partner_email, o.name AS owner_name, o.email AS owner_email FROM accounts a LEFT JOIN users p ON p.id = a.partner_id LEFT JOIN users o ON o.id = a.owner_id WHERE a.id = $1`;
+      findParams = [id];
+    }
 
-    const result = await query(
-      `SELECT a.*,
-              p.name AS partner_name, p.company_name AS partner_company, p.email AS partner_email,
-              o.name AS owner_name, o.email AS owner_email
-       FROM accounts a
-       LEFT JOIN users p ON p.id = a.partner_id
-       LEFT JOIN users o ON o.id = a.owner_id
-       WHERE a.id = $1 AND ${access.where.replace('$1', '$2')}`,
-      [id, ...access.params]
-    );
+    const result = await query(findQuery, findParams);
 
     if (!result.rows.length) {
       return res.status(404).json({ error: 'Account not found' });

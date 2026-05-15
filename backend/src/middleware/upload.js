@@ -17,27 +17,13 @@ const storage = multer.diskStorage({
   }
 });
 
-function fileFilter(allowedTypes) {
-  return (req, file, cb) => {
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error(`Invalid file type. Allowed: ${allowedTypes.join(', ')}`), false);
-    }
-  };
-}
-
+// No MIME-type filter here — the controller validates by file extension.
+// Multer 2.x changed how fileFilter errors propagate; removing the filter
+// avoids false rejections from browsers that send unexpected MIME types
+// (e.g. application/zip for .xlsx, text/comma-separated-values for .csv).
 const bulkUpload = multer({
   storage,
   limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE) || 10 * 1024 * 1024 },
-  fileFilter: fileFilter([
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel',
-    'text/csv',
-    'application/csv',
-    'text/plain',       // some OS/browser combos emit this for .csv
-    'application/octet-stream' // generic binary fallback for .xlsx
-  ])
 });
 
 module.exports = { bulkUpload };
