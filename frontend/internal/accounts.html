@@ -187,6 +187,7 @@
     <!-- INFO TAB -->
     <div id="tab-info">
       <div class="info-grid" id="info-grid"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="panel-actions"></div>
     </div>
 
     <!-- EDIT TAB (COS editable fields) -->
@@ -373,6 +374,29 @@
       <div class="audit-list" id="audit-list"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- Move Stage Modal -->
+<div class="modal-overlay hidden" id="stage-modal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-icon" style="background:linear-gradient(135deg,var(--g-blue),var(--g-purple))">
+        <svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">Move Account Stage</div>
+        <div class="modal-sub" id="stage-modal-sub">Select the new stage</div>
+      </div>
+      <button class="modal-close" onclick="closeStageModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="stage-err" style="background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none"></div>
+      <div id="stage-options" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeStageModal()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -630,7 +654,7 @@ function buildJourney(a) {
         ${s.date ? `<div style="font-size:8.5px;color:var(--text3);text-align:center;margin-top:1px">${Auth.formatDate(s.date)}</div>` : ''}
       </div>`;
   }).join('');
-  return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 12px;margin-bottom:16px">
+  return `<div style="grid-column:1/-1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 12px;margin-bottom:4px">
     <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:12px">Account Journey</div>
     <div style="display:flex;align-items:flex-start">${items}</div>
   </div>`;
@@ -671,9 +695,10 @@ async function openPanel(id, defaultTab = 'info') {
       ['Partner Email',         esc(a.partner_email || '—')],
       ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
       ['Assigned Owner',        esc(a.owner_name || 'Unassigned')],
-      ['Account Status',        Auth.statusBadge(a.status)],
+      ['Account Stage',         Auth.statusBadge(a.status)],
       ['VA Status',             esc(_vaL[a.va_status] || a.va_status || '—')],
       ['Card Status',           esc(_cardL[a.card_status] || a.card_status || '—')],
+      ['Monthly Volume',        a.monthly_volume ? '$'+Number(a.monthly_volume).toLocaleString() : '—'],
       ['KYC Agent',             esc(a.kyc_agent || '—')],
       ['Onboarded',             Auth.formatDate(a.onboarded_at)],
       ['Activated',             Auth.formatDate(a.activated_at)],
@@ -682,6 +707,14 @@ async function openPanel(id, defaultTab = 'info') {
     if (a.remarks) {
       document.getElementById('info-grid').innerHTML += `<div class="info-item" style="grid-column:1/-1"><div class="info-label">Remarks</div><div class="info-value">${esc(a.remarks)}</div></div>`;
     }
+
+    // Action buttons — same as partner panel
+    document.getElementById('panel-actions').innerHTML = `
+      <button class="btn btn-grad btn-sm" onclick="openStageModal('${id}','${a.status}','${esc(a.company_name)}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;vertical-align:middle"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Move Stage
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="switchTab('edit')">Edit</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="switchTab('tickets')">+ Ticket</button>`;
 
     // Populate edit fields
     document.getElementById('e-acct-num').value      = a.account_number        || '';
@@ -876,22 +909,130 @@ async function updateTicket(ticketId) {
   } catch (e) { Auth.showToast(e.message, 'error'); }
 }
 
+// ── MOVE STAGE ────────────────────────────────────────────────────────────────
+const STAGES = [
+  { value:'registered', label:'Registered', color:'var(--text3)' },
+  { value:'in_review',  label:'In Review',  color:'var(--g-blue)' },
+  { value:'onboarded',  label:'Onboarded',  color:'var(--g-purple)' },
+  { value:'activated',  label:'Activated',  color:'var(--g-green)' },
+  { value:'rejected',   label:'Rejected',   color:'#D93025' },
+];
+
+function openStageModal(accountId, currentStatus, companyName) {
+  currentAccountId = accountId;
+  document.getElementById('stage-modal-sub').textContent = `${companyName} — current: ${STAGES.find(s=>s.value===currentStatus)?.label||currentStatus}`;
+  document.getElementById('stage-err').style.display = 'none';
+  document.getElementById('stage-options').innerHTML = STAGES.map(s => {
+    const isCurrent = s.value === currentStatus;
+    return `<button onclick="moveStage('${accountId}','${s.value}')" style="
+      display:flex;align-items:center;gap:12px;padding:12px 16px;
+      border-radius:10px;border:2px solid ${isCurrent?s.color:'var(--border)'};
+      background:${isCurrent?'var(--bg2)':'var(--surface)'};
+      cursor:${isCurrent?'default':'pointer'};
+      font-family:var(--font);font-size:13px;font-weight:${isCurrent?'700':'500'};
+      color:${isCurrent?s.color:'var(--text)'};text-align:left;width:100%;transition:all .18s"
+      ${isCurrent?'disabled':''}>
+      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+      ${s.label}
+      ${isCurrent?'<span style="margin-left:auto;font-size:11px;opacity:.6">Current</span>':''}
+    </button>`;
+  }).join('');
+  document.getElementById('stage-modal').classList.remove('hidden');
+}
+
+function closeStageModal() { document.getElementById('stage-modal').classList.add('hidden'); }
+
+async function moveStage(accountId, newStatus) {
+  const errEl = document.getElementById('stage-err');
+  errEl.style.display = 'none';
+  try {
+    await API.updateAccount(accountId, { status: newStatus });
+    closeStageModal();
+    Auth.showToast(`Stage moved to ${STAGES.find(s=>s.value===newStatus)?.label}.`, 'success');
+    openPanel(accountId);
+    loadAccounts();
+  } catch (e) {
+    errEl.textContent = e.message || 'Failed to update stage.';
+    errEl.style.display = 'block';
+  }
+}
+
+// ── RICH AUDIT LOG ─────────────────────────────────────────────────────────────
+const AUDIT_FIELD_LABELS = {
+  status:'Account Stage', company_name:'Company Name', contact_name:'Director Name',
+  contact_email:'Email', contact_phone:'Phone', country:'Country', city:'City',
+  business_type:'Business Type', vertical:'Vertical',
+  nature_of_business:'Nature of Business', onboarding_specialist:'Specialist',
+  va_status:'VA Status', card_status:'Card Status', monthly_volume:'Monthly Volume',
+  website:'Website', account_number:'Client ID', registration_date:'Reg Date',
+  remarks:'Remarks', kyc_agent:'KYC Agent', owner_id:'Assigned COS',
+  rejection_reason:'Rejection Reason'
+};
+
+function auditChangeSummary(action, oldV, newV) {
+  try {
+    const old = oldV ? (typeof oldV==='string'?JSON.parse(oldV):oldV) : {};
+    const nw  = newV ? (typeof newV==='string'?JSON.parse(newV):newV) : {};
+    if (action === 'note_added') {
+      const content = nw.content || '';
+      return `<div style="margin-top:5px;padding:6px 10px;background:var(--bg3);border-radius:7px;font-size:11px;color:var(--text2);font-style:italic">"${esc(content.substring(0,120))}${content.length>120?'…':''}"</div>`;
+    }
+    if (action === 'account_updated') {
+      const changes = [];
+      for (const [key,label] of Object.entries(AUDIT_FIELD_LABELS)) {
+        const ov = old[key], nwv = nw[key];
+        if (String(ov||'') !== String(nwv||'') && (ov!==undefined||nwv!==undefined)) {
+          changes.push(`<div style="display:flex;gap:6px;align-items:baseline;font-size:11px;padding:2px 0">
+            <span style="font-weight:600;color:var(--text2);min-width:100px">${label}</span>
+            <span style="color:var(--text3);text-decoration:line-through">${esc(String(ov||'—'))}</span>
+            <span style="color:var(--text3)">→</span>
+            <span style="color:var(--text);font-weight:500">${esc(String(nwv||'—'))}</span>
+          </div>`);
+        }
+      }
+      if (!changes.length) return '';
+      return `<div style="margin-top:6px;padding:8px 10px;background:var(--bg3);border-radius:8px;display:flex;flex-direction:column;gap:2px">${changes.join('')}</div>`;
+    }
+  } catch { return ''; }
+  return '';
+}
+
 async function loadAuditLog() {
   const list = document.getElementById('audit-list');
-  list.innerHTML = '<div style="color:var(--text3);font-size:12px">Loading…</div>';
+  list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">Loading…</div>';
   try {
     const data = await API.getAuditLog(currentAccountId);
     const logs = data.data || [];
-    if (!logs.length) { list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">No history yet.</div>'; return; }
-    list.innerHTML = logs.map(l => `
-      <div class="audit-item">
-        <div class="audit-dot"></div>
-        <div style="flex:1">
-          <div style="font-size:12px;font-weight:500;color:var(--text)">${actionLabel(l.action)}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(l.user_name||'System')} · ${Auth.timeAgo(l.created_at)}</div>
+    if (!logs.length) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:24px">No activity history yet.</div>';
+      return;
+    }
+    const labelMap = { account_created:'🟢 Account Created', account_updated:'✏️ Account Updated', note_added:'💬 Note Added' };
+    list.innerHTML = logs.map((l,i) => {
+      const summary = auditChangeSummary(l.action, l.old_values, l.new_values);
+      const dt = new Date(l.created_at);
+      const dateStr = dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+      const timeStr = dt.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+      return `<div style="display:flex;gap:10px;padding:12px 0;border-bottom:${i<logs.length-1?'1px solid var(--border)':'none'}">
+        <div style="display:flex;flex-direction:column;align-items:center;padding-top:2px">
+          <div style="width:8px;height:8px;border-radius:50%;background:linear-gradient(135deg,var(--g-blue),var(--g-purple));flex-shrink:0"></div>
+          ${i<logs.length-1?'<div style="width:1px;flex:1;background:var(--border);margin-top:4px"></div>':''}
         </div>
-      </div>`).join('');
-  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px">Could not load history.</div>'; }
+        <div style="flex:1;min-width:0;padding-bottom:${i<logs.length-1?'4px':'0'}">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12px;font-weight:600;color:var(--text)">${labelMap[l.action]||l.action}</span>
+            <span style="font-size:10px;color:var(--text3);white-space:nowrap">${dateStr} · ${timeStr}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text2);margin-top:3px">
+            <strong>${esc(l.user_name||'System')}</strong>
+            ${l.user_role?`<span style="color:var(--text3)"> · ${Auth.roleLabel(l.user_role)}</span>`:''}
+            <span style="color:var(--text3)"> · ${Auth.timeAgo(l.created_at)}</span>
+          </div>
+          ${summary}
+        </div>
+      </div>`;
+    }).join('');
+  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px;text-align:center">Could not load history.</div>'; }
 }
 
 function actionLabel(a) {
