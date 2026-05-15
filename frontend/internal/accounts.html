@@ -111,7 +111,7 @@
             <option value="">All Partners</option>
           </select>
           <select id="f-owner" class="filter-select" onchange="loadAccounts()">
-            <option value="">All Specialists</option>
+            <option value="">All Onboarding Specialists</option>
           </select>
         </div>
         <div style="display:flex;gap:6px">
@@ -145,7 +145,7 @@
                 <th>Biz Type</th>
                 <th>Status</th>
                 <th>KYC Agent</th>
-                <th>Account Specialist</th>
+                <th>Onboarding Specialist</th>
                 <th>Registered</th>
                 <th style="text-align:center">Actions</th>
               </tr>
@@ -300,7 +300,7 @@
             <input class="form-input" id="e-os-other" placeholder="Enter specialist name…" style="margin-top:6px;display:none"/>
           </div>
           <div class="form-group">
-            <label class="form-label">Account Specialist</label>
+            <label class="form-label">Onboarding Specialist</label>
             <select class="form-input" id="e-owner"><option value="">Unassigned</option></select>
           </div>
         </div>
@@ -698,7 +698,7 @@ async function openPanel(id, defaultTab = 'info') {
       ['Channel Partner',       esc(a.partner_name || '—')],
       ['Partner Email',         esc(a.partner_email || '—')],
       ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
-      ['Account Specialist',        esc(a.owner_name || 'Unassigned')],
+      ['Onboarding Specialist',        esc(a.owner_name || 'Unassigned')],
       ['Account Stage',         Auth.statusBadge(a.status)],
       ['VA Status',             esc(_vaL[a.va_status] || a.va_status || '—')],
       ['Card Status',           esc(_cardL[a.card_status] || a.card_status || '—')],
