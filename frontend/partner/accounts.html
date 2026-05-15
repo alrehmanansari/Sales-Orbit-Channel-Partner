@@ -21,6 +21,11 @@
 .info-item{display:flex;flex-direction:column;gap:4px}
 .info-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3)}
 .info-value{font-size:13px;color:var(--text);font-weight:500}
+.form-section{border-bottom:1px solid var(--border)}
+.form-section-head{display:flex;align-items:center;gap:8px;padding:13px 20px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text2)}
+.form-section-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.form-section-body{padding:0 20px 16px;display:flex;flex-direction:column;gap:12px}
+.req{color:#D93025;font-size:12px}
 .date-chip{padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-family:var(--font);font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
 .date-chip:hover{border-color:var(--g-purple);color:var(--g-purple)}
 .date-chip.active{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent;color:#fff}
@@ -233,7 +238,7 @@
 
 <!-- Add / Edit Account Modal -->
 <div class="modal-overlay hidden" id="account-modal">
-  <div class="modal-box" style="max-width:700px;width:95vw">
+  <div class="modal-box" style="max-width:760px;width:95vw">
     <div class="modal-header">
       <div class="modal-icon">
         <svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
@@ -244,170 +249,199 @@
       </div>
       <button class="modal-close" onclick="closeAccountModal()">×</button>
     </div>
-    <div class="modal-body" style="max-height:72vh;overflow-y:auto">
-      <div id="modal-err" style="background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:14px;display:none"></div>
+    <div class="modal-body" style="max-height:76vh;overflow-y:auto;padding:0">
+      <div id="modal-err" style="background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin:16px 20px -4px;display:none"></div>
 
-      <!-- Row 1: Client ID | Company Name -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Client ID</label>
-          <input class="form-input" id="f-client-id" placeholder="Enter client ID"/>
+      <!-- ── SECTION 1: Company Information ───────────────────────────── -->
+      <div class="form-section">
+        <div class="form-section-head">
+          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(71,150,227,.15),rgba(71,150,227,.05));color:var(--g-blue)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <span>Company Information</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Company Name *</label>
-          <input class="form-input" id="f-company" placeholder="Write registered company name"/>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Company Name <span class="req">*</span></label>
+              <input class="form-input" id="f-company" placeholder="Registered company name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Client ID <span style="font-weight:400;color:var(--text3)">(optional)</span></label>
+              <input class="form-input" id="f-client-id" placeholder="Auto-assigned if blank"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Registration Country</label>
+              <select class="form-input" id="f-country" onchange="toggleCountryOther()">
+                <option value="">Select country</option>
+                <option value="United Arab Emirates">🇦🇪 United Arab Emirates</option>
+                <option value="United States">🇺🇸 United States</option>
+                <option value="United Kingdom">🇬🇧 United Kingdom</option>
+                <option value="Singapore">🇸🇬 Singapore</option>
+                <option value="Hong Kong">🇭🇰 Hong Kong</option>
+                <option value="Pakistan">🇵🇰 Pakistan</option>
+                <option value="__other__">🌍 Other (type manually)</option>
+              </select>
+              <input class="form-input" id="f-country-other" placeholder="Type country name…" style="margin-top:6px;display:none"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Website / Store Link</label>
+              <input class="form-input" id="f-website" placeholder="https://yourcompany.com"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Account Registration Date</label>
+              <input class="form-input" type="date" id="f-reg-date"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Expected Monthly Volume ($)</label>
+              <input class="form-input" type="number" id="f-monthly-volume" placeholder="e.g. 50,000" min="0" step="1"/>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Row 2: Company Reg Country | Director Name -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Company Reg Country</label>
-          <select class="form-input" id="f-country" onchange="toggleCountryOther()">
-            <option value="">Select country</option>
-            <option value="United States">United States</option>
-            <option value="United Kingdom">United Kingdom</option>
-            <option value="United Arab Emirates">United Arab Emirates</option>
-            <option value="Singapore">Singapore</option>
-            <option value="Hong Kong">Hong Kong</option>
-            <option value="Pakistan">Pakistan</option>
-            <option value="__other__">Other (Type Manually)</option>
-          </select>
-          <input class="form-input" id="f-country-other" placeholder="Type country name…" style="margin-top:6px;display:none"/>
+      <!-- ── SECTION 2: Business Profile ─────────────────────────────── -->
+      <div class="form-section">
+        <div class="form-section-head">
+          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(145,119,199,.15),rgba(145,119,199,.05));color:var(--g-purple)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v4H3zM3 10h18v4H3zM3 17h18v4H3z"/></svg>
+          </div>
+          <span>Business Profile</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Director Name</label>
-          <input class="form-input" id="f-contact-name" placeholder="Full name of director"/>
-        </div>
-      </div>
-
-      <!-- Row 3: Email ID | Phone -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Email ID *</label>
-          <input class="form-input" type="email" id="f-contact-email" placeholder="director@company.com"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Phone</label>
-          <input class="form-input" id="f-phone" placeholder="Active Whatsapp Number of Client"/>
-        </div>
-      </div>
-
-      <!-- Row 4: Website | Account Reg Date -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Website</label>
-          <input class="form-input" id="f-website" placeholder="Website URL or Ecomm Store Link"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Account Reg Date</label>
-          <input class="form-input" type="date" id="f-reg-date"/>
-        </div>
-      </div>
-
-      <!-- Row 5: Business Type | Vertical -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Business Type</label>
-          <select class="form-input" id="f-biz">
-            <option value="">Select type</option>
-            <option value="new">New</option>
-            <option value="established">Established</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Vertical</label>
-          <select class="form-input" id="f-vertical">
-            <option value="">Select vertical</option>
-            <option value="it_services_provider">IT Services</option>
-            <option value="ecomm_seller">Ecomm Seller</option>
-            <option value="b2b_seller">B2B Seller</option>
-          </select>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Business Type</label>
+              <select class="form-input" id="f-biz">
+                <option value="">Select type</option>
+                <option value="new">🌱 New Business</option>
+                <option value="established">🏆 Established Business</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Vertical / Industry</label>
+              <select class="form-input" id="f-vertical">
+                <option value="">Select vertical</option>
+                <option value="it_services_provider">💻 IT Services</option>
+                <option value="ecomm_seller">🛒 E-commerce Seller</option>
+                <option value="b2b_seller">🤝 B2B Seller</option>
+                <option value="freelancer">👤 Freelancer</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nature of Business</label>
+            <select class="form-input" id="f-nob">
+              <option value="">Select nature of business</option>
+              <option value="Ai Solutions">Ai Solutions</option>
+              <option value="App Development">App Development</option>
+              <option value="B2B Goods">B2B Goods</option>
+              <option value="BPO">BPO</option>
+              <option value="Digital Accountancy">Digital Accountancy</option>
+              <option value="Digital Marketing Agency">Digital Marketing Agency</option>
+              <option value="E-comm Marketplaces">E-comm Marketplaces</option>
+              <option value="Game Development">Game Development</option>
+              <option value="HR Management">HR Management</option>
+              <option value="IT Services">IT Services</option>
+              <option value="Logistics">Logistics</option>
+              <option value="Medical Billing">Medical Billing</option>
+              <option value="PayPal">PayPal</option>
+              <option value="Shopify">Shopify</option>
+              <option value="Software Development">Software Development</option>
+              <option value="Stripe">Stripe</option>
+              <option value="Web Development">Web Development</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- Nature of Business (full width) -->
-      <div class="form-group">
-        <label class="form-label">Nature of Business</label>
-        <select class="form-input" id="f-nob">
-          <option value="">Select nature of business</option>
-          <option value="Ai Solutions">Ai Solutions</option>
-          <option value="App Development">App Development</option>
-          <option value="B2B Goods">B2B Goods</option>
-          <option value="BPO">BPO</option>
-          <option value="Digital Accountancy">Digital Accountancy</option>
-          <option value="Digital Marketing Agency">Digital Marketing Agency</option>
-          <option value="E-comm Marketplaces">E-comm Marketplaces</option>
-          <option value="Game Development">Game Development</option>
-          <option value="HR Management">HR Management</option>
-          <option value="IT Services">IT Services</option>
-          <option value="Logistics">Logistics</option>
-          <option value="Medical Billing">Medical Billing</option>
-          <option value="PayPal">PayPal</option>
-          <option value="Shopify">Shopify</option>
-          <option value="Software Development">Software Development</option>
-          <option value="Stripe">Stripe</option>
-          <option value="Web Development">Web Development</option>
-        </select>
-      </div>
-
-      <!-- Channel Partner (full width, auto-filled) -->
-      <div class="form-group">
-        <label class="form-label">Channel Partner</label>
-        <input class="form-input" id="f-partner-display" disabled style="opacity:.7;cursor:default"/>
-      </div>
-
-      <!-- Row 6: Onboarding Specialist | Account Stage -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Onboarding Specialist</label>
-          <select class="form-input" id="f-onboarding-specialist" onchange="toggleOSother()">
-            <option value="">Select specialist</option>
-            <option value="Anum Farooq">Anum Farooq</option>
-            <option value="Muhammad Shoaib">Muhammad Shoaib</option>
-            <option value="Khushbu Fatima">Khushbu Fatima</option>
-            <option value="__other__">Other (Add manually)</option>
-          </select>
-          <input class="form-input" id="f-os-other" placeholder="Enter specialist name…" style="margin-top:6px;display:none"/>
+      <!-- ── SECTION 3: Director / Contact ───────────────────────────── -->
+      <div class="form-section">
+        <div class="form-section-head">
+          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(52,168,83,.15),rgba(52,168,83,.05));color:var(--g-green)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <span>Director / Contact</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Account Stage</label>
-          <select class="form-input" id="f-status">
-            <option value="registered">Registered</option>
-            <option value="in_review">In Review</option>
-            <option value="onboarded">Onboarded</option>
-            <option value="activated">Activated</option>
-          </select>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Director Name <span class="req">*</span></label>
+              <input class="form-input" id="f-contact-name" placeholder="Full legal name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address <span class="req">*</span></label>
+              <input class="form-input" type="email" id="f-contact-email" placeholder="director@company.com"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">WhatsApp / Phone</label>
+            <input class="form-input" id="f-phone" placeholder="+971 50 000 0000 — active WhatsApp number"/>
+          </div>
         </div>
       </div>
 
-      <!-- Row 7: VA Status | Card Status -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">VA Status</label>
-          <select class="form-input" id="f-va-status">
-            <option value="">—</option>
-            <option value="required">Required</option>
-            <option value="applied">Applied</option>
-            <option value="issued">Issued</option>
-            <option value="activated">Activated</option>
-          </select>
+      <!-- ── SECTION 4: Account Settings ─────────────────────────────── -->
+      <div class="form-section" style="border-bottom:none">
+        <div class="form-section-head">
+          <div class="form-section-icon" style="background:linear-gradient(135deg,rgba(202,102,115,.15),rgba(202,102,115,.05));color:var(--g-pink)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          </div>
+          <span>Account Settings</span>
         </div>
-        <div class="form-group">
-          <label class="form-label">Card Status</label>
-          <select class="form-input" id="f-card-status">
-            <option value="">—</option>
-            <option value="required">Required</option>
-            <option value="applied">Applied</option>
-            <option value="issued">Issued</option>
-          </select>
+        <div class="form-section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Channel Partner</label>
+              <input class="form-input" id="f-partner-display" disabled style="opacity:.6;cursor:default;background:var(--bg3)"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Onboarding Specialist</label>
+              <select class="form-input" id="f-onboarding-specialist" onchange="toggleOSother()">
+                <option value="">Select specialist</option>
+                <option value="Anum Farooq">Anum Farooq</option>
+                <option value="Muhammad Shoaib">Muhammad Shoaib</option>
+                <option value="Khushbu Fatima">Khushbu Fatima</option>
+                <option value="__other__">Other (Add manually)</option>
+              </select>
+              <input class="form-input" id="f-os-other" placeholder="Enter specialist name…" style="margin-top:6px;display:none"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Account Stage</label>
+              <select class="form-input" id="f-status">
+                <option value="registered">📋 Registered</option>
+                <option value="in_review">🔍 In Review</option>
+                <option value="onboarded">✅ Onboarded</option>
+                <option value="activated">⚡ Activated</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">VA Status</label>
+              <select class="form-input" id="f-va-status">
+                <option value="">— Not set</option>
+                <option value="required">Required</option>
+                <option value="applied">Applied</option>
+                <option value="issued">Issued</option>
+                <option value="activated">Activated</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Card Status</label>
+            <select class="form-input" id="f-card-status">
+              <option value="">— Not set</option>
+              <option value="required">Required</option>
+              <option value="applied">Applied</option>
+              <option value="issued">Issued</option>
+            </select>
+          </div>
         </div>
-      </div>
-
-      <!-- Monthly Volume -->
-      <div class="form-group">
-        <label class="form-label">Expected Monthly Volume ($)</label>
-        <input class="form-input" type="number" id="f-monthly-volume" placeholder="e.g. 50000" min="0" step="1"/>
       </div>
 
     </div>

@@ -67,4 +67,15 @@ async function getClient() {
   return client;
 }
 
-module.exports = { pool, query, getClient, testConnection };
+async function runMigrations() {
+  const migrations = [
+    `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS monthly_volume NUMERIC(15,2)`,
+  ];
+  for (const sql of migrations) {
+    try { await pool.query(sql); }
+    catch (err) { console.error('[migration] error:', err.message); }
+  }
+  console.log('[migration] Schema up to date');
+}
+
+module.exports = { pool, query, getClient, testConnection, runMigrations };

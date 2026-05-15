@@ -4,7 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 const routes = require('./routes/index');
-const { testConnection } = require('./config/database');
+const { testConnection, runMigrations } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -57,6 +57,7 @@ app.use((err, req, res, next) => {
 
 async function start() {
   await testConnection();
+  await runMigrations();
   app.listen(PORT, () => {
     console.log(`Sales Orbit API running on port ${PORT}`);
   });
