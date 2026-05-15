@@ -278,9 +278,10 @@ async function updateAccount(req, res, next) {
     // Fields only internal staff can edit
     const internalFields = ['kyc_agent','owner_id','rejection_reason'];
 
-    const allowedFields = req.user.role === ROLES.CHANNEL_PARTNER
-      ? partnerFields
-      : [...partnerFields, ...internalFields];
+    // Channel partners get the partner field list; every other role (COS, BDM,
+    // Manager, Head, etc.) gets full field access including internal-only fields.
+    const isPartner   = req.user.role === ROLES.CHANNEL_PARTNER;
+    const allowedFields = isPartner ? partnerFields : [...partnerFields, ...internalFields];
 
     const updates = {};
     for (const field of allowedFields) {

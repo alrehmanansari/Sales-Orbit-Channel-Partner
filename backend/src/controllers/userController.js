@@ -151,12 +151,14 @@ async function listSpecialists(req, res, next) {
 }
 
 // Returns all active internal team members for the Onboarding Specialist dropdown
+// Only COS and Manager Partnerships appear in the partner's Onboarding Specialist dropdown
 async function listSalesTeam(req, res, next) {
   try {
     const result = await query(
       `SELECT id, name, email, role, designation
        FROM users
-       WHERE role != 'channel_partner' AND is_active = TRUE
+       WHERE role IN ('customer_onboarding_specialist', 'manager_partnerships')
+         AND is_active = TRUE
        ORDER BY name`,
       []
     );
