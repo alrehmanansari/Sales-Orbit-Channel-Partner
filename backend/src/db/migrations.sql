@@ -236,3 +236,4 @@ ALTER TABLE accounts ADD COLUMN IF NOT EXISTS va_status             VARCHAR(30);
 ALTER TABLE accounts DROP CONSTRAINT IF EXISTS accounts_va_status_check;
 ALTER TABLE accounts ADD CONSTRAINT accounts_va_status_check CHECK (va_status IN ('required', 'applied', 'issued', 'activated'));
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS card_status           VARCHAR(30) CHECK (card_status IN ('required', 'applied', 'issued'));
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS monthly_volume NUMERIC(15,2);

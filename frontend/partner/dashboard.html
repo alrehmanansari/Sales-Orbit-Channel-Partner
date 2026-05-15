@@ -15,12 +15,26 @@
 [data-theme=dark] .pipeline-card{background:linear-gradient(180deg,#1d1d1d,#141414)}
 .pipeline-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)}
 .pipeline-title{font-size:14px;font-weight:600;color:var(--text)}
-.acct-row{display:flex;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .15s}
+.acct-row{display:flex;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .15s;position:relative}
 .acct-row:last-child{border-bottom:none}
 .acct-row:hover{background:var(--bg2)}
 .acct-co{font-size:13px;font-weight:500;color:var(--text)}
 .acct-meta{font-size:11px;color:var(--text3);margin-top:2px}
 .acct-status{margin-left:auto;flex-shrink:0}
+.activity-dot{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:linear-gradient(135deg,var(--g-blue),var(--g-purple))}
+.date-chip{padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-family:var(--font);font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
+.date-chip:hover{border-color:var(--g-purple);color:var(--g-purple)}
+.date-chip.active{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent;color:#fff}
+.ticket-row{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.ticket-row:last-child{border-bottom:none}
+.ticket-num{font-size:10px;font-weight:600;color:var(--text3);flex-shrink:0;width:36px}
+.ticket-body{flex:1;min-width:0}
+.ticket-query{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticket-co{font-size:11px;color:var(--text3);margin-top:2px}
+.ticket-summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;padding:16px 18px}
+.ticket-summary-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.ticket-summary-val{font-size:22px;font-weight:700;color:var(--text)}
+.ticket-summary-lbl{font-size:10px;color:var(--text3);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 </style>
 </head>
 <body>
@@ -48,10 +62,74 @@
         </div>
       </div>
 
-      <!-- Stats -->
-      <div class="stats-grid" id="stats-grid">
+      <!-- Filters -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <select id="dash-stage" class="filter-select" onchange="loadDashboard()">
+          <option value="">All Stages</option>
+          <option value="registered">Registered</option>
+          <option value="in_review">In Review</option>
+          <option value="onboarded">Onboarded</option>
+          <option value="activated">Activated</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <select id="dash-vertical" class="filter-select" onchange="loadDashboard()">
+          <option value="">All Verticals</option>
+          <option value="it_services_provider">IT Services</option>
+          <option value="ecomm_seller">E-comm Seller</option>
+          <option value="b2b_seller">B2B Seller</option>
+          <option value="freelancer">Freelancer</option>
+        </select>
+        <select id="dash-nob" class="filter-select" onchange="loadDashboard()">
+          <option value="">All NOB</option>
+          <option value="Ai Solutions">Ai Solutions</option>
+          <option value="App Development">App Development</option>
+          <option value="B2B Goods">B2B Goods</option>
+          <option value="BPO">BPO</option>
+          <option value="Digital Accountancy">Digital Accountancy</option>
+          <option value="Digital Marketing Agency">Digital Marketing Agency</option>
+          <option value="E-comm Marketplaces">E-comm Marketplaces</option>
+          <option value="Game Development">Game Development</option>
+          <option value="HR Management">HR Management</option>
+          <option value="IT Services">IT Services</option>
+          <option value="Logistics">Logistics</option>
+          <option value="Medical Billing">Medical Billing</option>
+          <option value="PayPal">PayPal</option>
+          <option value="Shopify">Shopify</option>
+          <option value="Software Development">Software Development</option>
+          <option value="Stripe">Stripe</option>
+          <option value="Web Development">Web Development</option>
+        </select>
+        <select id="dash-biz" class="filter-select" onchange="loadDashboard()">
+          <option value="">All Biz Types</option>
+          <option value="new">New</option>
+          <option value="established">Established</option>
+        </select>
+      </div>
+
+      <!-- Date Filter Row -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:20px;flex-wrap:wrap;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">
+        <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-right:4px">Period</span>
+        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
+        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
+        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
+        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
+        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Quarter</button>
+        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Quarter</button>
+        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Quarter</button>
+        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">Year to Date</button>
+        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
+          <span style="color:var(--text3);font-size:11px">to</span>
+          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
+        </span>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);padding:3px 6px;border-radius:6px;margin-left:auto">✕ Clear</button>
+      </div>
+
+      <!-- Stats (no Open Tickets box) -->
+      <div class="stats-grid" id="stats-grid" style="margin-bottom:20px">
         <div class="stat-card">
-          <div class="lbl">Total Accounts</div>
+          <div class="lbl">Total Registered Accounts</div>
           <div class="val" id="stat-total">—</div>
           <div class="stat-card-accent" style="background:linear-gradient(90deg,var(--g-blue),var(--g-purple))"></div>
         </div>
@@ -70,17 +148,32 @@
           <div class="val" style="color:var(--g-green)" id="stat-activated">—</div>
           <div class="stat-card-accent" style="background:var(--g-green)"></div>
         </div>
-        <div class="stat-card">
-          <div class="lbl">Open Tickets</div>
-          <div class="val" style="color:var(--g-pink)" id="stat-tickets">—</div>
-          <div class="stat-card-accent" style="background:var(--g-pink)"></div>
+      </div>
+
+      <!-- Tickets Section -->
+      <div class="pipeline-card">
+        <div class="pipeline-head">
+          <span class="pipeline-title">Ticket Overview</span>
+          <a href="accounts.html" class="btn btn-ghost btn-sm">View Accounts</a>
+        </div>
+        <!-- Summary -->
+        <div class="ticket-summary-grid" id="ticket-summary"></div>
+        <!-- Open Tickets -->
+        <div style="padding:10px 18px 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-top:1px solid var(--border)">Open Tickets</div>
+        <div id="open-tickets-list">
+          <div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">Loading…</div>
+        </div>
+        <!-- Past Tickets -->
+        <div style="padding:10px 18px 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);border-top:1px solid var(--border)">Resolved / Declined</div>
+        <div id="closed-tickets-list">
+          <div style="padding:24px;text-align:center;color:var(--text3);font-size:13px">Loading…</div>
         </div>
       </div>
 
-      <!-- Recent Accounts -->
+      <!-- Recent Updates -->
       <div class="pipeline-card">
         <div class="pipeline-head">
-          <span class="pipeline-title">Recent Accounts</span>
+          <span class="pipeline-title">Recent Updates</span>
           <a href="accounts.html" class="btn btn-ghost btn-sm">View all</a>
         </div>
         <div id="recent-accounts">
@@ -110,41 +203,148 @@
 <script>
 const user = Auth.requirePartnerAuth();
 if (user) {
-  // Render sidebar + topbar
   document.getElementById('sidebar-placeholder').outerHTML = Layout.partnerSidebar('dashboard', user);
   document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Partner Dashboard', `Welcome back, ${user.name.split(' ')[0]}`, user);
-
-  document.getElementById('welcome-heading').textContent = `Good day, ${user.name.split(' ')[0]}!`;
-
+  document.getElementById('welcome-heading').textContent   = `Good day, ${user.name.split(' ')[0]}!`;
   Notifications.initNotifications();
   loadDashboard();
 }
 
+let activeDateFilter = { key: null, start: null, end: null };
+
+function getDateRange(key) {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now); monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+  const fmt = d => d.toISOString().split('T')[0];
+  switch (key) {
+    case 'current_week': { const sun=new Date(monday); sun.setDate(monday.getDate()+6); return [fmt(monday),fmt(sun)]; }
+    case 'last_week':    { const lm=new Date(monday); lm.setDate(monday.getDate()-7); const ls=new Date(lm); ls.setDate(lm.getDate()+6); return [fmt(lm),fmt(ls)]; }
+    case 'current_month':  return [fmt(new Date(y,m,1)), fmt(new Date(y,m+1,0))];
+    case 'last_month':     return [fmt(new Date(y,m-1,1)), fmt(new Date(y,m,0))];
+    case 'current_quarter':{ const q=Math.floor(m/3); return [fmt(new Date(y,q*3,1)),fmt(new Date(y,q*3+3,0))]; }
+    case 'prev_quarter':   { const q=Math.floor(m/3)-1,qy=q<0?y-1:y,qq=q<0?3:q; return [fmt(new Date(qy,qq*3,1)),fmt(new Date(qy,qq*3+3,0))]; }
+    case 'next_quarter':   { const q=Math.floor(m/3)+1,qy=q>3?y+1:y,qq=q>3?0:q; return [fmt(new Date(qy,qq*3,1)),fmt(new Date(qy,qq*3+3,0))]; }
+    case 'ytd': return [fmt(new Date(y,0,1)),fmt(now)];
+    default: return [null,null];
+  }
+}
+
+function setDateFilter(key) {
+  if (key === 'custom') {
+    document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('active'));
+    document.getElementById('dc-cu').classList.add('active');
+    document.getElementById('custom-date-wrap').style.display = 'flex';
+    document.getElementById('dc-clear').style.display = 'inline-block';
+    return;
+  }
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  const [start,end] = getDateRange(key);
+  activeDateFilter = { key, start, end };
+  document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('active'));
+  const idMap = {current_week:'cw',last_week:'lw',current_month:'cm',last_month:'lm',current_quarter:'cq',prev_quarter:'pq',next_quarter:'nq',ytd:'ytd'};
+  document.getElementById('dc-'+idMap[key]).classList.add('active');
+  document.getElementById('dc-clear').style.display = 'inline-block';
+  loadDashboard();
+}
+
+function applyCustomDate() {
+  const s = document.getElementById('custom-start').value;
+  const e = document.getElementById('custom-end').value;
+  if (s && e) { activeDateFilter = {key:'custom',start:s,end:e}; loadDashboard(); }
+}
+
+function clearDateFilter() {
+  activeDateFilter = {key:null,start:null,end:null};
+  document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('custom-date-wrap').style.display='none';
+  document.getElementById('dc-clear').style.display='none';
+  document.getElementById('custom-start').value='';
+  document.getElementById('custom-end').value='';
+  loadDashboard();
+}
+
 async function loadDashboard() {
+  const stage    = document.getElementById('dash-stage').value;
+  const vertical = document.getElementById('dash-vertical').value;
+  const nob      = document.getElementById('dash-nob').value;
+  const biz      = document.getElementById('dash-biz').value;
+
+  const acctParams = { limit: 999 };
+  if (stage)    acctParams.status            = stage;
+  if (vertical) acctParams.vertical          = vertical;
+  if (nob)      acctParams.nature_of_business = nob;
+  if (biz)      acctParams.business_type     = biz;
+  if (activeDateFilter.start) acctParams.start_date = activeDateFilter.start;
+  if (activeDateFilter.end)   acctParams.end_date   = activeDateFilter.end;
+
   try {
-    const [accts, tickets] = await Promise.all([
-      API.getAccounts({ limit: 5 }),
-      API.getTickets({ limit: 1 })
+    const [acctData, ticketData] = await Promise.all([
+      API.getAccounts(acctParams),
+      API.getTickets({ limit: 100 })
     ]);
 
-    const accounts = accts.data || [];
-    const allAccts = accts.total || 0;
+    const all     = acctData.data || [];
+    const tickets = ticketData.data || [];
 
-    // Quick stats from accounts list
-    const reviewCount    = accounts.filter(a => a.status === 'in_review').length;
-    const onboardedCount = accounts.filter(a => a.status === 'onboarded').length;
-    const activatedCount = accounts.filter(a => a.status === 'activated').length;
+    // Stats
+    document.getElementById('stat-total').textContent     = acctData.total || 0;
+    document.getElementById('stat-review').textContent    = all.filter(a=>a.status==='in_review').length;
+    document.getElementById('stat-onboarded').textContent = all.filter(a=>a.status==='onboarded').length;
+    document.getElementById('stat-activated').textContent = all.filter(a=>a.status==='activated').length;
 
-    // For accurate counts, fetch full list
-    const allData = await API.getAccounts({ limit: 999 });
-    const all = allData.data || [];
-    document.getElementById('stat-total').textContent     = allData.total || 0;
-    document.getElementById('stat-review').textContent    = all.filter(a => a.status === 'in_review').length;
-    document.getElementById('stat-onboarded').textContent = all.filter(a => a.status === 'onboarded').length;
-    document.getElementById('stat-activated').textContent = all.filter(a => a.status === 'activated').length;
-    document.getElementById('stat-tickets').textContent   = tickets.total || 0;
+    // Ticket summary
+    const tOpen    = tickets.filter(t=>t.status==='open').length;
+    const tReview  = tickets.filter(t=>t.status==='in_review').length;
+    const tPendP   = tickets.filter(t=>t.status==='pending_partner').length;
+    const tPendC   = tickets.filter(t=>t.status==='pending_customer').length;
+    const tResolved= tickets.filter(t=>t.status==='resolved').length;
+    const tDeclined= tickets.filter(t=>t.status==='declined').length;
+    document.getElementById('ticket-summary').innerHTML = [
+      [tOpen,'Open','var(--g-blue)'],
+      [tReview,'In Review','var(--g-purple)'],
+      [tPendP,'Pending Partner','var(--g-pink)'],
+      [tPendC,'Pending Client','#F59E0B'],
+      [tResolved,'Resolved','var(--g-green)'],
+      [tDeclined,'Declined','#D93025'],
+    ].map(([v,l,c])=>`<div class="ticket-summary-box">
+      <div class="ticket-summary-val" style="color:${c}">${v}</div>
+      <div class="ticket-summary-lbl">${l}</div>
+    </div>`).join('');
 
-    renderRecentAccounts(accounts.slice(0, 8));
+    // Open tickets list
+    const openTickets = tickets.filter(t=>!['resolved','declined'].includes(t.status));
+    document.getElementById('open-tickets-list').innerHTML = openTickets.length
+      ? openTickets.map(t=>`
+        <div class="ticket-row">
+          <div class="ticket-num">#${t.ticket_number}</div>
+          <div class="ticket-body">
+            <div class="ticket-query">${esc(t.query_type)}</div>
+            <div class="ticket-co">${esc(t.account_company_name||t.account_name||'—')} · ${Auth.timeAgo(t.created_at)}</div>
+          </div>
+          <div>${Auth.ticketStatusBadge(t.status)}</div>
+        </div>`).join('')
+      : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No open tickets</div>';
+
+    // Closed tickets list
+    const closedTickets = tickets.filter(t=>['resolved','declined'].includes(t.status)).slice(0,10);
+    document.getElementById('closed-tickets-list').innerHTML = closedTickets.length
+      ? closedTickets.map(t=>`
+        <div class="ticket-row" style="opacity:.7">
+          <div class="ticket-num">#${t.ticket_number}</div>
+          <div class="ticket-body">
+            <div class="ticket-query">${esc(t.query_type)}</div>
+            <div class="ticket-co">${esc(t.account_company_name||t.account_name||'—')} · ${Auth.formatDate(t.resolved_at||t.updated_at)}</div>
+          </div>
+          <div>${Auth.ticketStatusBadge(t.status)}</div>
+        </div>`).join('')
+      : '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">No resolved tickets yet</div>';
+
+    // Recent Updates — order by most recently updated, show activity badge
+    const recent = [...all].sort((a,b)=>new Date(b.updated_at||b.registration_date)-new Date(a.updated_at||a.registration_date)).slice(0,8);
+    renderRecentAccounts(recent);
+
   } catch (e) {
     Auth.showToast('Could not load dashboard data.', 'error');
   }
@@ -161,19 +361,30 @@ function renderRecentAccounts(accounts) {
     return;
   }
 
-  container.innerHTML = accounts.map(a => `
+  const now = Date.now();
+  container.innerHTML = accounts.map(a => {
+    const hasNotes   = parseInt(a.notes_count) > 0;
+    const hasTickets = parseInt(a.open_tickets) > 0;
+    const updatedMs  = new Date(a.updated_at || a.registration_date).getTime();
+    const isRecent   = (now - updatedMs) < 7 * 24 * 60 * 60 * 1000; // within 7 days
+    const showBadge  = isRecent && (hasNotes || hasTickets || a.updated_at !== a.created_at);
+    return `
     <div class="acct-row" onclick="window.location.href='accounts.html?id=${a.id}'">
-      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--g-blue-soft),var(--g-purple-soft));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:var(--g-purple)">
+      ${showBadge ? '<span class="activity-dot"></span>' : ''}
+      <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--g-blue-soft),var(--g-purple-soft));display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:var(--g-purple);margin-left:${showBadge?'10':'0'}px">
         ${(a.company_name||'?')[0].toUpperCase()}
       </div>
       <div style="flex:1;min-width:0">
         <div class="acct-co">${esc(a.company_name)}</div>
-        <div class="acct-meta">${Auth.verticalLabel(a.vertical)} · ${Auth.businessTypeLabel(a.business_type)} · ${Auth.formatDate(a.registration_date)}</div>
+        <div class="acct-meta">
+          ${Auth.verticalLabel(a.vertical)} · ${Auth.businessTypeLabel(a.business_type)}
+          ${showBadge ? `<span style="color:var(--g-blue);font-weight:600;margin-left:4px">· Updated ${Auth.timeAgo(a.updated_at)}</span>` : `· ${Auth.formatDate(a.registration_date)}`}
+        </div>
       </div>
       <div class="acct-status">${Auth.statusBadge(a.status)}</div>
-      ${parseInt(a.open_tickets) > 0 ? `<span class="badge badge-pink" style="margin-left:6px">${a.open_tickets} ticket${a.open_tickets > 1 ? 's' : ''}</span>` : ''}
-    </div>
-  `).join('');
+      ${hasTickets ? `<span class="badge badge-pink" style="margin-left:6px">${a.open_tickets} ticket${a.open_tickets>1?'s':''}</span>` : ''}
+    </div>`;
+  }).join('');
 }
 
 function esc(s) {

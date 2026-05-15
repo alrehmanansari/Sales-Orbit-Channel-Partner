@@ -21,6 +21,9 @@
 .info-item{display:flex;flex-direction:column;gap:4px}
 .info-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3)}
 .info-value{font-size:13px;color:var(--text);font-weight:500}
+.date-chip{padding:4px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-family:var(--font);font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
+.date-chip:hover{border-color:var(--g-purple);color:var(--g-purple)}
+.date-chip.active{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent;color:#fff}
 .chat-list{display:flex;flex-direction:column;gap:10px;min-height:60px}
 .chat-wrap{display:flex;flex-direction:column}
 .chat-wrap.mine{align-items:flex-end}
@@ -52,15 +55,15 @@
     <div id="topbar-placeholder"></div>
     <div class="page-body">
 
-      <!-- Toolbar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div class="search-box" style="min-width:240px">
+      <!-- Toolbar Row 1: Search + Filters + Actions -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div class="search-box" style="min-width:220px">
           <svg style="width:15px;height:15px;color:var(--text3)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input id="search-input" placeholder="Search accounts…" oninput="debounceSearch()"/>
+          <input id="search-input" placeholder="Search by company, director, email, client ID…" oninput="debounceSearch()"/>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <select id="filter-status" class="filter-select" onchange="loadAccounts()">
-            <option value="">All Statuses</option>
+            <option value="">All Stages</option>
             <option value="registered">Registered</option>
             <option value="in_review">In Review</option>
             <option value="onboarded">Onboarded</option>
@@ -74,8 +77,37 @@
             <option value="b2b_seller">B2B Seller</option>
             <option value="freelancer">Freelancer</option>
           </select>
-          <button class="btn btn-ghost btn-sm" onclick="triggerExport()">
+          <select id="filter-nob" class="filter-select" onchange="loadAccounts()">
+            <option value="">All NOB</option>
+            <option value="Ai Solutions">Ai Solutions</option>
+            <option value="App Development">App Development</option>
+            <option value="B2B Goods">B2B Goods</option>
+            <option value="BPO">BPO</option>
+            <option value="Digital Accountancy">Digital Accountancy</option>
+            <option value="Digital Marketing Agency">Digital Marketing Agency</option>
+            <option value="E-comm Marketplaces">E-comm Marketplaces</option>
+            <option value="Game Development">Game Development</option>
+            <option value="HR Management">HR Management</option>
+            <option value="IT Services">IT Services</option>
+            <option value="Logistics">Logistics</option>
+            <option value="Medical Billing">Medical Billing</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Shopify">Shopify</option>
+            <option value="Software Development">Software Development</option>
+            <option value="Stripe">Stripe</option>
+            <option value="Web Development">Web Development</option>
+          </select>
+          <select id="filter-biz" class="filter-select" onchange="loadAccounts()">
+            <option value="">All Biz Types</option>
+            <option value="new">New</option>
+            <option value="established">Established</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()" title="Download bulk upload template">
             <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Template
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="triggerExport()">
+            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h6M3 15h6"/></svg>
             Export XLS
           </button>
           <label class="btn btn-ghost btn-sm" style="cursor:pointer">
@@ -88,6 +120,26 @@
             Add Account
           </button>
         </div>
+      </div>
+
+      <!-- Toolbar Row 2: Date Filter Chips -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px">
+        <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-right:4px;white-space:nowrap">Period</span>
+        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
+        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
+        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
+        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
+        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Quarter</button>
+        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Quarter</button>
+        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Quarter</button>
+        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">Year to Date</button>
+        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
+          <span style="color:var(--text3);font-size:11px">to</span>
+          <input type="date" id="custom-end"   class="filter-select" style="padding:3px 8px;font-size:11px;width:130px" onchange="applyCustomDate()"/>
+        </span>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);padding:3px 6px;border-radius:6px;margin-left:auto" title="Clear date filter">✕ Clear</button>
       </div>
 
       <!-- Table -->
@@ -114,14 +166,15 @@
                 <th style="padding:7px 8px">Vertical</th>
                 <th style="padding:7px 8px">Nature of Biz</th>
                 <th style="padding:7px 8px">Specialist</th>
-                <th style="padding:7px 8px">Status</th>
+                <th style="padding:7px 8px">Stage</th>
                 <th style="padding:7px 8px">VA</th>
                 <th style="padding:7px 8px">Card</th>
+                <th style="padding:7px 8px;white-space:nowrap">Monthly Vol</th>
                 <th style="padding:7px 8px;text-align:center">Actions</th>
               </tr>
             </thead>
             <tbody id="accounts-tbody">
-              <tr><td colspan="16" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
+              <tr><td colspan="17" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -304,7 +357,7 @@
         <input class="form-input" id="f-partner-display" disabled style="opacity:.7;cursor:default"/>
       </div>
 
-      <!-- Row 6: Onboarding Specialist | Account Status -->
+      <!-- Row 6: Onboarding Specialist | Account Stage -->
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Onboarding Specialist</label>
@@ -318,7 +371,7 @@
           <input class="form-input" id="f-os-other" placeholder="Enter specialist name…" style="margin-top:6px;display:none"/>
         </div>
         <div class="form-group">
-          <label class="form-label">Account Status</label>
+          <label class="form-label">Account Stage</label>
           <select class="form-input" id="f-status">
             <option value="registered">Registered</option>
             <option value="in_review">In Review</option>
@@ -351,10 +404,39 @@
         </div>
       </div>
 
+      <!-- Monthly Volume -->
+      <div class="form-group">
+        <label class="form-label">Expected Monthly Volume ($)</label>
+        <input class="form-input" type="number" id="f-monthly-volume" placeholder="e.g. 50000" min="0" step="1"/>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeAccountModal()">Cancel</button>
       <button class="btn btn-grad" id="modal-submit-btn" onclick="submitAccount()">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- Move Stage Modal -->
+<div class="modal-overlay hidden" id="stage-modal">
+  <div class="modal-box" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-icon" style="background:linear-gradient(135deg,var(--g-blue),var(--g-purple))">
+        <svg style="width:18px;height:18px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+      <div>
+        <div class="modal-title">Move Account Stage</div>
+        <div class="modal-sub" id="stage-modal-sub">Select the new stage for this account</div>
+      </div>
+      <button class="modal-close" onclick="closeStageModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="stage-err" style="background:rgba(217,48,37,.1);color:#D93025;border:1px solid rgba(217,48,37,.2);border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;display:none"></div>
+      <div id="stage-options" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeStageModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -432,6 +514,156 @@ let currentPage = 1;
 let currentAccountId = null;
 let editingAccountId = null;
 let searchTimer = null;
+let activeDateFilter = { key: null, start: null, end: null };
+
+// ── DATE FILTER HELPERS ──
+function getDateRange(key) {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const dayOfWeek = now.getDay(); // 0=Sun
+  const monday = new Date(now); monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+  const fmt = d => d.toISOString().split('T')[0];
+  switch (key) {
+    case 'current_week': {
+      const sun = new Date(monday); sun.setDate(monday.getDate() + 6);
+      return [fmt(monday), fmt(sun)];
+    }
+    case 'last_week': {
+      const lm = new Date(monday); lm.setDate(monday.getDate() - 7);
+      const ls = new Date(lm);    ls.setDate(lm.getDate() + 6);
+      return [fmt(lm), fmt(ls)];
+    }
+    case 'current_month':
+      return [fmt(new Date(y, m, 1)), fmt(new Date(y, m + 1, 0))];
+    case 'last_month':
+      return [fmt(new Date(y, m - 1, 1)), fmt(new Date(y, m, 0))];
+    case 'current_quarter': {
+      const q = Math.floor(m / 3);
+      return [fmt(new Date(y, q * 3, 1)), fmt(new Date(y, q * 3 + 3, 0))];
+    }
+    case 'prev_quarter': {
+      const q = Math.floor(m / 3) - 1;
+      const qy = q < 0 ? y - 1 : y, qq = q < 0 ? 3 : q;
+      return [fmt(new Date(qy, qq * 3, 1)), fmt(new Date(qy, qq * 3 + 3, 0))];
+    }
+    case 'next_quarter': {
+      const q = Math.floor(m / 3) + 1;
+      const qy = q > 3 ? y + 1 : y, qq = q > 3 ? 0 : q;
+      return [fmt(new Date(qy, qq * 3, 1)), fmt(new Date(qy, qq * 3 + 3, 0))];
+    }
+    case 'ytd':
+      return [fmt(new Date(y, 0, 1)), fmt(now)];
+    default: return [null, null];
+  }
+}
+
+function setDateFilter(key) {
+  if (key === 'custom') {
+    document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('dc-cu').classList.add('active');
+    document.getElementById('custom-date-wrap').style.display = 'flex';
+    document.getElementById('dc-clear').style.display = 'inline-block';
+    return;
+  }
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  const [start, end] = getDateRange(key);
+  activeDateFilter = { key, start, end };
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('dc-' + {
+    current_week:'cw', last_week:'lw', current_month:'cm', last_month:'lm',
+    current_quarter:'cq', prev_quarter:'pq', next_quarter:'nq', ytd:'ytd'
+  }[key]).classList.add('active');
+  document.getElementById('dc-clear').style.display = 'inline-block';
+  currentPage = 1; loadAccounts();
+}
+
+function applyCustomDate() {
+  const s = document.getElementById('custom-start').value;
+  const e = document.getElementById('custom-end').value;
+  if (s && e) { activeDateFilter = { key:'custom', start:s, end:e }; currentPage = 1; loadAccounts(); }
+}
+
+function clearDateFilter() {
+  activeDateFilter = { key:null, start:null, end:null };
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  document.getElementById('dc-clear').style.display = 'none';
+  document.getElementById('custom-start').value = '';
+  document.getElementById('custom-end').value   = '';
+  currentPage = 1; loadAccounts();
+}
+
+// ── MOVE STAGE ──
+const STAGES = [
+  { value:'registered', label:'Registered',  color:'var(--text3)' },
+  { value:'in_review',  label:'In Review',   color:'var(--g-blue)' },
+  { value:'onboarded',  label:'Onboarded',   color:'var(--g-purple)' },
+  { value:'activated',  label:'Activated',   color:'var(--g-green)' },
+  { value:'rejected',   label:'Rejected',    color:'#D93025' },
+];
+
+function openStageModal(accountId, currentStatus, companyName) {
+  currentAccountId = accountId;
+  document.getElementById('stage-modal-sub').textContent = `${companyName} — current: ${STAGES.find(s=>s.value===currentStatus)?.label || currentStatus}`;
+  document.getElementById('stage-err').style.display = 'none';
+  document.getElementById('stage-options').innerHTML = STAGES.map(s => {
+    const isCurrent = s.value === currentStatus;
+    return `<button onclick="moveStage('${accountId}','${s.value}')" style="
+      display:flex;align-items:center;gap:12px;padding:12px 16px;
+      border-radius:10px;border:2px solid ${isCurrent ? s.color : 'var(--border)'};
+      background:${isCurrent ? 'var(--bg2)' : 'var(--surface)'};
+      cursor:${isCurrent ? 'default' : 'pointer'};
+      font-family:var(--font);font-size:13px;font-weight:${isCurrent ? '700' : '500'};
+      color:${isCurrent ? s.color : 'var(--text)'};text-align:left;width:100%;
+      transition:all .18s" ${isCurrent ? 'disabled' : ''}>
+      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+      ${s.label}
+      ${isCurrent ? '<span style="margin-left:auto;font-size:11px;opacity:.6">Current</span>' : ''}
+    </button>`;
+  }).join('');
+  document.getElementById('stage-modal').classList.remove('hidden');
+}
+
+function closeStageModal() {
+  document.getElementById('stage-modal').classList.add('hidden');
+}
+
+async function moveStage(accountId, newStatus) {
+  const errEl = document.getElementById('stage-err');
+  errEl.style.display = 'none';
+  try {
+    await API.updateAccount(accountId, { status: newStatus });
+    closeStageModal();
+    Auth.showToast(`Stage moved to ${STAGES.find(s=>s.value===newStatus)?.label}.`, 'success');
+    openDetailPanel(accountId);
+    loadAccounts();
+  } catch (e) {
+    errEl.textContent = e.message || 'Failed to update stage.';
+    errEl.style.display = 'block';
+  }
+}
+
+// ── BULK UPLOAD TEMPLATE ──
+function downloadTemplate() {
+  const headers = [
+    'company_name','contact_name','contact_email','account_number',
+    'country','contact_phone','website','registration_date',
+    'business_type','vertical','nature_of_business',
+    'onboarding_specialist','status','va_status','card_status','monthly_volume'
+  ];
+  const example = [
+    'Acme Corp','John Smith','john@acme.com','CL-001',
+    'United Arab Emirates','+971501234567','https://acme.com','2026-05-01',
+    'new','ecomm_seller','Shopify',
+    'Anum Farooq','registered','','','50000'
+  ];
+  const csv = [headers.join(','), example.join(',')].join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'sales_orbit_accounts_template.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
 
 if (user) {
   document.getElementById('sidebar-placeholder').outerHTML = Layout.partnerSidebar('accounts', user);
@@ -453,50 +685,59 @@ function debounceSearch() {
 async function loadAccounts() {
   const status   = document.getElementById('filter-status').value;
   const vertical = document.getElementById('filter-vertical').value;
+  const nob      = document.getElementById('filter-nob').value;
+  const biz      = document.getElementById('filter-biz').value;
   const search   = document.getElementById('search-input').value.trim();
 
   const tbody = document.getElementById('accounts-tbody');
-  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="17" style="text-align:center;padding:32px;color:var(--text3)">Loading…</td></tr>`;
 
   try {
     const params = { page: currentPage, limit: 20 };
-    if (status)   params.status   = status;
-    if (vertical) params.vertical = vertical;
-    if (search)   params.search   = search;
+    if (status)   params.status            = status;
+    if (vertical) params.vertical          = vertical;
+    if (nob)      params.nature_of_business = nob;
+    if (biz)      params.business_type     = biz;
+    if (search)   params.search            = search;
+    if (activeDateFilter.start) params.start_date = activeDateFilter.start;
+    if (activeDateFilter.end)   params.end_date   = activeDateFilter.end;
 
     const data = await API.getAccounts(params);
     const accounts = data.data || [];
     const total = data.total || 0;
 
     document.getElementById('tbl-count').textContent = total;
-    document.getElementById('tbl-showing').textContent = `Showing ${((currentPage-1)*20)+1}–${Math.min(currentPage*20, total)} of ${total}`;
+    document.getElementById('tbl-showing').textContent = total
+      ? `Showing ${((currentPage-1)*20)+1}–${Math.min(currentPage*20, total)} of ${total}`
+      : 'No results';
 
-    const _vaL   = {applied:'Applied',issued:'Issued',activated:'Activated'};
+    const _vaL   = {required:'Required',applied:'Applied',issued:'Issued',activated:'Activated'};
     const _cardL = {required:'Required',applied:'Applied',issued:'Issued'};
 
     if (!accounts.length) {
-      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:40px;color:var(--text3)">No accounts found. <a href="#" onclick="openAddModal()" style="color:var(--g-blue)">Add your first account</a></td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="17" style="text-align:center;padding:40px;color:var(--text3)">No accounts found. <a href="#" onclick="openAddModal()" style="color:var(--g-blue)">Add your first account</a></td></tr>`;
       return;
     }
 
-    const _cellStyle = 'padding:6px 8px;font-size:11px;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+    const _c = 'padding:6px 8px;font-size:11px;max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
     tbody.innerHTML = accounts.map(a => `
       <tr onclick="openDetailPanel('${a.id}')">
-        <td style="${_cellStyle}">${esc(a.account_number||'—')}</td>
-        <td style="${_cellStyle};font-weight:500;max-width:130px">${esc(a.company_name)}</td>
-        <td style="${_cellStyle}">${esc(a.country||'—')}</td>
-        <td style="${_cellStyle}">${esc(a.contact_name||'—')}</td>
-        <td style="${_cellStyle};max-width:130px">${esc(a.contact_email||'—')}</td>
-        <td style="${_cellStyle}">${esc(a.contact_phone||'—')}</td>
-        <td style="${_cellStyle}">${a.website?`<a href="${esc(a.website)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--g-blue)">${esc(a.website)}</a>`:'—'}</td>
-        <td style="${_cellStyle}">${Auth.formatDate(a.registration_date)}</td>
-        <td style="${_cellStyle}">${Auth.businessTypeLabel(a.business_type)}</td>
-        <td style="${_cellStyle}">${Auth.verticalLabel(a.vertical)}</td>
-        <td style="${_cellStyle}">${esc(a.nature_of_business||'—')}</td>
-        <td style="${_cellStyle}">${esc(a.onboarding_specialist||'—')}</td>
+        <td style="${_c}">${esc(a.account_number||'—')}</td>
+        <td style="${_c};font-weight:500;max-width:130px">${esc(a.company_name)}</td>
+        <td style="${_c}">${esc(a.country||'—')}</td>
+        <td style="${_c}">${esc(a.contact_name||'—')}</td>
+        <td style="${_c};max-width:130px">${esc(a.contact_email||'—')}</td>
+        <td style="${_c}">${esc(a.contact_phone||'—')}</td>
+        <td style="${_c}">${a.website?`<a href="${esc(a.website)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--g-blue)">${esc(a.website)}</a>`:'—'}</td>
+        <td style="${_c}">${Auth.formatDate(a.registration_date)}</td>
+        <td style="${_c}">${Auth.businessTypeLabel(a.business_type)}</td>
+        <td style="${_c}">${Auth.verticalLabel(a.vertical)}</td>
+        <td style="${_c}">${esc(a.nature_of_business||'—')}</td>
+        <td style="${_c}">${esc(a.onboarding_specialist||'—')}</td>
         <td style="padding:6px 8px">${Auth.statusBadge(a.status)}</td>
-        <td style="${_cellStyle}">${esc(_vaL[a.va_status]||a.va_status||'—')}</td>
-        <td style="${_cellStyle}">${esc(_cardL[a.card_status]||a.card_status||'—')}</td>
+        <td style="${_c}">${esc(_vaL[a.va_status]||a.va_status||'—')}</td>
+        <td style="${_c}">${esc(_cardL[a.card_status]||a.card_status||'—')}</td>
+        <td style="${_c};text-align:right">${a.monthly_volume ? '$'+Number(a.monthly_volume).toLocaleString() : '—'}</td>
         <td style="padding:6px 8px;text-align:center;white-space:nowrap">
           <div style="display:flex;gap:4px;justify-content:center" onclick="event.stopPropagation()">
             <button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:11px" onclick="openEditModal('${a.id}')">Edit</button>
@@ -508,7 +749,7 @@ async function loadAccounts() {
 
     renderPagination(total, data.limit);
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:#D93025">Error loading accounts: ${esc(e.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="17" style="text-align:center;padding:32px;color:#D93025">Error loading accounts: ${esc(e.message)}</td></tr>`;
   }
 }
 
@@ -603,9 +844,10 @@ async function openDetailPanel(id) {
       ['Nature of Business',    esc(a.nature_of_business || '—')],
       ['Channel Partner',       esc(a.partner_company || a.partner_name || '—')],
       ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
-      ['Account Status',        Auth.statusBadge(a.status)],
+      ['Account Stage',         Auth.statusBadge(a.status)],
       ['VA Status',             esc(vaLabels[a.va_status] || a.va_status || '—')],
       ['Card Status',           esc(cardLabels[a.card_status] || a.card_status || '—')],
+      ['Monthly Volume',        a.monthly_volume ? '$'+Number(a.monthly_volume).toLocaleString() : '—'],
     ].map(([l, v]) => `<div class="info-item"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join('');
 
     if (a.remarks) {
@@ -613,8 +855,11 @@ async function openDetailPanel(id) {
     }
 
     document.getElementById('panel-actions').innerHTML = `
-      <button class="btn btn-ghost btn-sm" onclick="openEditModal('${id}')">Edit Account</button>
-      <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="switchTab('tickets');openTicketModal('${id}')">Create Ticket</button>`;
+      <button class="btn btn-grad btn-sm" onclick="openStageModal('${id}','${a.status}','${esc(a.company_name)}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;vertical-align:middle"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Move Stage
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="openEditModal('${id}')">Edit</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="switchTab('tickets');openTicketModal('${id}')">+ Ticket</button>`;
 
     positionTabIndicator();
   } catch (e) {
@@ -811,6 +1056,7 @@ function openAddModal() {
   document.getElementById('f-status').value          = 'registered';
   document.getElementById('f-va-status').value       = '';
   document.getElementById('f-card-status').value     = '';
+  document.getElementById('f-monthly-volume').value  = '';
   setCountryValue('');
   setOSValue('');
   document.getElementById('modal-err').style.display = 'none';
@@ -841,6 +1087,7 @@ async function openEditModal(id) {
     document.getElementById('f-status').value          = a.status         || 'registered';
     document.getElementById('f-va-status').value       = a.va_status      || '';
     document.getElementById('f-card-status').value     = a.card_status    || '';
+    document.getElementById('f-monthly-volume').value  = a.monthly_volume || '';
     setCountryValue(a.country || '');
     setOSValue(a.onboarding_specialist || '');
   } catch (e) { Auth.showToast('Could not load account.', 'error'); }
@@ -856,6 +1103,7 @@ async function submitAccount() {
   errEl.style.display = 'none';
   const btn = document.getElementById('modal-submit-btn');
 
+  const mv = document.getElementById('f-monthly-volume').value;
   const body = {
     account_number:        document.getElementById('f-client-id').value.trim() || null,
     company_name:          document.getElementById('f-company').value.trim(),
@@ -872,6 +1120,7 @@ async function submitAccount() {
     va_status:             document.getElementById('f-va-status').value || null,
     card_status:           document.getElementById('f-card-status').value || null,
     registration_date:     document.getElementById('f-reg-date').value || null,
+    monthly_volume:        mv ? parseFloat(mv) : null,
   };
 
   if (!body.company_name || !body.contact_name || !body.contact_email) {

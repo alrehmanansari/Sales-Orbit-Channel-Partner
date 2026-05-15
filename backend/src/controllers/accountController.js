@@ -25,19 +25,20 @@ async function logAudit(client, accountId, userId, action, oldValues, newValues,
 
 async function listAccounts(req, res, next) {
   try {
-    const { status, vertical, business_type, partner_id, owner_id, search,
-            start_date, end_date, page = 1, limit = 50 } = req.query;
+    const { status, vertical, business_type, nature_of_business, partner_id,
+            owner_id, search, start_date, end_date, page = 1, limit = 50 } = req.query;
 
     const access = accountAccessClause(req.user);
     const conditions = [access.where];
     const params = [...access.params];
     let idx = params.length + 1;
 
-    if (status)        { conditions.push(`a.status = $${idx++}`);             params.push(status); }
-    if (vertical)      { conditions.push(`a.vertical = $${idx++}`);           params.push(vertical); }
-    if (business_type) { conditions.push(`a.business_type = $${idx++}`);      params.push(business_type); }
-    if (start_date)    { conditions.push(`a.registration_date >= $${idx++}`); params.push(start_date); }
-    if (end_date)      { conditions.push(`a.registration_date <= $${idx++}`); params.push(end_date); }
+    if (status)             { conditions.push(`a.status = $${idx++}`);               params.push(status); }
+    if (vertical)           { conditions.push(`a.vertical = $${idx++}`);             params.push(vertical); }
+    if (business_type)      { conditions.push(`a.business_type = $${idx++}`);        params.push(business_type); }
+    if (nature_of_business) { conditions.push(`a.nature_of_business = $${idx++}`);   params.push(nature_of_business); }
+    if (start_date)         { conditions.push(`a.registration_date >= $${idx++}`);   params.push(start_date); }
+    if (end_date)           { conditions.push(`a.registration_date <= $${idx++}`);   params.push(end_date); }
 
     // Management-only filters
     if (MANAGEMENT_ROLES.includes(req.user.role)) {
@@ -46,8 +47,12 @@ async function listAccounts(req, res, next) {
     }
 
     if (search) {
-      conditions.push(`(a.company_name ILIKE $${idx} OR a.contact_name ILIKE $${idx} OR a.contact_email ILIKE $${idx})`);
-      params.push(`%${search}%`); idx++;
+      const s = idx++;
+      conditions.push(
+        `(a.company_name ILIKE $${s} OR a.contact_name ILIKE $${s} OR ` +
+        `a.contact_email ILIKE $${s} OR a.account_number ILIKE $${s})`
+      );
+      params.push(`%${search}%`);
     }
 
     const whereClause = conditions.join(' AND ');
@@ -62,9 +67,9 @@ async function listAccounts(req, res, next) {
       `SELECT a.id, a.company_name, a.trading_name, a.business_type, a.vertical,
               a.contact_name, a.contact_email, a.contact_phone, a.country,
               a.website, a.nature_of_business, a.onboarding_specialist,
-              a.va_status, a.card_status,
+              a.va_status, a.card_status, a.monthly_volume,
               a.status, a.registration_date, a.onboarded_at, a.activated_at,
-              a.account_number,
+              a.account_number, a.updated_at,
               p.name AS partner_name, p.company_name AS partner_company,
               o.name AS owner_name,
               ${INTERNAL_ROLES.includes(req.user.role) ? 'a.kyc_agent,' : ''}
@@ -134,7 +139,7 @@ async function createAccount(req, res, next) {
       contact_name, contact_email, contact_phone, country,
       website, nature_of_business, onboarding_specialist,
       va_status, card_status, registration_date, remarks,
-      account_number, status
+      account_number, status, monthly_volume
     } = req.body;
 
     if (!company_name || !contact_name || !contact_email) {
@@ -159,15 +164,16 @@ async function createAccount(req, res, next) {
          (company_name, trading_name, business_type, vertical, contact_name,
           contact_email, contact_phone, country, website, nature_of_business,
           onboarding_specialist, va_status, card_status, registration_date,
-          remarks, account_number, status, partner_id, owner_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
+          remarks, account_number, status, monthly_volume, partner_id, owner_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
        RETURNING *`,
       [company_name, trading_name || null, business_type || null, vertical || null,
        contact_name, contact_email, contact_phone || null, country || null,
        website || null, nature_of_business || null, onboarding_specialist || null,
-       va_status || null, card_status || null,
-       registration_date || null,
-       remarks || null, account_number || null, accountStatus, req.user.id, ownerId]
+       va_status || null, card_status || null, registration_date || null,
+       remarks || null, account_number || null, accountStatus,
+       monthly_volume ? parseFloat(monthly_volume) : null,
+       req.user.id, ownerId]
     );
 
     const account = result.rows[0];
@@ -207,7 +213,7 @@ async function updateAccount(req, res, next) {
                            'contact_name','contact_email','contact_phone','country',
                            'website','nature_of_business','onboarding_specialist',
                            'va_status','card_status','registration_date','remarks',
-                           'account_number','status'];
+                           'account_number','status','monthly_volume'];
 
     // Fields only internal staff can edit
     const internalFields = ['kyc_agent','owner_id','rejection_reason'];
