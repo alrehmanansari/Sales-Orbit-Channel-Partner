@@ -23,6 +23,50 @@ async function logAudit(client, accountId, userId, action, oldValues, newValues,
   );
 }
 
+async function createNotification(client, userId, title, message, type, referenceId) {
+  await client.query(
+    `INSERT INTO notifications (user_id, title, message, type, reference_id, reference_type)
+     VALUES ($1, $2, $3, $4, $5, 'account')`,
+    [userId, title, message, type, referenceId]
+  );
+}
+
+// Human-readable labels for account fields used in notification summaries
+const FIELD_LABELS = {
+  status:               'Account Stage',
+  company_name:         'Company Name',
+  contact_name:         'Director Name',
+  contact_email:        'Email',
+  contact_phone:        'Phone',
+  country:              'Country',
+  city:                 'City',
+  business_type:        'Business Type',
+  vertical:             'Vertical',
+  nature_of_business:   'Nature of Business',
+  onboarding_specialist:'Onboarding Specialist',
+  va_status:            'VA Status',
+  card_status:          'Card Status',
+  monthly_volume:       'Monthly Volume',
+  website:              'Website',
+  account_number:       'Client ID',
+  registration_date:    'Registration Date',
+  kyc_agent:            'KYC Agent',
+  rejection_reason:     'Rejection Reason',
+};
+
+function buildChangeSummary(oldRow, newRow) {
+  const changes = [];
+  for (const [field, label] of Object.entries(FIELD_LABELS)) {
+    const ov = oldRow[field], nv = newRow[field];
+    if (String(ov ?? '') !== String(nv ?? '') && (ov || nv)) {
+      changes.push(`${label}: ${ov || '—'} → ${nv || '—'}`);
+    }
+  }
+  if (!changes.length) return null;
+  const shown = changes.slice(0, 3).join(' · ');
+  return changes.length > 3 ? `${shown} (+${changes.length - 3} more)` : shown;
+}
+
 async function listAccounts(req, res, next) {
   try {
     const { status, vertical, business_type, nature_of_business, partner_id,
@@ -180,6 +224,16 @@ async function createAccount(req, res, next) {
 
     await logAudit(client, account.id, req.user.id, 'account_created', null, account, req.ip);
 
+    // Notify assigned COS that a new account has been created and assigned to them
+    if (ownerId) {
+      await createNotification(
+        client, ownerId,
+        `New account assigned: ${company_name}`,
+        `${req.user.name} submitted a new account. Company: ${company_name}${account.nature_of_business ? ` · ${account.nature_of_business}` : ''}`,
+        'account', account.id
+      );
+    }
+
     await client.query('COMMIT');
     res.status(201).json({ data: account });
   } catch (err) {
@@ -249,10 +303,56 @@ async function updateAccount(req, res, next) {
       values
     );
 
-    await logAudit(client, id, req.user.id, 'account_updated', old, result.rows[0], req.ip);
-    await client.query('COMMIT');
+    const updated = result.rows[0];
+    await logAudit(client, id, req.user.id, 'account_updated', old, updated, req.ip);
 
-    res.json({ data: result.rows[0] });
+    // ── Cross-notifications for every account edit ────────────────────────
+    // Fetch partner and owner IDs if not already on `old` (after UPDATE they're still there)
+    const changeSummary = buildChangeSummary(old, updated);
+    const notifTitle    = `Account updated: ${updated.company_name}`;
+    const actorLabel    = req.user.name;
+
+    if (changeSummary) {
+      const notifBody = `${actorLabel} updated — ${changeSummary}`;
+
+      if (req.user.role === ROLES.CHANNEL_PARTNER) {
+        // Partner edited → notify assigned COS
+        if (old.owner_id) {
+          await createNotification(client, old.owner_id, notifTitle, notifBody, 'account', id);
+        }
+      } else {
+        // Internal edited → notify partner
+        if (old.partner_id) {
+          await createNotification(client, old.partner_id, notifTitle, notifBody, 'account', id);
+        }
+        // Also notify the assigned COS if a different internal user made the change
+        if (old.owner_id && old.owner_id !== req.user.id) {
+          await createNotification(client, old.owner_id, notifTitle, notifBody, 'account', id);
+        }
+      }
+
+      // Special: stage change — always notify both sides with a clear message
+      if (updates.status && updates.status !== old.status) {
+        const stageMsg = `${actorLabel} moved ${updated.company_name} from "${old.status}" to "${updates.status}"`;
+        if (req.user.role === ROLES.CHANNEL_PARTNER && old.owner_id) {
+          // already notified above — skip duplicate
+        } else if (old.partner_id && req.user.role !== ROLES.CHANNEL_PARTNER) {
+          // already notified above — skip duplicate
+        }
+        // Extra: notify management roles about stage changes
+        const mgmtResult = await client.query(
+          `SELECT id FROM users WHERE role IN ('senior_bdm','manager_partnerships','head_of_sales','head_of_mena') AND is_active = TRUE`
+        );
+        for (const mgr of mgmtResult.rows) {
+          if (mgr.id !== req.user.id) {
+            await createNotification(client, mgr.id, `Stage change: ${updated.company_name}`, stageMsg, 'account', id);
+          }
+        }
+      }
+    }
+
+    await client.query('COMMIT');
+    res.json({ data: updated });
   } catch (err) {
     await client.query('ROLLBACK');
     next(err);
