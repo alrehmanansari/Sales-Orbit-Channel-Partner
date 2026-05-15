@@ -21,13 +21,18 @@
 .info-item{display:flex;flex-direction:column;gap:4px}
 .info-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3)}
 .info-value{font-size:13px;color:var(--text);font-weight:500}
-.notes-list{display:flex;flex-direction:column;gap:12px}
-.note-item{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px}
-.note-author{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
-.note-content{font-size:13px;color:var(--text);line-height:1.55}
-.note-input-row{display:flex;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
-.note-textarea{flex:1;border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);resize:none;outline:none;transition:border-color .2s}
-.note-textarea:focus{border-color:var(--g-blue);box-shadow:0 0 0 3px var(--g-blue-soft)}
+.chat-list{display:flex;flex-direction:column;gap:10px;min-height:60px}
+.chat-wrap{display:flex;flex-direction:column}
+.chat-wrap.mine{align-items:flex-end}
+.chat-wrap.theirs{align-items:flex-start}
+.chat-meta{font-size:10px;color:var(--text3);margin-bottom:3px}
+.chat-bubble{max-width:82%;padding:9px 13px;font-size:13px;line-height:1.5;word-break:break-word}
+.chat-bubble.mine{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));color:#fff;border-radius:16px 16px 4px 16px}
+.chat-bubble.theirs{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:16px 16px 16px 4px}
+.chat-role{font-size:10px;color:var(--text3);margin-top:2px}
+.chat-input-row{display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);align-items:flex-end}
+.chat-textarea{flex:1;border:1px solid var(--border2);border-radius:10px;padding:9px 12px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--surface);resize:none;outline:none;transition:border-color .2s;min-height:38px;max-height:120px;overflow-y:auto;line-height:1.45}
+.chat-textarea:focus{border-color:var(--g-purple);box-shadow:0 0 0 3px var(--g-purple-soft)}
 .audit-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .audit-item:last-child{border-bottom:none}
 .audit-dot{width:8px;height:8px;border-radius:50%;background:var(--g-purple);flex-shrink:0;margin-top:4px}
@@ -152,10 +157,12 @@
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="panel-actions"></div>
     </div>
     <div id="tab-notes" class="hidden">
-      <div class="notes-list" id="notes-list"></div>
-      <div class="note-input-row">
-        <textarea class="note-textarea" id="note-input" rows="3" placeholder="Add a note…"></textarea>
-        <button class="btn btn-grad" onclick="submitNote()" style="align-self:flex-end">Post</button>
+      <div class="chat-list" id="notes-list"></div>
+      <div class="chat-input-row">
+        <textarea class="chat-textarea" id="note-input" rows="1" placeholder="Type a note… (Enter to send, Shift+Enter for new line)" onkeydown="handleNoteKey(event)"></textarea>
+        <button class="btn btn-grad" onclick="submitNote()" style="height:38px;padding:0 14px;flex-shrink:0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;vertical-align:middle"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>Send
+        </button>
       </div>
     </div>
     <div id="tab-tickets" class="hidden">
@@ -519,6 +526,49 @@ function renderPagination(total, limit) {
 
 function changePage(p) { currentPage = p; loadAccounts(); }
 
+// ── JOURNEY TIMELINE ──
+function buildJourney(a) {
+  const order   = ['registered','in_review','onboarded','activated'];
+  const rejected = a.status === 'rejected';
+  const curIdx   = rejected ? 1 : order.indexOf(a.status);
+  const stages   = [
+    { key:'registered', label:'Registered', date: a.registration_date },
+    { key:'in_review',  label: rejected ? 'Rejected' : 'In Review', date: null },
+    { key:'onboarded',  label:'Onboarded',  date: a.onboarded_at },
+    { key:'activated',  label:'Activated',  date: a.activated_at },
+  ];
+  const items = stages.map((s, i) => {
+    const done    = !rejected && i < curIdx;
+    const current = i === curIdx;
+    let circ, inner;
+    if (done) {
+      circ  = 'background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent';
+      inner = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><path d="M20 6L9 17l-5-5"/></svg>`;
+    } else if (current && rejected) {
+      circ  = 'background:#FEE2E2;border-color:#D93025';
+      inner = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#D93025" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+    } else if (current) {
+      circ  = 'background:var(--surface);border-color:var(--g-purple);box-shadow:0 0 0 3px rgba(145,119,199,.2)';
+      inner = `<span style="width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,var(--g-blue),var(--g-purple));display:inline-block"></span>`;
+    } else {
+      circ  = 'background:var(--bg3);border-color:var(--border2)'; inner = '';
+    }
+    const lc = (current && rejected) ? '#D93025' : current ? 'var(--text)' : done ? 'var(--text2)' : 'var(--text3)';
+    const lw = current ? '700' : '500';
+    const line = i > 0 ? `<div style="position:absolute;top:11px;left:calc(-50% + 12px);right:calc(50% + 12px);height:2px;background:${done ? 'linear-gradient(90deg,var(--g-blue),var(--g-purple))' : 'var(--border2)'}"></div>` : '';
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;position:relative">
+        ${line}
+        <div style="width:22px;height:22px;border-radius:50%;border:2px solid;${circ};display:flex;align-items:center;justify-content:center;position:relative;z-index:1;flex-shrink:0">${inner}</div>
+        <div style="font-size:9.5px;font-weight:${lw};color:${lc};margin-top:5px;text-align:center;line-height:1.3">${s.label}</div>
+        ${s.date ? `<div style="font-size:8.5px;color:var(--text3);text-align:center;margin-top:1px">${Auth.formatDate(s.date)}</div>` : ''}
+      </div>`;
+  }).join('');
+  return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px 12px;margin-bottom:16px">
+    <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:12px">Account Journey</div>
+    <div style="display:flex;align-items:flex-start">${items}</div>
+  </div>`;
+}
+
 // ── DETAIL PANEL ──
 async function openDetailPanel(id) {
   currentAccountId = id;
@@ -539,7 +589,7 @@ async function openDetailPanel(id) {
     const vaLabels   = { required:'Required', applied:'Applied', issued:'Issued', activated:'Activated' };
     const cardLabels = { required:'Required', applied:'Applied', issued:'Issued' };
 
-    document.getElementById('info-grid').innerHTML = [
+    document.getElementById('info-grid').innerHTML = buildJourney(a) + [
       ['Client ID',             esc(a.account_number || '—')],
       ['Company Name',          esc(a.company_name)],
       ['Reg Country',           esc(a.country || '—')],
@@ -556,18 +606,10 @@ async function openDetailPanel(id) {
       ['Account Status',        Auth.statusBadge(a.status)],
       ['VA Status',             esc(vaLabels[a.va_status] || a.va_status || '—')],
       ['Card Status',           esc(cardLabels[a.card_status] || a.card_status || '—')],
-    ].map(([l, v]) => `
-      <div class="info-item">
-        <div class="info-label">${l}</div>
-        <div class="info-value">${v}</div>
-      </div>`).join('');
+    ].map(([l, v]) => `<div class="info-item"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join('');
 
     if (a.remarks) {
-      document.getElementById('info-grid').innerHTML += `
-        <div class="info-item" style="grid-column:1/-1">
-          <div class="info-label">Remarks</div>
-          <div class="info-value">${esc(a.remarks)}</div>
-        </div>`;
+      document.getElementById('info-grid').innerHTML += `<div class="info-item" style="grid-column:1/-1"><div class="info-label">Remarks</div><div class="info-value">${esc(a.remarks)}</div></div>`;
     }
 
     document.getElementById('panel-actions').innerHTML = `
@@ -608,32 +650,48 @@ function positionTabIndicator() {
 
 async function loadNotes() {
   const list = document.getElementById('notes-list');
-  list.innerHTML = '<div style="color:var(--text3);font-size:12px">Loading notes…</div>';
+  list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:32px 0">Loading…</div>';
   try {
-    const data = await API.getNotes(currentAccountId);
+    const data  = await API.getNotes(currentAccountId);
     const notes = data.data || [];
-    if (!notes.length) { list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:20px">No notes yet. Add the first one below.</div>'; return; }
-    list.innerHTML = notes.map(n => `
-      <div class="note-item">
-        <div class="note-author">
-          <span>${esc(n.author_name)} <span style="font-weight:400;color:var(--text3)">(${Auth.roleLabel(n.author_role)})</span></span>
-          <span style="color:var(--text3);font-weight:400">${Auth.timeAgo(n.created_at)}</span>
-        </div>
-        <div class="note-content">${esc(n.content)}</div>
-      </div>`).join('');
-  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px">Could not load notes.</div>'; }
+    if (!notes.length) {
+      list.innerHTML = '<div style="color:var(--text3);font-size:12px;text-align:center;padding:32px 0">No notes yet. Send the first one!</div>';
+      return;
+    }
+    list.innerHTML = notes.map(n => {
+      const mine = n.author_role === 'channel_partner';
+      const side = mine ? 'mine' : 'theirs';
+      return `<div class="chat-wrap ${side}">
+        <div class="chat-meta">${esc(n.author_name)} · ${Auth.timeAgo(n.created_at)}</div>
+        <div class="chat-bubble ${side}">${esc(n.content).replace(/\n/g,'<br>')}</div>
+        ${!mine ? `<div class="chat-role">${Auth.roleLabel(n.author_role)}</div>` : ''}
+      </div>`;
+    }).join('');
+    list.scrollTop = list.scrollHeight;
+  } catch { list.innerHTML = '<div style="color:#D93025;font-size:12px;text-align:center">Could not load notes.</div>'; }
 }
 
 async function submitNote() {
-  const input = document.getElementById('note-input');
+  const input   = document.getElementById('note-input');
   const content = input.value.trim();
   if (!content) return;
+  const btn = document.querySelector('#tab-notes .btn');
+  btn.disabled = true;
   try {
     await API.createNote(currentAccountId, { content });
     input.value = '';
-    loadNotes();
-    Auth.showToast('Note posted.', 'success');
-  } catch (e) { Auth.showToast(e.message, 'error'); }
+    input.style.height = '';
+    await loadNotes();
+  } catch (e) { Auth.showToast(e.message || 'Failed to post note.', 'error'); }
+  finally { btn.disabled = false; input.focus(); }
+}
+
+function handleNoteKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitNote(); return; }
+  setTimeout(() => {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+  }, 0);
 }
 
 async function loadTickets() {

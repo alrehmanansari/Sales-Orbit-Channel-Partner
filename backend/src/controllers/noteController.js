@@ -33,12 +33,12 @@ async function getNotes(req, res, next) {
     if (!account) return res.status(404).json({ error: 'Account not found' });
 
     const result = await query(
-      `SELECT n.id, n.content, n.created_at,
+      `SELECT n.id, n.author_id, n.content, n.created_at,
               u.name AS author_name, u.role AS author_role
        FROM notes n
        JOIN users u ON u.id = n.author_id
        WHERE n.account_id = $1
-       ORDER BY n.created_at DESC`,
+       ORDER BY n.created_at ASC`,
       [accountId]
     );
 
@@ -78,32 +78,31 @@ async function createNote(req, res, next) {
       [accountId, req.user.id, JSON.stringify({ note_id: note.id, content: note.content })]
     );
 
-    // Cross-notify: if partner posts note → notify assigned COS; if COS/internal posts → notify partner
+    // Notify both sides on every note — partner always notifies COS and vice versa
     const accountRow = await client.query(
-      `SELECT a.partner_id, a.owner_id, a.company_name,
-              p.name AS partner_name, o.name AS owner_name
-       FROM accounts a
-       LEFT JOIN users p ON p.id = a.partner_id
-       LEFT JOIN users o ON o.id = a.owner_id
-       WHERE a.id = $1`,
+      `SELECT a.partner_id, a.owner_id, a.company_name
+       FROM accounts a WHERE a.id = $1`,
       [accountId]
     );
     const acc = accountRow.rows[0];
+    const preview = `"${content.trim().substring(0, 80)}${content.trim().length > 80 ? '…' : ''}"`;
+    const msgTitle = `New note on ${acc.company_name}`;
+    const msgBody  = `${req.user.name}: ${preview}`;
 
-    if (req.user.role === ROLES.CHANNEL_PARTNER && acc.owner_id) {
-      await createNotification(
-        client, acc.owner_id,
-        `New note on ${acc.company_name}`,
-        `${req.user.name} posted a note: "${content.trim().substring(0, 80)}..."`,
-        'note', accountId
-      );
-    } else if (INTERNAL_ROLES.includes(req.user.role) && acc.partner_id) {
-      await createNotification(
-        client, acc.partner_id,
-        `New note on ${acc.company_name}`,
-        `${req.user.name} posted a note: "${content.trim().substring(0, 80)}..."`,
-        'note', accountId
-      );
+    if (req.user.role === ROLES.CHANNEL_PARTNER) {
+      // Partner posted → notify assigned COS
+      if (acc.owner_id) {
+        await createNotification(client, acc.owner_id, msgTitle, msgBody, 'note', accountId);
+      }
+    } else {
+      // Internal posted → notify partner
+      if (acc.partner_id) {
+        await createNotification(client, acc.partner_id, msgTitle, msgBody, 'note', accountId);
+      }
+      // Also notify COS if a different internal user posted
+      if (acc.owner_id && acc.owner_id !== req.user.id) {
+        await createNotification(client, acc.owner_id, msgTitle, msgBody, 'note', accountId);
+      }
     }
 
     await client.query('COMMIT');
