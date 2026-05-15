@@ -69,13 +69,36 @@ async function getClient() {
 
 async function runMigrations() {
   const migrations = [
+    // Schema additions
     `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS monthly_volume NUMERIC(15,2)`,
+
+    // Fix users who registered with an internal designation but got channel_partner role
+    // by mistake (the old register endpoint always assigned channel_partner).
+    `UPDATE users SET role =
+       CASE designation
+         WHEN 'Customer Onboarding Specialist'      THEN 'customer_onboarding_specialist'
+         WHEN 'Senior Business Development Manager' THEN 'senior_bdm'
+         WHEN 'Manager Partnerships'                THEN 'manager_partnerships'
+         WHEN 'Head of Sales'                       THEN 'head_of_sales'
+         WHEN 'Head of MENA'                        THEN 'head_of_mena'
+         WHEN 'Business Development Manager'        THEN 'senior_bdm'
+         WHEN 'Sales Development Representative'    THEN 'senior_bdm'
+         WHEN 'Country Head'                        THEN 'head_of_sales'
+         ELSE 'senior_bdm'
+       END
+     WHERE role = 'channel_partner'
+       AND designation IS NOT NULL
+       AND designation <> 'Channel Partner'`,
   ];
   for (const sql of migrations) {
-    try { await pool.query(sql); }
-    catch (err) { console.error('[migration] error:', err.message); }
+    try {
+      const r = await pool.query(sql);
+      if (r.rowCount) console.log(`[migration] ${r.rowCount} row(s) affected: ${sql.substring(0,60).trim()}…`);
+    } catch (err) {
+      console.error('[migration] error:', err.message);
+    }
   }
-  console.log('[migration] Schema up to date');
+  console.log('[migration] All migrations complete');
 }
 
 module.exports = { pool, query, getClient, testConnection, runMigrations };
