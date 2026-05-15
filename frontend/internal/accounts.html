@@ -350,7 +350,7 @@
         </div>
       </div>
 
-      <button class="btn btn-grad w-full" onclick="saveAccount()">Save Changes</button>
+      <button class="btn btn-grad w-full" id="save-account-btn" onclick="saveAccount()">Save Changes</button>
     </div>
 
     <!-- NOTES TAB -->
@@ -766,7 +766,14 @@ function positionTabInd() {
 
 async function saveAccount() {
   const errEl = document.getElementById('edit-err');
+  const btn   = document.getElementById('save-account-btn');
   errEl.style.display = 'none';
+
+  if (!currentAccountId) {
+    errEl.textContent = 'No account selected. Please close and reopen the account.';
+    errEl.style.display = 'block';
+    return;
+  }
 
   const body = {
     company_name:          document.getElementById('e-company').value.trim(),
@@ -790,14 +797,21 @@ async function saveAccount() {
     rejection_reason:      document.getElementById('e-rejection').value.trim(),
   };
 
+  btn.disabled    = true;
+  btn.textContent = 'Saving…';
+
   try {
     await API.updateAccount(currentAccountId, body);
     Auth.showToast('Account updated successfully.', 'success');
     loadAccounts();
     openPanel(currentAccountId);
   } catch (e) {
-    errEl.textContent   = e.message || 'Update failed.';
+    errEl.textContent = e.message || 'Failed to save. Please try again.';
     errEl.style.display = 'block';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = 'Save Changes';
   }
 }
 

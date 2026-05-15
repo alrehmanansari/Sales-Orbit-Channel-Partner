@@ -689,16 +689,16 @@ async function moveStage(accountId, newStatus) {
 // ── BULK UPLOAD TEMPLATE ──
 function downloadTemplate() {
   const headers = [
-    'company_name','contact_name','contact_email','account_number',
-    'country','contact_phone','website','registration_date',
-    'business_type','vertical','nature_of_business',
-    'onboarding_specialist','status','va_status','card_status','monthly_volume'
+    'company_name','account_number','country','city','website','registration_date',
+    'business_type','vertical','nature_of_business','monthly_volume',
+    'contact_name','contact_email','contact_phone',
+    'onboarding_specialist','status','va_status','card_status'
   ];
   const example = [
-    'Acme Corp','John Smith','john@acme.com','CL-001',
-    'United Arab Emirates','+971501234567','https://acme.com','2026-05-01',
-    'new','ecomm_seller','Shopify',
-    'Anum Farooq','registered','','','50000'
+    'Acme Corp','CL-001','United Arab Emirates','Karachi','https://acme.com','2026-05-01',
+    'new','ecomm_seller','Shopify','50000',
+    'John Smith','john@acme.com','+923010101010',
+    '','registered','',''
   ];
   const csv = [headers.join(','), example.join(',')].join('\n');
   const blob = new Blob([csv], { type:'text/csv' });

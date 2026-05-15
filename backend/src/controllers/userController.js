@@ -150,18 +150,13 @@ async function listSpecialists(req, res, next) {
   }
 }
 
-// Returns signed-up BDM/SDR/Manager users shown as Onboarding Specialist options in the add-account form
+// Returns all active internal team members for the Onboarding Specialist dropdown
 async function listSalesTeam(req, res, next) {
   try {
     const result = await query(
-      `SELECT id, name, email, designation
+      `SELECT id, name, email, role, designation
        FROM users
-       WHERE designation IN (
-         'Business Development Manager',
-         'Sales Development Representative',
-         'Senior Business Development Manager',
-         'Manager Partnerships'
-       ) AND is_active = TRUE
+       WHERE role != 'channel_partner' AND is_active = TRUE
        ORDER BY name`,
       []
     );
