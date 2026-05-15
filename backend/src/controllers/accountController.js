@@ -65,7 +65,7 @@ async function listAccounts(req, res, next) {
 
     const dataResult = await query(
       `SELECT a.id, a.company_name, a.trading_name, a.business_type, a.vertical,
-              a.contact_name, a.contact_email, a.contact_phone, a.country,
+              a.contact_name, a.contact_email, a.contact_phone, a.country, a.city,
               a.website, a.nature_of_business, a.onboarding_specialist,
               a.va_status, a.card_status, a.monthly_volume,
               a.status, a.registration_date, a.onboarded_at, a.activated_at,
@@ -136,7 +136,7 @@ async function createAccount(req, res, next) {
 
     const {
       company_name, trading_name, business_type, vertical,
-      contact_name, contact_email, contact_phone, country,
+      contact_name, contact_email, contact_phone, country, city,
       website, nature_of_business, onboarding_specialist,
       va_status, card_status, registration_date, remarks,
       account_number, status, monthly_volume
@@ -162,13 +162,13 @@ async function createAccount(req, res, next) {
     const result = await client.query(
       `INSERT INTO accounts
          (company_name, trading_name, business_type, vertical, contact_name,
-          contact_email, contact_phone, country, website, nature_of_business,
+          contact_email, contact_phone, country, city, website, nature_of_business,
           onboarding_specialist, va_status, card_status, registration_date,
           remarks, account_number, status, monthly_volume, partner_id, owner_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
        RETURNING *`,
       [company_name, trading_name || null, business_type || null, vertical || null,
-       contact_name, contact_email, contact_phone || null, country || null,
+       contact_name, contact_email, contact_phone || null, country || null, city || null,
        website || null, nature_of_business || null, onboarding_specialist || null,
        va_status || null, card_status || null, registration_date || null,
        remarks || null, account_number || null, accountStatus,
@@ -210,7 +210,7 @@ async function updateAccount(req, res, next) {
 
     // Fields partners can edit
     const partnerFields = ['company_name','trading_name','business_type','vertical',
-                           'contact_name','contact_email','contact_phone','country',
+                           'contact_name','contact_email','contact_phone','country','city',
                            'website','nature_of_business','onboarding_specialist',
                            'va_status','card_status','registration_date','remarks',
                            'account_number','status','monthly_volume'];

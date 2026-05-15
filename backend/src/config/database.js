@@ -88,6 +88,7 @@ async function runMigrations() {
   // ── Idempotent schema changes ─────────────────────────────────────────────
   const schemaMigrations = [
     ['add_monthly_volume', `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS monthly_volume NUMERIC(15,2)`],
+    ['add_city',          `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS city VARCHAR(100)`],
   ];
   for (const [id, sql] of schemaMigrations) {
     try { await pool.query(sql); await mark(id); }

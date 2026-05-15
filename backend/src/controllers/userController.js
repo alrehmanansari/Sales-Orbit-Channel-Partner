@@ -150,4 +150,25 @@ async function listSpecialists(req, res, next) {
   }
 }
 
-module.exports = { listUsers, getUser, createUser, updateUser, listPartners, listSpecialists };
+// Returns signed-up BDM/SDR/Manager users shown as Onboarding Specialist options in the add-account form
+async function listSalesTeam(req, res, next) {
+  try {
+    const result = await query(
+      `SELECT id, name, email, designation
+       FROM users
+       WHERE designation IN (
+         'Business Development Manager',
+         'Sales Development Representative',
+         'Senior Business Development Manager',
+         'Manager Partnerships'
+       ) AND is_active = TRUE
+       ORDER BY name`,
+      []
+    );
+    res.json({ data: result.rows });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { listUsers, getUser, createUser, updateUser, listPartners, listSpecialists, listSalesTeam };

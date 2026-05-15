@@ -125,7 +125,7 @@ function verticalLabel(v) {
   const map = {
     it_services_provider: 'IT Services',
     ecomm_seller: 'E-comm Seller',
-    b2b_seller: 'B2B Seller',
+    b2b_seller: 'B2B Goods Exports',
     freelancer: 'Freelancer'
   };
   return map[v] || v || '—';

@@ -93,6 +93,7 @@ const API = {
   getUsers:       (params = {})   => apiFetch('/users?' + new URLSearchParams(params)),
   getPartners:    ()               => apiFetch('/users/partners'),
   getSpecialists: ()               => apiFetch('/users/specialists'),
+  getSalesTeam:   ()               => apiFetch('/users/sales-team'),
   createUser:     (body)           => apiFetch('/users',         { method: 'POST', body: JSON.stringify(body) }),
   updateUser:     (id, body)       => apiFetch(`/users/${id}`,   { method: 'PUT',  body: JSON.stringify(body) }),
 };

@@ -89,7 +89,7 @@
             <option value="">All Verticals</option>
             <option value="it_services_provider">IT Services</option>
             <option value="ecomm_seller">E-comm Seller</option>
-            <option value="b2b_seller">B2B Seller</option>
+            <option value="b2b_seller">B2B Goods Exports</option>
             <option value="freelancer">Freelancer</option>
           </select>
           <select id="f-nob" class="filter-select" onchange="loadAccounts()">
@@ -218,10 +218,33 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Email ID</label><input class="form-input" type="email" id="e-contact-email"/></div>
-          <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="e-phone" placeholder="Active Whatsapp Number of Client"/></div>
+          <div class="form-group"><label class="form-label">WhatsApp / Phone</label><input class="form-input" id="e-phone" placeholder="+923010101010 / Add Active Whatsapp number of the client"/></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Website</label><input class="form-input" id="e-website" placeholder="Store Link in case of Ecomm Seller"/></div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input class="form-input" id="e-city" list="pk-cities-int" placeholder="Search city…" autocomplete="off"/>
+            <datalist id="pk-cities-int">
+              <option>Karachi</option><option>Lahore</option><option>Islamabad</option><option>Rawalpindi</option>
+              <option>Faisalabad</option><option>Multan</option><option>Peshawar</option><option>Quetta</option>
+              <option>Hyderabad</option><option>Sialkot</option><option>Gujranwala</option><option>Sargodha</option>
+              <option>Bahawalpur</option><option>Sukkur</option><option>Larkana</option><option>Sheikhupura</option>
+              <option>Rahim Yar Khan</option><option>Jhang</option><option>Dera Ghazi Khan</option><option>Gujrat</option>
+              <option>Kasur</option><option>Mardan</option><option>Mingora</option><option>Nawabshah</option>
+              <option>Sahiwal</option><option>Mirpur Khas</option><option>Okara</option><option>Wah Cantonment</option>
+              <option>Dera Ismail Khan</option><option>Chiniot</option><option>Kamoke</option><option>Hafizabad</option>
+              <option>Sadiqabad</option><option>Burewala</option><option>Jacobabad</option><option>Khanewal</option>
+              <option>Kohat</option><option>Khuzdar</option><option>Pakpattan</option><option>Khanpur</option>
+              <option>Daska</option><option>Kamalia</option><option>Khairpur</option><option>Abbottabad</option>
+              <option>Jhelum</option><option>Attock</option><option>Mianwali</option><option>Chakwal</option>
+              <option>Muzaffargarh</option><option>Mandi Bahauddin</option><option>Lodhran</option><option>Vehari</option>
+              <option>Toba Tek Singh</option><option>Narowal</option><option>Bahawalnagar</option><option>Layyah</option>
+              <option>Muzaffarabad</option><option>Mirpur AJK</option><option>Kotli</option><option>Rawalakot</option>
+              <option>Gilgit</option><option>Skardu</option><option>Turbat</option><option>Hub</option>
+              <option>Bannu</option><option>Swabi</option><option>Nowshera</option><option>Charsadda</option>
+              <option>Mansehra</option><option>Haripur</option>
+            </datalist>
+          </div>
           <div class="form-group"><label class="form-label">Account Reg Date</label><input class="form-input" type="date" id="e-reg-date"/></div>
         </div>
         <div class="form-row">
@@ -235,7 +258,7 @@
               <option value="">—</option>
               <option value="it_services_provider">IT Services</option>
               <option value="ecomm_seller">Ecomm Seller</option>
-              <option value="b2b_seller">B2B Seller</option>
+              <option value="b2b_seller">B2B Goods Exports</option>
             </select>
           </div>
         </div>
@@ -638,6 +661,7 @@ async function openPanel(id, defaultTab = 'info') {
       ['Director Name',         esc(a.contact_name)],
       ['Email ID',              esc(a.contact_email)],
       ['Phone',                 esc(a.contact_phone || '—')],
+      ['City',                  esc(a.city || '—')],
       ['Website',               a.website ? `<a href="${esc(a.website)}" target="_blank" style="color:var(--g-blue)">${esc(a.website)}</a>` : '—'],
       ['Account Reg Date',      Auth.formatDate(a.registration_date)],
       ['Business Type',         Auth.businessTypeLabel(a.business_type)],
@@ -665,6 +689,7 @@ async function openPanel(id, defaultTab = 'info') {
     document.getElementById('e-contact-name').value  = a.contact_name          || '';
     document.getElementById('e-contact-email').value = a.contact_email         || '';
     document.getElementById('e-phone').value         = a.contact_phone         || '';
+    document.getElementById('e-city').value          = a.city                  || '';
     document.getElementById('e-website').value       = a.website               || '';
     document.getElementById('e-reg-date').value      = a.registration_date ? a.registration_date.split('T')[0] : '';
     document.getElementById('e-biz').value           = a.business_type         || '';
@@ -718,6 +743,7 @@ async function saveAccount() {
     contact_email:         document.getElementById('e-contact-email').value.trim(),
     contact_phone:         document.getElementById('e-phone').value.trim(),
     country:               getECountryValue(),
+    city:                  document.getElementById('e-city').value.trim() || null,
     website:               document.getElementById('e-website').value.trim(),
     nature_of_business:    document.getElementById('e-nob').value,
     onboarding_specialist: getEOSValue(),
