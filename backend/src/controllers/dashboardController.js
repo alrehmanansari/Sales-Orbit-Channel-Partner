@@ -322,36 +322,46 @@ function _resolveDateRange(date_range, custom_start, custom_end) {
 
 async function getPartnerKpi(req, res, next) {
   try {
-    const { date_range = 'current_month', custom_start, custom_end, owner_id } = req.query;
-    const [startDate, endDate] = _resolveDateRange(date_range, custom_start, custom_end);
+    const { date_range = 'all', custom_start, custom_end, start_date, end_date, owner_id } = req.query;
 
-    const params = [startDate.toISOString(), endDate.toISOString()];
-    let idx = 3;
+    let startDate, endDate;
+    if (start_date && end_date) {
+      startDate = new Date(start_date);
+      endDate   = new Date(end_date + 'T23:59:59');
+    } else if (date_range !== 'all') {
+      [startDate, endDate] = _resolveDateRange(date_range, custom_start, custom_end);
+    }
+
+    const hasDateFilter = !!(startDate && endDate);
+    const params = hasDateFilter ? [startDate.toISOString(), endDate.toISOString()] : [];
+    let idx = hasDateFilter ? 3 : 1;
+
+    const dateClause = hasDateFilter ? `AND a.registration_date BETWEEN $1 AND $2` : '';
     const ownerFilter = owner_id ? `AND a.owner_id = $${idx++}` : '';
     if (owner_id) params.push(owner_id);
 
     const result = await query(
       `SELECT
-         p.id, p.name AS partner_name, p.company_name AS partner_company,
-         COUNT(a.id) FILTER (WHERE a.registration_date BETWEEN $1 AND $2)                          AS accounts_registered,
-         COUNT(a.id) FILTER (WHERE a.status='in_review'  AND a.registration_date BETWEEN $1 AND $2) AS accounts_in_review,
-         COUNT(a.id) FILTER (WHERE a.status='onboarded'  AND a.registration_date BETWEEN $1 AND $2) AS accounts_onboarded,
-         COUNT(a.id) FILTER (WHERE a.status='activated'  AND a.registration_date BETWEEN $1 AND $2) AS accounts_activated,
-         COUNT(a.id) FILTER (WHERE a.business_type='new'          AND a.registration_date BETWEEN $1 AND $2) AS business_new,
-         COUNT(a.id) FILTER (WHERE a.business_type='established'  AND a.registration_date BETWEEN $1 AND $2) AS business_established,
-         COUNT(a.id) FILTER (WHERE a.vertical='it_services_provider' AND a.registration_date BETWEEN $1 AND $2) AS vertical_it,
-         COUNT(a.id) FILTER (WHERE a.vertical='ecomm_seller'         AND a.registration_date BETWEEN $1 AND $2) AS vertical_ecomm,
-         COUNT(a.id) FILTER (WHERE a.vertical='b2b_seller'           AND a.registration_date BETWEEN $1 AND $2) AS vertical_b2b,
-         COUNT(a.id) FILTER (WHERE a.vertical='freelancer'           AND a.registration_date BETWEEN $1 AND $2) AS vertical_freelancer
+         p.id, p.name AS partner_name, p.company_name AS partner_company, p.email AS partner_email,
+         COUNT(DISTINCT a.id) FILTER (WHERE TRUE ${dateClause})                              AS total_accounts,
+         COUNT(DISTINCT a.id) FILTER (WHERE a.status='registered'  ${dateClause})           AS stage_registered,
+         COUNT(DISTINCT a.id) FILTER (WHERE a.status='in_review'   ${dateClause})           AS stage_in_review,
+         COUNT(DISTINCT a.id) FILTER (WHERE a.status='onboarded'   ${dateClause})           AS stage_onboarded,
+         COUNT(DISTINCT a.id) FILTER (WHERE a.status='activated'   ${dateClause})           AS stage_activated,
+         COUNT(DISTINCT a.id) FILTER (WHERE a.status='rejected'    ${dateClause})           AS stage_rejected,
+         COALESCE(SUM(a.monthly_volume) FILTER (WHERE TRUE ${dateClause}), 0)               AS total_monthly_volume,
+         COUNT(DISTINCT t.id) FILTER (WHERE t.status NOT IN ('resolved','declined'))        AS open_tickets,
+         COUNT(DISTINCT t.id)                                                                AS total_tickets
        FROM users p
        LEFT JOIN accounts a ON a.partner_id = p.id ${ownerFilter}
+       LEFT JOIN tickets  t ON t.partner_id = p.id
        WHERE p.role = 'channel_partner' AND p.is_active = TRUE
-       GROUP BY p.id, p.name, p.company_name
-       ORDER BY accounts_registered DESC`,
+       GROUP BY p.id, p.name, p.company_name, p.email
+       ORDER BY total_accounts DESC`,
       params
     );
 
-    res.json({ data: result.rows, date_range, start_date: startDate, end_date: endDate });
+    res.json({ data: result.rows });
   } catch (err) {
     next(err);
   }

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>OBS Dashboard · Sales Orbit Internal</title>
+<link rel="stylesheet" href="../assets/css/design-system.css"/>
+<style>
+/* Date chips */
+.date-chip{padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-family:var(--font);font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
+.date-chip:hover{border-color:var(--g-purple);color:var(--g-purple)}
+.date-chip.active{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent;color:#fff}
+
+/* Partner cards */
+.partner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-top:16px}
+.partner-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:box-shadow .2s,border-color .2s;cursor:pointer}
+.partner-card:hover{box-shadow:0 8px 24px -8px rgba(0,0,0,.15);border-color:var(--border2)}
+[data-theme=dark] .partner-card:hover{box-shadow:0 8px 24px -4px rgba(0,0,0,.5)}
+.partner-card-head{padding:16px 18px 12px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.partner-avatar{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.partner-name{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.partner-email{font-size:11px;color:var(--text3);margin-top:2px}
+.partner-card-body{padding:14px 18px}
+.stage-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.stage-bar-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);width:68px;flex-shrink:0}
+.stage-bar-track{flex:1;height:6px;border-radius:3px;background:var(--bg3);overflow:hidden}
+.stage-bar-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.stage-bar-count{font-size:11px;font-weight:700;color:var(--text);min-width:20px;text-align:right}
+.partner-stats-row{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.partner-stat{flex:1;text-align:center}
+.partner-stat-val{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.partner-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;font-weight:600}
+.partner-card-foot{padding:10px 18px;border-top:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between}
+
+/* Summary stat boxes */
+.obs-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.obs-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+.obs-stat-val{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.obs-stat-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-top:3px}
+.obs-stat-accent{position:absolute;bottom:0;left:0;right:0;height:3px}
+
+/* Empty / loading */
+.obs-empty{text-align:center;padding:60px 20px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="sidebar-placeholder"></div>
+  <div class="main-content">
+    <div id="topbar-placeholder"></div>
+    <div class="page-body">
+
+      <!-- Period chips — top right, minimal -->
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--text3);margin-right:2px">Period:</span>
+        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
+        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
+        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
+        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
+        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Qtr</button>
+        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Qtr</button>
+        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Qtr</button>
+        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">YTD</button>
+        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+          <span style="color:var(--text3);font-size:11px">–</span>
+          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+        </span>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px;border-radius:6px">✕</button>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+        <select id="f-stage" class="filter-select" onchange="loadOBS()">
+          <option value="">All Stages</option>
+          <option value="registered">Registered</option>
+          <option value="in_review">In Review</option>
+          <option value="onboarded">Onboarded</option>
+          <option value="activated">Activated</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <select id="f-vertical" class="filter-select" onchange="loadOBS()">
+          <option value="">All Verticals</option>
+          <option value="it_services_provider">IT Services</option>
+          <option value="ecomm_seller">E-comm Seller</option>
+          <option value="b2b_seller">B2B Seller</option>
+          <option value="freelancer">Freelancer</option>
+        </select>
+        <select id="f-nob" class="filter-select" onchange="loadOBS()">
+          <option value="">All NOB</option>
+          <option>Ai Solutions</option><option>App Development</option><option>B2B Goods</option>
+          <option>BPO</option><option>Digital Accountancy</option><option>Digital Marketing Agency</option>
+          <option>E-comm Marketplaces</option><option>Game Development</option><option>HR Management</option>
+          <option>IT Services</option><option>Logistics</option><option>Medical Billing</option>
+          <option>PayPal</option><option>Shopify</option><option>Software Development</option>
+          <option>Stripe</option><option>Web Development</option>
+        </select>
+        <select id="f-biz" class="filter-select" onchange="loadOBS()">
+          <option value="">All Biz Types</option>
+          <option value="new">New</option>
+          <option value="established">Established</option>
+        </select>
+        <select id="f-partner" class="filter-select" onchange="loadOBS()">
+          <option value="">All Partners</option>
+        </select>
+        <select id="f-owner" class="filter-select" onchange="loadOBS()">
+          <option value="">All Specialists</option>
+        </select>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          <span style="font-size:11px;color:var(--text3)">Sort:</span>
+          <select id="f-sort" class="filter-select" onchange="renderCards()" style="min-width:120px">
+            <option value="total">Total Accounts</option>
+            <option value="activated">Activated</option>
+            <option value="volume">Monthly Volume</option>
+            <option value="name">Partner Name</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="obs-stats" id="obs-stats">
+        <div class="obs-stat"><div class="obs-stat-val" id="s-partners">—</div><div class="obs-stat-lbl">Active Partners</div><div class="obs-stat-accent" style="background:linear-gradient(90deg,var(--g-blue),var(--g-purple))"></div></div>
+        <div class="obs-stat"><div class="obs-stat-val" id="s-total">—</div><div class="obs-stat-lbl">Total Accounts</div><div class="obs-stat-accent" style="background:var(--g-blue)"></div></div>
+        <div class="obs-stat"><div class="obs-stat-val" id="s-review" style="color:var(--g-blue)">—</div><div class="obs-stat-lbl">In Review</div><div class="obs-stat-accent" style="background:var(--g-blue)"></div></div>
+        <div class="obs-stat"><div class="obs-stat-val" id="s-onboarded" style="color:var(--g-purple)">—</div><div class="obs-stat-lbl">Onboarded</div><div class="obs-stat-accent" style="background:var(--g-purple)"></div></div>
+        <div class="obs-stat"><div class="obs-stat-val" id="s-activated" style="color:var(--g-green)">—</div><div class="obs-stat-lbl">Activated</div><div class="obs-stat-accent" style="background:var(--g-green))"></div></div>
+        <div class="obs-stat"><div class="obs-stat-val" id="s-volume" style="color:var(--g-purple)">—</div><div class="obs-stat-lbl">Total Monthly Vol ($)</div><div class="obs-stat-accent" style="background:var(--g-purple)"></div></div>
+        <div class="obs-stat"><div class="obs-stat-val" id="s-tickets" style="color:var(--g-pink)">—</div><div class="obs-stat-lbl">Open Tickets</div><div class="obs-stat-accent" style="background:var(--g-pink)"></div></div>
+      </div>
+
+      <!-- Partner Cards -->
+      <div id="partner-grid" class="partner-grid">
+        <div class="obs-empty">Loading partner data…</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="notif-panel hidden" id="notif-panel">
+  <div class="notif-panel-head">
+    <span class="notif-panel-title">Notifications</span>
+    <button class="btn btn-ghost btn-sm" id="mark-all-read" style="padding:4px 10px;font-size:11px">Mark all read</button>
+  </div>
+  <div class="notif-scroll" id="notif-scroll"><div class="notif-empty">Loading…</div></div>
+</div>
+<div class="toast-container"></div>
+
+<script src="../assets/js/auth.js?v=3"></script>
+<script src="../assets/js/api.js?v=3"></script>
+<script src="../assets/js/notifications.js?v=3"></script>
+<script src="../assets/js/layout.js?v=3"></script>
+<script>
+const user = Auth.requireInternalAuth();
+if (user) {
+  document.getElementById('sidebar-placeholder').outerHTML = Layout.internalSidebar('obs-dashboard', user);
+  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('OBS Dashboard', 'Partner-wise onboarding performance overview', user);
+  Notifications.initNotifications();
+  loadDropdowns();
+  loadOBS();
+}
+
+let activeDateFilter = { key: null, start: null, end: null };
+let allAccountData   = [];   // raw accounts from API
+let partnerMap       = {};   // partner_id → partner info
+
+// ── DATE FILTER ──────────────────────────────────────────────────────────────
+function getDateRange(key) {
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  const dow = now.getDay();
+  const mon = new Date(now); mon.setDate(now.getDate() - ((dow + 6) % 7));
+  const fmt = d => d.toISOString().split('T')[0];
+  switch (key) {
+    case 'current_week':    { const sun=new Date(mon); sun.setDate(mon.getDate()+6); return [fmt(mon),fmt(sun)]; }
+    case 'last_week':       { const lm=new Date(mon); lm.setDate(mon.getDate()-7); const ls=new Date(lm); ls.setDate(lm.getDate()+6); return [fmt(lm),fmt(ls)]; }
+    case 'current_month':   return [fmt(new Date(y,m,1)), fmt(new Date(y,m+1,0))];
+    case 'last_month':      return [fmt(new Date(y,m-1,1)), fmt(new Date(y,m,0))];
+    case 'current_quarter': { const q=Math.floor(m/3); return [fmt(new Date(y,q*3,1)),fmt(new Date(y,q*3+3,0))]; }
+    case 'prev_quarter':    { const q=Math.floor(m/3)-1,qy=q<0?y-1:y,qq=q<0?3:q; return [fmt(new Date(qy,qq*3,1)),fmt(new Date(qy,qq*3+3,0))]; }
+    case 'next_quarter':    { const q=Math.floor(m/3)+1,qy=q>3?y+1:y,qq=q>3?0:q; return [fmt(new Date(qy,qq*3,1)),fmt(new Date(qy,qq*3+3,0))]; }
+    case 'ytd':             return [fmt(new Date(y,0,1)),fmt(now)];
+    default: return [null,null];
+  }
+}
+function setDateFilter(key) {
+  if (key === 'custom') {
+    document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('dc-cu').classList.add('active');
+    document.getElementById('custom-date-wrap').style.display = 'flex';
+    document.getElementById('dc-clear').style.display = 'inline-block';
+    return;
+  }
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  const [start, end] = getDateRange(key);
+  activeDateFilter = { key, start, end };
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  const ids = { current_week:'cw',last_week:'lw',current_month:'cm',last_month:'lm',current_quarter:'cq',prev_quarter:'pq',next_quarter:'nq',ytd:'ytd' };
+  document.getElementById('dc-' + ids[key]).classList.add('active');
+  document.getElementById('dc-clear').style.display = 'inline-block';
+  loadOBS();
+}
+function applyCustomDate() {
+  const s = document.getElementById('custom-start').value, e = document.getElementById('custom-end').value;
+  if (s && e) { activeDateFilter = { key:'custom', start:s, end:e }; loadOBS(); }
+}
+function clearDateFilter() {
+  activeDateFilter = { key:null, start:null, end:null };
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  document.getElementById('dc-clear').style.display = 'none';
+  document.getElementById('custom-start').value = '';
+  document.getElementById('custom-end').value   = '';
+  loadOBS();
+}
+
+// ── DROPDOWNS ────────────────────────────────────────────────────────────────
+async function loadDropdowns() {
+  try {
+    const [partners, specialists] = await Promise.all([API.getPartners(), API.getSpecialists()]);
+    const pSel = document.getElementById('f-partner');
+    const oSel = document.getElementById('f-owner');
+    (partners.data || []).forEach(p => {
+      partnerMap[p.id] = p;
+      pSel.innerHTML += `<option value="${p.id}">${esc(p.company_name || p.name)}</option>`;
+    });
+    (specialists.data || []).forEach(s => {
+      oSel.innerHTML += `<option value="${s.id}">${esc(s.name)}</option>`;
+    });
+  } catch {}
+}
+
+// ── LOAD DATA ────────────────────────────────────────────────────────────────
+async function loadOBS() {
+  document.getElementById('partner-grid').innerHTML = '<div class="obs-empty">Loading…</div>';
+
+  const stage    = document.getElementById('f-stage').value;
+  const vertical = document.getElementById('f-vertical').value;
+  const nob      = document.getElementById('f-nob').value;
+  const biz      = document.getElementById('f-biz').value;
+  const partner  = document.getElementById('f-partner').value;
+  const owner    = document.getElementById('f-owner').value;
+
+  const params = { limit: 999 };
+  if (stage)    params.status             = stage;
+  if (vertical) params.vertical           = vertical;
+  if (nob)      params.nature_of_business = nob;
+  if (biz)      params.business_type      = biz;
+  if (partner)  params.partner_id         = partner;
+  if (owner)    params.owner_id           = owner;
+  if (activeDateFilter.start) params.start_date = activeDateFilter.start;
+  if (activeDateFilter.end)   params.end_date   = activeDateFilter.end;
+
+  try {
+    const [acctRes, ticketRes] = await Promise.all([
+      API.getAccounts(params),
+      API.getTickets({ limit: 999 })
+    ]);
+
+    allAccountData = acctRes.data || [];
+    const tickets  = ticketRes.data || [];
+
+    // Build open tickets count per partner
+    const openTicketsByPartner = {};
+    tickets.filter(t => !['resolved','declined'].includes(t.status)).forEach(t => {
+      openTicketsByPartner[t.partner_id] = (openTicketsByPartner[t.partner_id] || 0) + 1;
+    });
+
+    // Group accounts by partner
+    const byPartner = {};
+    allAccountData.forEach(a => {
+      const pid = a.partner_id || '__none__';
+      if (!byPartner[pid]) {
+        byPartner[pid] = {
+          partner_id:      pid,
+          partner_name:    a.partner_name    || 'Unknown Partner',
+          partner_company: a.partner_company || a.partner_name || '—',
+          accounts: []
+        };
+      }
+      byPartner[pid].accounts.push(a);
+    });
+
+    // Build partner summaries
+    const summaries = Object.values(byPartner).map(p => {
+      const accts   = p.accounts;
+      const total   = accts.length;
+      const byStage = {
+        registered: accts.filter(a => a.status === 'registered').length,
+        in_review:  accts.filter(a => a.status === 'in_review').length,
+        onboarded:  accts.filter(a => a.status === 'onboarded').length,
+        activated:  accts.filter(a => a.status === 'activated').length,
+        rejected:   accts.filter(a => a.status === 'rejected').length,
+      };
+      const volume      = accts.reduce((s, a) => s + (parseFloat(a.monthly_volume) || 0), 0);
+      const openTickets = openTicketsByPartner[p.partner_id] || 0;
+      return { ...p, total, byStage, volume, openTickets };
+    });
+
+    // Update global summary stats
+    const totals = summaries.reduce((acc, p) => ({
+      partners:  acc.partners + 1,
+      total:     acc.total    + p.total,
+      review:    acc.review   + p.byStage.in_review,
+      onboarded: acc.onboarded+ p.byStage.onboarded,
+      activated: acc.activated+ p.byStage.activated,
+      volume:    acc.volume   + p.volume,
+      tickets:   acc.tickets  + p.openTickets,
+    }), { partners:0,total:0,review:0,onboarded:0,activated:0,volume:0,tickets:0 });
+
+    document.getElementById('s-partners').textContent  = totals.partners;
+    document.getElementById('s-total').textContent     = totals.total;
+    document.getElementById('s-review').textContent    = totals.review;
+    document.getElementById('s-onboarded').textContent = totals.onboarded;
+    document.getElementById('s-activated').textContent = totals.activated;
+    document.getElementById('s-volume').textContent    = totals.volume ? '$'+totals.volume.toLocaleString() : '—';
+    document.getElementById('s-tickets').textContent   = totals.tickets;
+
+    // Store for sorting
+    window._obsSummaries = summaries;
+    renderCards();
+
+  } catch (e) {
+    document.getElementById('partner-grid').innerHTML = `<div class="obs-empty" style="color:#D93025">Error: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderCards() {
+  const summaries = window._obsSummaries || [];
+  if (!summaries.length) {
+    document.getElementById('partner-grid').innerHTML = '<div class="obs-empty">No partner data found for the selected filters.</div>';
+    return;
+  }
+
+  const sort = document.getElementById('f-sort').value;
+  const sorted = [...summaries].sort((a, b) => {
+    if (sort === 'total')     return b.total    - a.total;
+    if (sort === 'activated') return b.byStage.activated - a.byStage.activated;
+    if (sort === 'volume')    return b.volume   - a.volume;
+    if (sort === 'name')      return a.partner_company.localeCompare(b.partner_company);
+    return 0;
+  });
+
+  const COLORS = ['av-blue','av-purple','av-pink','av-green','av-gold'];
+  const colorFor = name => { let h=0; for(const c of(name||'')) h=c.charCodeAt(0)+((h<<5)-h); return COLORS[Math.abs(h)%COLORS.length]; };
+  const initials = name => (name||'?').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+
+  const stageConfig = [
+    { key:'registered', label:'Registered', color:'#6B7280' },
+    { key:'in_review',  label:'In Review',  color:'#4796E3' },
+    { key:'onboarded',  label:'Onboarded',  color:'#9177C7' },
+    { key:'activated',  label:'Activated',  color:'#34A853' },
+    { key:'rejected',   label:'Rejected',   color:'#D93025' },
+  ];
+
+  document.getElementById('partner-grid').innerHTML = sorted.map(p => {
+    const maxStage = Math.max(...stageConfig.map(s => p.byStage[s.key]), 1);
+    const stageRows = stageConfig.filter(s => p.byStage[s.key] > 0).map(s => {
+      const pct = Math.round((p.byStage[s.key] / Math.max(p.total, 1)) * 100);
+      const barW = Math.round((p.byStage[s.key] / maxStage) * 100);
+      return `<div class="stage-bar-row">
+        <div class="stage-bar-label">${s.label}</div>
+        <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${barW}%;background:${s.color}"></div></div>
+        <div class="stage-bar-count">${p.byStage[s.key]}</div>
+        <div style="font-size:9px;color:var(--text3);width:26px;text-align:right">${pct}%</div>
+      </div>`;
+    }).join('');
+
+    const acctUrl = `/internal/accounts.html?partner_id=${p.partner_id}`;
+
+    return `<div class="partner-card" onclick="window.location.href='${acctUrl}'">
+      <div class="partner-card-head">
+        <div class="partner-avatar ${colorFor(p.partner_company)}">${initials(p.partner_company)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="partner-name">${esc(p.partner_company)}</div>
+          <div class="partner-email">${esc(p.partner_name)}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.5px">${p.total}</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">accounts</div>
+        </div>
+      </div>
+      <div class="partner-card-body">
+        ${stageRows || '<div style="color:var(--text3);font-size:12px;text-align:center;padding:8px 0">No accounts</div>'}
+        <div class="partner-stats-row">
+          <div class="partner-stat">
+            <div class="partner-stat-val" style="color:var(--g-green)">${p.byStage.activated}</div>
+            <div class="partner-stat-lbl">Activated</div>
+          </div>
+          <div class="partner-stat">
+            <div class="partner-stat-val" style="color:var(--g-purple)">${p.byStage.onboarded}</div>
+            <div class="partner-stat-lbl">Onboarded</div>
+          </div>
+          <div class="partner-stat">
+            <div class="partner-stat-val" style="color:var(--g-blue)">${p.byStage.in_review}</div>
+            <div class="partner-stat-lbl">In Review</div>
+          </div>
+          <div class="partner-stat">
+            <div class="partner-stat-val" style="color:var(--g-pink)">${p.openTickets}</div>
+            <div class="partner-stat-lbl">Open Tickets</div>
+          </div>
+        </div>
+      </div>
+      <div class="partner-card-foot">
+        <span style="font-size:11px;color:var(--text3)">
+          ${p.volume ? `<span style="font-weight:600;color:var(--text)">$${p.volume.toLocaleString()}</span> monthly vol` : 'No volume data'}
+        </span>
+        <span style="font-size:11px;color:var(--g-blue);font-weight:500">View Accounts →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

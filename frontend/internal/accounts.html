@@ -38,6 +38,9 @@
 .audit-item{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .audit-item:last-child{border-bottom:none}
 .audit-dot{width:8px;height:8px;border-radius:50%;background:var(--g-purple);flex-shrink:0;margin-top:4px}
+.date-chip{padding:4px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);font-family:var(--font);font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
+.date-chip:hover{border-color:var(--g-purple);color:var(--g-purple)}
+.date-chip.active{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));border-color:transparent;color:#fff}
 </style>
 </head>
 <body>
@@ -47,15 +50,35 @@
     <div id="topbar-placeholder"></div>
     <div class="page-body">
 
+      <!-- Period chips — top right, minimal -->
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:10px;color:var(--text3);margin-right:2px">Period:</span>
+        <button class="date-chip" id="dc-cw"  onclick="setDateFilter('current_week')">This Week</button>
+        <button class="date-chip" id="dc-lw"  onclick="setDateFilter('last_week')">Last Week</button>
+        <button class="date-chip" id="dc-cm"  onclick="setDateFilter('current_month')">This Month</button>
+        <button class="date-chip" id="dc-lm"  onclick="setDateFilter('last_month')">Last Month</button>
+        <button class="date-chip" id="dc-cq"  onclick="setDateFilter('current_quarter')">This Qtr</button>
+        <button class="date-chip" id="dc-pq"  onclick="setDateFilter('prev_quarter')">Prev Qtr</button>
+        <button class="date-chip" id="dc-nq"  onclick="setDateFilter('next_quarter')">Next Qtr</button>
+        <button class="date-chip" id="dc-ytd" onclick="setDateFilter('ytd')">YTD</button>
+        <button class="date-chip" id="dc-cu"  onclick="setDateFilter('custom')">Custom</button>
+        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+          <span style="color:var(--text3);font-size:11px">–</span>
+          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+        </span>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px;border-radius:6px">✕</button>
+      </div>
+
       <!-- Toolbar -->
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center;justify-content:space-between">
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
           <div class="search-box" style="min-width:220px">
             <svg style="width:15px;height:15px;color:var(--text3)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <input id="search-input" placeholder="Search accounts…" oninput="debounceSearch()"/>
+            <input id="search-input" placeholder="Search company, director, email, client ID…" oninput="debounceSearch()"/>
           </div>
           <select id="f-status" class="filter-select" onchange="loadAccounts()">
-            <option value="">All Statuses</option>
+            <option value="">All Stages</option>
             <option value="registered">Registered</option>
             <option value="in_review">In Review</option>
             <option value="onboarded">Onboarded</option>
@@ -69,8 +92,17 @@
             <option value="b2b_seller">B2B Seller</option>
             <option value="freelancer">Freelancer</option>
           </select>
+          <select id="f-nob" class="filter-select" onchange="loadAccounts()">
+            <option value="">All NOB</option>
+            <option>Ai Solutions</option><option>App Development</option><option>B2B Goods</option>
+            <option>BPO</option><option>Digital Accountancy</option><option>Digital Marketing Agency</option>
+            <option>E-comm Marketplaces</option><option>Game Development</option><option>HR Management</option>
+            <option>IT Services</option><option>Logistics</option><option>Medical Billing</option>
+            <option>PayPal</option><option>Shopify</option><option>Software Development</option>
+            <option>Stripe</option><option>Web Development</option>
+          </select>
           <select id="f-biz" class="filter-select" onchange="loadAccounts()">
-            <option value="">All Types</option>
+            <option value="">All Biz Types</option>
             <option value="new">New</option>
             <option value="established">Established</option>
           </select>
@@ -81,13 +113,13 @@
             <option value="">All Owners</option>
           </select>
         </div>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" onclick="triggerExport()">
-            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export XLS
           </button>
           <label class="btn btn-ghost btn-sm" style="cursor:pointer">
-            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Bulk Upload
             <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="doBulkUpload(this)"/>
           </label>
@@ -340,6 +372,55 @@ const user = Auth.requireInternalAuth();
 let currentPage = 1;
 let currentAccountId = null;
 let searchTimer = null;
+let activeDateFilter = { key: null, start: null, end: null };
+
+function getDateRange(key) {
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now); monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+  const fmt = d => d.toISOString().split('T')[0];
+  switch (key) {
+    case 'current_week':    { const sun = new Date(monday); sun.setDate(monday.getDate()+6); return [fmt(monday), fmt(sun)]; }
+    case 'last_week':       { const lm = new Date(monday); lm.setDate(monday.getDate()-7); const ls = new Date(lm); ls.setDate(lm.getDate()+6); return [fmt(lm), fmt(ls)]; }
+    case 'current_month':   return [fmt(new Date(y,m,1)), fmt(new Date(y,m+1,0))];
+    case 'last_month':      return [fmt(new Date(y,m-1,1)), fmt(new Date(y,m,0))];
+    case 'current_quarter': { const q=Math.floor(m/3); return [fmt(new Date(y,q*3,1)), fmt(new Date(y,q*3+3,0))]; }
+    case 'prev_quarter':    { const q=Math.floor(m/3)-1,qy=q<0?y-1:y,qq=q<0?3:q; return [fmt(new Date(qy,qq*3,1)), fmt(new Date(qy,qq*3+3,0))]; }
+    case 'next_quarter':    { const q=Math.floor(m/3)+1,qy=q>3?y+1:y,qq=q>3?0:q; return [fmt(new Date(qy,qq*3,1)), fmt(new Date(qy,qq*3+3,0))]; }
+    case 'ytd':             return [fmt(new Date(y,0,1)), fmt(now)];
+    default: return [null, null];
+  }
+}
+function setDateFilter(key) {
+  if (key === 'custom') {
+    document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('dc-cu').classList.add('active');
+    document.getElementById('custom-date-wrap').style.display = 'flex';
+    document.getElementById('dc-clear').style.display = 'inline-block';
+    return;
+  }
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  const [start, end] = getDateRange(key);
+  activeDateFilter = { key, start, end };
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  const idMap = { current_week:'cw', last_week:'lw', current_month:'cm', last_month:'lm', current_quarter:'cq', prev_quarter:'pq', next_quarter:'nq', ytd:'ytd' };
+  document.getElementById('dc-' + idMap[key]).classList.add('active');
+  document.getElementById('dc-clear').style.display = 'inline-block';
+  currentPage = 1; loadAccounts();
+}
+function applyCustomDate() {
+  const s = document.getElementById('custom-start').value, e = document.getElementById('custom-end').value;
+  if (s && e) { activeDateFilter = { key:'custom', start:s, end:e }; currentPage = 1; loadAccounts(); }
+}
+function clearDateFilter() {
+  activeDateFilter = { key:null, start:null, end:null };
+  document.querySelectorAll('.date-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  document.getElementById('dc-clear').style.display = 'none';
+  document.getElementById('custom-start').value = '';
+  document.getElementById('custom-end').value = '';
+  currentPage = 1; loadAccounts();
+}
 
 if (user) {
   document.getElementById('sidebar-placeholder').outerHTML = Layout.internalSidebar('accounts', user);
@@ -348,8 +429,12 @@ if (user) {
   loadDropdowns();
   loadAccounts();
 
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('id')) openPanel(params.get('id'));
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('id')) openPanel(urlParams.get('id'));
+  if (urlParams.get('partner_id')) {
+    document.getElementById('f-partner').value = urlParams.get('partner_id');
+    loadAccounts();
+  }
 }
 
 async function loadDropdowns() {
@@ -377,13 +462,16 @@ function debounceSearch() {
 async function loadAccounts() {
   const params = {
     page: currentPage, limit: 20,
-    status:        document.getElementById('f-status').value   || '',
-    vertical:      document.getElementById('f-vertical').value || '',
-    business_type: document.getElementById('f-biz').value      || '',
-    search:        document.getElementById('search-input').value.trim() || '',
-    partner_id:    document.getElementById('f-partner').value  || '',
-    owner_id:      document.getElementById('f-owner').value    || '',
+    status:             document.getElementById('f-status').value.trim()        || '',
+    vertical:           document.getElementById('f-vertical').value.trim()      || '',
+    nature_of_business: document.getElementById('f-nob').value.trim()           || '',
+    business_type:      document.getElementById('f-biz').value.trim()           || '',
+    search:             document.getElementById('search-input').value.trim()    || '',
+    partner_id:         document.getElementById('f-partner').value.trim()       || '',
+    owner_id:           document.getElementById('f-owner').value.trim()         || '',
   };
+  if (activeDateFilter.start) params.start_date = activeDateFilter.start;
+  if (activeDateFilter.end)   params.end_date   = activeDateFilter.end;
   Object.keys(params).forEach(k => !params[k] && delete params[k]);
 
   const tbody = document.getElementById('accounts-tbody');

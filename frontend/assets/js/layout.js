@@ -79,9 +79,10 @@ function partnerTopnav(activePage, user) {
 
 function internalTopnav(activePage, user) {
   const links = [
-    { page: 'dashboard', href: '/internal/dashboard.html', label: 'Team Dashboard' },
-    { page: 'accounts',  href: '/internal/accounts.html',  label: 'Accounts' },
-    { page: 'tickets',   href: '/internal/tickets.html',   label: 'Tickets' },
+    { page: 'dashboard',     href: '/internal/dashboard.html',     label: 'Team Dashboard' },
+    { page: 'obs-dashboard', href: '/internal/obs-dashboard.html', label: 'OBS Dashboard' },
+    { page: 'accounts',      href: '/internal/accounts.html',      label: 'Accounts' },
+    { page: 'tickets',       href: '/internal/tickets.html',       label: 'Tickets' },
   ];
   return `
     <div class="topnav-wrap">
