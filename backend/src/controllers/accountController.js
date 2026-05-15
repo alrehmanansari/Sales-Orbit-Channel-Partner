@@ -182,22 +182,33 @@ async function createAccount(req, res, next) {
       contact_name, contact_email, contact_phone, country, city,
       website, nature_of_business, onboarding_specialist,
       va_status, card_status, registration_date, remarks,
-      account_number, status, monthly_volume
+      account_number, status, monthly_volume,
+      owner_id: requestedOwnerId  // specialist selected by partner in dropdown
     } = req.body;
 
     if (!company_name || !contact_name || !contact_email) {
       return res.status(400).json({ error: 'Company name, contact name and email are required' });
     }
 
-    // Auto-assign COS with fewest accounts
-    const cosResult = await client.query(
-      `SELECT u.id, COUNT(a.id) AS cnt
-       FROM users u
-       LEFT JOIN accounts a ON a.owner_id = u.id AND a.status NOT IN ('rejected')
-       WHERE u.role = 'customer_onboarding_specialist' AND u.is_active = TRUE
-       GROUP BY u.id ORDER BY cnt ASC LIMIT 1`
-    );
-    const ownerId = cosResult.rows[0]?.id || null;
+    // Resolve owner_id: use partner's specialist selection if valid, else auto-assign
+    let ownerId = null;
+    if (requestedOwnerId) {
+      const ownerCheck = await client.query(
+        `SELECT id FROM users WHERE id = $1 AND role != $2 AND is_active = TRUE`,
+        [requestedOwnerId, ROLES.CHANNEL_PARTNER]
+      );
+      if (ownerCheck.rows.length) ownerId = requestedOwnerId;
+    }
+    if (!ownerId) {
+      const cosResult = await client.query(
+        `SELECT u.id FROM users u
+         LEFT JOIN accounts a ON a.owner_id = u.id AND a.status NOT IN ('rejected')
+         WHERE u.role = 'customer_onboarding_specialist' AND u.is_active = TRUE
+           AND u.email NOT LIKE '%@salesorbit.app'
+         GROUP BY u.id ORDER BY COUNT(a.id) ASC LIMIT 1`
+      );
+      ownerId = cosResult.rows[0]?.id || null;
+    }
 
     const validStatuses = ['registered','in_review','onboarded','activated','rejected'];
     const accountStatus = validStatuses.includes(status) ? status : 'registered';

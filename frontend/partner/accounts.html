@@ -897,7 +897,7 @@ async function openDetailPanel(id) {
       ['Vertical',              Auth.verticalLabel(a.vertical)],
       ['Nature of Business',    esc(a.nature_of_business || '—')],
       ['Channel Partner',       esc(a.partner_company || a.partner_name || '—')],
-      ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
+      ['Onboarding Specialist', esc(a.owner_name || a.onboarding_specialist || '—')],
       ['Account Stage',         Auth.statusBadge(a.status)],
       ['VA Status',             esc(vaLabels[a.va_status] || a.va_status || '—')],
       ['Card Status',           esc(cardLabels[a.card_status] || a.card_status || '—')],
@@ -1125,23 +1125,29 @@ function setCountryValue(val) {
   }
 }
 
-// Load BDM/Sales team members into the specialist dropdown
+// Specialist dropdown — option value = user UUID so we can set owner_id correctly
 let _salesTeamLoaded = false;
-async function loadSalesTeamDropdown(selectedValue) {
+let _salesTeamMap    = {};   // { userId: { name, designation } }
+
+async function loadSalesTeamDropdown(selectedId) {
   const sel = document.getElementById('f-onboarding-specialist');
   if (!_salesTeamLoaded) {
-    sel.innerHTML = '<option value="">Loading specialists…</option>';
+    sel.innerHTML = '<option value="">Loading…</option>';
     try {
-      const res = await API.getSalesTeam();
+      const res  = await API.getSalesTeam();
       const team = res.data || [];
+      _salesTeamMap = {};
+      team.forEach(m => { _salesTeamMap[m.id] = { name: m.name, designation: m.designation }; });
       sel.innerHTML = '<option value="">— Select specialist</option>' +
-        team.map(m => `<option value="${esc(m.name)}">${esc(m.name)}${m.designation ? ' · '+esc(m.designation) : ''}</option>`).join('');
+        team.map(m =>
+          `<option value="${esc(m.id)}">${esc(m.name)}${m.designation ? ' · ' + esc(m.designation) : ''}</option>`
+        ).join('');
       _salesTeamLoaded = true;
     } catch {
       sel.innerHTML = '<option value="">Could not load specialists</option>';
     }
   }
-  if (selectedValue !== undefined) sel.value = selectedValue || '';
+  if (selectedId !== undefined) sel.value = selectedId || '';
 }
 
 async function openAddModal() {
@@ -1198,7 +1204,8 @@ async function openEditModal(id) {
     document.getElementById('f-card-status').value     = a.card_status    || '';
     document.getElementById('f-monthly-volume').value  = a.monthly_volume || '';
     setCountryValue(a.country || '');
-    await loadSalesTeamDropdown(a.onboarding_specialist || '');
+    // Match by owner_id (UUID) — the real link between specialist and account
+    await loadSalesTeamDropdown(a.owner_id || '');
   } catch (e) { Auth.showToast('Could not load account.', 'error'); }
 }
 
@@ -1212,7 +1219,10 @@ async function submitAccount() {
   errEl.style.display = 'none';
   const btn = document.getElementById('modal-submit-btn');
 
-  const mv = document.getElementById('f-monthly-volume').value;
+  const mv           = document.getElementById('f-monthly-volume').value;
+  const specialistId = document.getElementById('f-onboarding-specialist').value || null;
+  const specialistName = specialistId ? (_salesTeamMap[specialistId]?.name || null) : null;
+
   const body = {
     account_number:        document.getElementById('f-client-id').value.trim() || null,
     company_name:          document.getElementById('f-company').value.trim(),
@@ -1225,7 +1235,8 @@ async function submitAccount() {
     city:                  document.getElementById('f-city').value.trim() || null,
     website:               document.getElementById('f-website').value.trim(),
     nature_of_business:    document.getElementById('f-nob').value,
-    onboarding_specialist: document.getElementById('f-onboarding-specialist').value || null,
+    onboarding_specialist: specialistName,   // human-readable name (display only)
+    owner_id:              specialistId,      // UUID → sets who owns/sees the account
     status:                document.getElementById('f-status').value,
     va_status:             document.getElementById('f-va-status').value || null,
     card_status:           document.getElementById('f-card-status').value || null,
