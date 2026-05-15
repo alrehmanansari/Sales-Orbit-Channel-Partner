@@ -287,22 +287,10 @@
             <option value="Web Development">Web Development</option>
           </select>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Onboarding Specialist</label>
-            <select class="form-input" id="e-onboarding-specialist" onchange="toggleEOSother()">
-              <option value="">Select specialist</option>
-              <option value="Anum Farooq">Anum Farooq</option>
-              <option value="Muhammad Shoaib">Muhammad Shoaib</option>
-              <option value="Khushbu Fatima">Khushbu Fatima</option>
-              <option value="__other__">Other (Add manually)</option>
-            </select>
-            <input class="form-input" id="e-os-other" placeholder="Enter specialist name…" style="margin-top:6px;display:none"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Onboarding Specialist</label>
-            <select class="form-input" id="e-owner"><option value="">Unassigned</option></select>
-          </div>
+        <div class="form-group">
+          <label class="form-label">Onboarding Specialist</label>
+          <select class="form-input" id="e-owner"><option value="">Loading…</option></select>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px">Changing this reassigns the account to the selected team member.</div>
         </div>
       </div>
 
@@ -490,17 +478,17 @@ if (user) {
 
 async function loadDropdowns() {
   try {
-    const [partners, specialists] = await Promise.all([API.getPartners(), API.getSpecialists()]);
+    // Partners dropdown (for list filter only)
+    const partners = await API.getPartners();
     const partnerSel = document.getElementById('f-partner');
     (partners.data || []).forEach(p => {
       partnerSel.innerHTML += `<option value="${p.id}">${esc(p.name)}${p.company_name ? ' · '+esc(p.company_name) : ''}</option>`;
     });
+    // f-owner filter (list filter — COS only, seed users excluded via backend)
+    const specialists = await API.getSpecialists();
     const ownerSel = document.getElementById('f-owner');
-    const editOwnerSel = document.getElementById('e-owner');
     (specialists.data || []).forEach(s => {
-      const opt = `<option value="${s.id}">${esc(s.name)}</option>`;
-      ownerSel.innerHTML    += opt;
-      editOwnerSel.innerHTML += opt;
+      ownerSel.innerHTML += `<option value="${s.id}">${esc(s.name)}</option>`;
     });
   } catch {}
 }
@@ -601,24 +589,29 @@ function setECountryValue(val) {
   else if (known.includes(val)) { sel.value = val; }
   else { sel.value = '__other__'; document.getElementById('e-country-other').value = val; document.getElementById('e-country-other').style.display = 'block'; }
 }
-function toggleEOSother() {
-  const sel = document.getElementById('e-onboarding-specialist');
-  const other = document.getElementById('e-os-other');
-  other.style.display = sel.value === '__other__' ? 'block' : 'none';
-  if (sel.value !== '__other__') other.value = '';
-}
-function getEOSValue() {
-  const sel = document.getElementById('e-onboarding-specialist');
-  return sel.value === '__other__'
-    ? document.getElementById('e-os-other').value.trim()
-    : sel.value;
-}
-function setEOSValue(val) {
-  const sel = document.getElementById('e-onboarding-specialist');
-  const known = ['Anum Farooq','Muhammad Shoaib','Khushbu Fatima'];
-  if (!val) { sel.value = ''; }
-  else if (known.includes(val)) { sel.value = val; }
-  else { sel.value = '__other__'; document.getElementById('e-os-other').value = val; document.getElementById('e-os-other').style.display = 'block'; }
+// ── INTERNAL SPECIALIST DROPDOWN (dynamic, UUID-based) ───────────────────────
+let _intSpecLoaded = false;
+let _intSpecMap    = {};  // { userId: { name, designation } }
+
+async function loadSpecialistDropdown(selectedId) {
+  const sel = document.getElementById('e-owner');
+  if (!_intSpecLoaded) {
+    sel.innerHTML = '<option value="">Loading…</option>';
+    try {
+      const res  = await API.getSpecialists();
+      const team = res.data || [];
+      _intSpecMap = {};
+      team.forEach(m => { _intSpecMap[m.id] = { name: m.name, designation: m.designation }; });
+      sel.innerHTML = '<option value="">— Select specialist</option>' +
+        team.map(m =>
+          `<option value="${esc(m.id)}">${esc(m.name)}${m.designation ? ' · ' + esc(m.designation) : ''}</option>`
+        ).join('');
+      _intSpecLoaded = true;
+    } catch {
+      sel.innerHTML = '<option value="">Could not load team members</option>';
+    }
+  }
+  if (selectedId !== undefined) sel.value = selectedId || '';
 }
 
 // ── JOURNEY TIMELINE ──
@@ -697,8 +690,7 @@ async function openPanel(id, defaultTab = 'info') {
       ['Nature of Business',    esc(a.nature_of_business || '—')],
       ['Channel Partner',       esc(a.partner_name || '—')],
       ['Partner Email',         esc(a.partner_email || '—')],
-      ['Onboarding Specialist', esc(a.onboarding_specialist || '—')],
-      ['Onboarding Specialist',        esc(a.owner_name || 'Unassigned')],
+      ['Onboarding Specialist', esc(a.owner_name || a.onboarding_specialist || 'Unassigned')],
       ['Account Stage',         Auth.statusBadge(a.status)],
       ['VA Status',             esc(_vaL[a.va_status] || a.va_status || '—')],
       ['Card Status',           esc(_cardL[a.card_status] || a.card_status || '—')],
@@ -734,12 +726,12 @@ async function openPanel(id, defaultTab = 'info') {
     document.getElementById('e-nob').value           = a.nature_of_business    || '';
     document.getElementById('e-status').value        = a.status                || 'registered';
     document.getElementById('e-kyc').value           = a.kyc_agent             || '';
-    document.getElementById('e-owner').value         = a.owner_id              || '';
+    await loadSpecialistDropdown(a.owner_id || '');
     document.getElementById('e-va-status').value     = a.va_status             || '';
     document.getElementById('e-card-status').value   = a.card_status           || '';
     document.getElementById('e-rejection').value     = a.rejection_reason      || '';
     setECountryValue(a.country || '');
-    setEOSValue(a.onboarding_specialist || '');
+    // Specialist loaded above via loadSpecialistDropdown
   } catch (e) {
     Auth.showToast('Could not load account.', 'error');
   }
@@ -790,12 +782,15 @@ async function saveAccount() {
     city:                  document.getElementById('e-city').value.trim() || null,
     website:               document.getElementById('e-website').value.trim(),
     nature_of_business:    document.getElementById('e-nob').value,
-    onboarding_specialist: getEOSValue(),
+    owner_id:              document.getElementById('e-owner').value || undefined,
+    onboarding_specialist: (() => {
+      const id = document.getElementById('e-owner').value;
+      return id ? (_intSpecMap[id]?.name || null) : null;
+    })(),
     registration_date:     document.getElementById('e-reg-date').value || null,
     status:                document.getElementById('e-status').value,
     kyc_agent:             document.getElementById('e-kyc').value.trim(),
     account_number:        document.getElementById('e-acct-num').value.trim(),
-    owner_id:              document.getElementById('e-owner').value || null,
     va_status:             document.getElementById('e-va-status').value || null,
     card_status:           document.getElementById('e-card-status').value || null,
     rejection_reason:      document.getElementById('e-rejection').value.trim(),

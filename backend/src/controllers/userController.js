@@ -133,16 +133,16 @@ async function listPartners(req, res, next) {
   }
 }
 
+// Returns all active non-seed internal team members for the internal edit specialist dropdown
 async function listSpecialists(req, res, next) {
   try {
     const result = await query(
-      `SELECT u.id, u.name, u.email,
-              COUNT(a.id) AS account_count
-       FROM users u
-       LEFT JOIN accounts a ON a.owner_id = u.id
-       WHERE u.role = 'customer_onboarding_specialist' AND u.is_active = TRUE
-         AND u.email NOT LIKE '%@salesorbit.app'
-       GROUP BY u.id ORDER BY u.name`,
+      `SELECT id, name, email, role, designation
+       FROM users
+       WHERE role != 'channel_partner'
+         AND is_active = TRUE
+         AND email NOT LIKE '%@salesorbit.app'
+       ORDER BY name`,
       []
     );
     res.json({ data: result.rows });
