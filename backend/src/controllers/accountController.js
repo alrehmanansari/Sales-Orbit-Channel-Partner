@@ -248,13 +248,20 @@ async function updateAccount(req, res, next) {
   const client = await getClient();
   try {
     const { id } = req.params;
-    const access = accountAccessClause(req.user);
+
+    // For updates: partners can only edit their own accounts;
+    // ALL internal roles (COS, BDM, Manager, etc.) can edit any account.
+    let findQuery, findParams;
+    if (req.user.role === ROLES.CHANNEL_PARTNER) {
+      findQuery  = `SELECT * FROM accounts a WHERE a.id = $1 AND a.partner_id = $2`;
+      findParams = [id, req.user.id];
+    } else {
+      findQuery  = `SELECT * FROM accounts a WHERE a.id = $1`;
+      findParams = [id];
+    }
 
     // Fetch current record
-    const current = await client.query(
-      `SELECT * FROM accounts a WHERE a.id = $1 AND ${access.where.replace('$1', '$2')}`,
-      [id, ...access.params]
-    );
+    const current = await client.query(findQuery, findParams);
     if (!current.rows.length) {
       return res.status(404).json({ error: 'Account not found' });
     }
