@@ -740,7 +740,7 @@ async function openPanel(id, defaultTab = 'info') {
     _pendingOwnerId = a.owner_id || '';
   } catch (e) {
     console.error('[openPanel]', e);
-    Auth.showToast('Could not load account details. Please try again.', 'error');
+    Auth.showToast(e.message || 'Could not load account details.', 'error');
     return;
   }
 
