@@ -250,6 +250,10 @@
           <div class="form-group"><label class="form-label">Account Reg Date</label><input class="form-input" type="date" id="e-reg-date"/></div>
         </div>
         <div class="form-row">
+          <div class="form-group"><label class="form-label">Website</label><input class="form-input" id="e-website" placeholder="Store Link / Ecomm Store URL"/></div>
+          <div class="form-group"></div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
             <label class="form-label">Business Type</label>
             <select class="form-input" id="e-biz"><option value="">—</option><option value="new">New</option><option value="established">Established</option></select>
@@ -717,23 +721,24 @@ async function openPanel(id, defaultTab = 'info') {
       <button class="btn btn-ghost btn-sm" onclick="switchTab('edit')">Edit</button>
       <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="switchTab('tickets')">+ Ticket</button>`;
 
-    // Populate edit fields
-    document.getElementById('e-acct-num').value      = a.account_number        || '';
-    document.getElementById('e-company').value       = a.company_name          || '';
-    document.getElementById('e-contact-name').value  = a.contact_name          || '';
-    document.getElementById('e-contact-email').value = a.contact_email         || '';
-    document.getElementById('e-phone').value         = a.contact_phone         || '';
-    document.getElementById('e-city').value          = a.city                  || '';
-    document.getElementById('e-website').value       = a.website               || '';
-    document.getElementById('e-reg-date').value      = a.registration_date ? a.registration_date.split('T')[0] : '';
-    document.getElementById('e-biz').value           = a.business_type         || '';
-    document.getElementById('e-vertical').value      = a.vertical              || '';
-    document.getElementById('e-nob').value           = a.nature_of_business    || '';
-    document.getElementById('e-status').value        = a.status                || 'registered';
-    document.getElementById('e-kyc').value           = a.kyc_agent             || '';
-    document.getElementById('e-va-status').value     = a.va_status             || '';
-    document.getElementById('e-card-status').value   = a.card_status           || '';
-    document.getElementById('e-rejection').value     = a.rejection_reason      || '';
+    // Populate edit fields — null-safe so missing elements never crash the panel
+    const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    sv('e-acct-num',      a.account_number        || '');
+    sv('e-company',       a.company_name          || '');
+    sv('e-contact-name',  a.contact_name          || '');
+    sv('e-contact-email', a.contact_email         || '');
+    sv('e-phone',         a.contact_phone         || '');
+    sv('e-city',          a.city                  || '');
+    sv('e-website',       a.website               || '');
+    sv('e-reg-date',      a.registration_date ? a.registration_date.split('T')[0] : '');
+    sv('e-biz',           a.business_type         || '');
+    sv('e-vertical',      a.vertical              || '');
+    sv('e-nob',           a.nature_of_business    || '');
+    sv('e-status',        a.status                || 'registered');
+    sv('e-kyc',           a.kyc_agent             || '');
+    sv('e-va-status',     a.va_status             || '');
+    sv('e-card-status',   a.card_status           || '');
+    sv('e-rejection',     a.rejection_reason      || '');
     setECountryValue(a.country || '');
 
     // Store owner_id for post-load specialist dropdown
