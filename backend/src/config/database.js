@@ -106,13 +106,9 @@ async function runMigrations() {
     catch (err) { console.error(`[migration] ${id}:`, err.message); }
   }
 
-  // ── One-time: purge all non-seed users & their data ───────────────────────
-  // Seed users are identified by their @salesorbit.app email domain.
-  // All other registered users had the wrong role due to the old register bug;
-  // they can sign up again fresh with the corrected role assignment.
+  // ── One-time: purge all non-seed users & their data (v1) ────────────────────
   if (!await ran('clear_non_seed_users_v1')) {
     try {
-      // Delete in FK-safe order
       await pool.query(`DELETE FROM email_otps`);
       await pool.query(`DELETE FROM audit_logs`);
       await pool.query(`DELETE FROM notes`);
@@ -121,9 +117,26 @@ async function runMigrations() {
       await pool.query(`DELETE FROM accounts`);
       await pool.query(`DELETE FROM users WHERE email NOT LIKE '%@salesorbit.app'`);
       await mark('clear_non_seed_users_v1');
-      console.log('[migration] clear_non_seed_users_v1: all non-seed users and their data removed');
+      console.log('[migration] clear_non_seed_users_v1: done');
     } catch (err) {
       console.error('[migration] clear_non_seed_users_v1 error:', err.message);
+    }
+  }
+
+  // ── One-time: purge all non-seed users again so everyone re-signs up (v2) ──
+  if (!await ran('clear_non_seed_users_v2')) {
+    try {
+      await pool.query(`DELETE FROM email_otps`);
+      await pool.query(`DELETE FROM audit_logs`);
+      await pool.query(`DELETE FROM notes`);
+      await pool.query(`DELETE FROM tickets`);
+      await pool.query(`DELETE FROM notifications`);
+      await pool.query(`DELETE FROM accounts`);
+      await pool.query(`DELETE FROM users WHERE email NOT LIKE '%@salesorbit.app'`);
+      await mark('clear_non_seed_users_v2');
+      console.log('[migration] clear_non_seed_users_v2: all users cleared — everyone can sign up fresh');
+    } catch (err) {
+      console.error('[migration] clear_non_seed_users_v2 error:', err.message);
     }
   }
 
