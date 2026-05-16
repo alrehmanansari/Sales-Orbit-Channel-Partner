@@ -413,6 +413,7 @@ const user = Auth.requireInternalAuth();
 let currentPage = 1;
 let currentAccountId = null;
 let searchTimer = null;
+let _pendingOwnerId = '';
 let activeDateFilter = { key: null, start: null, end: null };
 
 function getDateRange(key) {
@@ -593,8 +594,12 @@ function setECountryValue(val) {
 let _intSpecLoaded = false;
 let _intSpecMap    = {};  // { userId: { name, designation } }
 
+// Reset cache on page init so stale data from a previous server version is cleared
+window.addEventListener('load', () => { _intSpecLoaded = false; _intSpecMap = {}; });
+
 async function loadSpecialistDropdown(selectedId) {
   const sel = document.getElementById('e-owner');
+  if (!sel) return; // guard — edit tab might not be in DOM yet
   if (!_intSpecLoaded) {
     sel.innerHTML = '<option value="">Loading…</option>';
     try {
@@ -726,15 +731,21 @@ async function openPanel(id, defaultTab = 'info') {
     document.getElementById('e-nob').value           = a.nature_of_business    || '';
     document.getElementById('e-status').value        = a.status                || 'registered';
     document.getElementById('e-kyc').value           = a.kyc_agent             || '';
-    await loadSpecialistDropdown(a.owner_id || '');
     document.getElementById('e-va-status').value     = a.va_status             || '';
     document.getElementById('e-card-status').value   = a.card_status           || '';
     document.getElementById('e-rejection').value     = a.rejection_reason      || '';
     setECountryValue(a.country || '');
-    // Specialist loaded above via loadSpecialistDropdown
+
+    // Store owner_id for post-load specialist dropdown
+    _pendingOwnerId = a.owner_id || '';
   } catch (e) {
-    Auth.showToast('Could not load account.', 'error');
+    console.error('[openPanel]', e);
+    Auth.showToast('Could not load account details. Please try again.', 'error');
+    return;
   }
+
+  // Load specialist dropdown AFTER panel is rendered — errors here won't block the panel
+  loadSpecialistDropdown(_pendingOwnerId).catch(() => {});
 }
 
 function closePanel() {

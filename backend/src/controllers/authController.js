@@ -61,16 +61,18 @@ async function register(req, res, next) {
     // Map designation to the correct role — everything except Channel Partner is internal
     const DESIGNATION_ROLE_MAP = {
       'Channel Partner':                     ROLES.CHANNEL_PARTNER,
+      'Onboarding Specialist':               ROLES.CUSTOMER_ONBOARDING_SPECIALIST,
+      // Legacy mappings — kept for existing users
       'Customer Onboarding Specialist':      ROLES.CUSTOMER_ONBOARDING_SPECIALIST,
-      'Senior Business Development Manager': ROLES.SENIOR_BDM,
       'Manager Partnerships':                ROLES.MANAGER_PARTNERSHIPS,
       'Head of Sales':                       ROLES.HEAD_OF_SALES,
       'Head of MENA':                        ROLES.HEAD_OF_MENA,
+      'Senior Business Development Manager': ROLES.SENIOR_BDM,
       'Business Development Manager':        ROLES.SENIOR_BDM,
       'Sales Development Representative':    ROLES.SENIOR_BDM,
       'Country Head':                        ROLES.HEAD_OF_SALES,
     };
-    const assignedRole = DESIGNATION_ROLE_MAP[designation] || ROLES.SENIOR_BDM;
+    const assignedRole = DESIGNATION_ROLE_MAP[designation] || ROLES.CUSTOMER_ONBOARDING_SPECIALIST;
 
     await query(
       `INSERT INTO users (name, email, password_hash, role, designation, company_name, phone)

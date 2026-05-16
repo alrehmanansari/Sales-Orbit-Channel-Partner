@@ -133,13 +133,13 @@ async function listPartners(req, res, next) {
   }
 }
 
-// Returns all active non-seed internal team members for the internal edit specialist dropdown
+// Returns all active signed-up Onboarding Specialists (excluding seed accounts)
 async function listSpecialists(req, res, next) {
   try {
     const result = await query(
       `SELECT id, name, email, role, designation
        FROM users
-       WHERE role != 'channel_partner'
+       WHERE role = 'customer_onboarding_specialist'
          AND is_active = TRUE
          AND email NOT LIKE '%@salesorbit.app'
        ORDER BY name`,

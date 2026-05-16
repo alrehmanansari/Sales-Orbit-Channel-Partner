@@ -91,6 +91,15 @@ async function runMigrations() {
     ['add_city',          `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS city VARCHAR(100)`],
     ['add_in_review_at',  `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS in_review_at TIMESTAMPTZ`],
     ['add_rejected_at',   `ALTER TABLE accounts ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMPTZ`],
+    // Fix existing users who signed up with old internal designations — give them COS role
+    ['fix_internal_roles_to_cos', `
+      UPDATE users
+      SET role = 'customer_onboarding_specialist',
+          designation = 'Onboarding Specialist'
+      WHERE role NOT IN ('channel_partner','customer_onboarding_specialist')
+        AND email NOT LIKE '%@salesorbit.app'
+        AND is_active = TRUE
+    `],
   ];
   for (const [id, sql] of schemaMigrations) {
     try { await pool.query(sql); await mark(id); }
