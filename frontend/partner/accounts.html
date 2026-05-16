@@ -685,23 +685,77 @@ async function moveStage(accountId, newStatus) {
 
 // ── BULK UPLOAD TEMPLATE ──
 function downloadTemplate() {
+  // Column names (must match exactly — used by the backend parser)
   const headers = [
-    'company_name','account_number','country','city','website','registration_date',
-    'business_type','vertical','nature_of_business','monthly_volume',
-    'contact_name','contact_email','contact_phone',
-    'onboarding_specialist','status','va_status','card_status'
+    'company_name',
+    'account_number',
+    'country',
+    'city',
+    'website',
+    'registration_date',
+    'business_type',
+    'vertical',
+    'monthly_volume',
+    'nature_of_business',
+    'contact_name',
+    'contact_email',
+    'contact_phone',
+    'onboarding_specialist',
+    'va_status',
+    'card_status',
   ];
+
+  // Human-readable labels (row 2 — for reference only, do NOT delete this row)
+  const labels = [
+    'Company Name*',
+    'Client ID*',
+    'Registration Country',
+    'City (Pakistan)',
+    'Website / Store URL',
+    'Reg Date (YYYY-MM-DD)',
+    'Business Type (new / established)',
+    'Vertical (it_services_provider / ecomm_seller / b2b_seller / freelancer)',
+    'Expected Monthly Volume ($)',
+    'Nature of Business',
+    'Director Name*',
+    'Director Email*',
+    'WhatsApp / Phone (+923001234567)',
+    'Onboarding Specialist Name',
+    'VA Status (required / applied / issued / activated)',
+    'Card Status (required / applied / issued)',
+  ];
+
+  // Example row with realistic sample data
   const example = [
-    'Acme Corp','CL-001','United Arab Emirates','Karachi','https://acme.com','2026-05-01',
-    'new','ecomm_seller','Shopify','50000',
-    'John Smith','john@acme.com','+923010101010',
-    '','registered','',''
+    'Acme Trading LLC',
+    'CL-001',
+    'United Arab Emirates',
+    'Karachi',
+    'https://acme.com',
+    '2026-05-01',
+    'new',
+    'ecomm_seller',
+    '50000',
+    'Shopify',
+    'John Smith',
+    'john@acme.com',
+    '+923010101010',
+    '',
+    '',
+    '',
   ];
-  const csv = [headers.join(','), example.join(',')].join('\n');
-  const blob = new Blob([csv], { type:'text/csv' });
+
+  const rows = [
+    headers.join(','),
+    labels.map(l => `"${l}"`).join(','),
+    example.join(','),
+  ];
+
+  const csv  = rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = 'sales_orbit_accounts_template.csv'; a.click();
+  a.href = url; a.download = 'sales_orbit_bulk_upload_template.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 

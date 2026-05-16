@@ -119,11 +119,22 @@
             <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export XLS
           </button>
-          <label class="btn btn-ghost btn-sm" style="cursor:pointer">
-            <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Bulk Upload
-            <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="doBulkUpload(this)"/>
-          </label>
+          <div style="position:relative;display:inline-flex">
+            <label class="btn btn-ghost btn-sm" for="bulk-file" style="cursor:pointer;border-radius:8px 0 0 8px;border-right:none;margin:0">
+              <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Bulk Upload
+              <input type="file" id="bulk-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="doBulkUpload(this)"/>
+            </label>
+            <button class="btn btn-ghost btn-sm" onclick="toggleIntUploadMenu(event)" style="border-radius:0 8px 8px 0;padding:0 7px;border-left:1px solid var(--border2);margin:0">
+              <svg style="width:10px;height:10px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div id="int-upload-menu" style="display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px -4px rgba(0,0,0,.15);min-width:170px;z-index:300;overflow:hidden">
+              <button onclick="downloadTemplate();document.getElementById('int-upload-menu').style.display='none'" style="width:100%;text-align:left;padding:9px 14px;border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px" onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='transparent'">
+                <svg style="width:13px;height:13px;color:var(--g-blue)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Template
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1069,6 +1080,47 @@ async function loadAuditLog() {
 
 function actionLabel(a) {
   return { account_created:'Account created', account_updated:'Account updated', note_added:'Note added' }[a] || a;
+}
+
+function toggleIntUploadMenu(e) {
+  e.stopPropagation();
+  const m = document.getElementById('int-upload-menu');
+  m.style.display = m.style.display === 'none' ? '' : 'none';
+}
+document.addEventListener('click', () => {
+  const m = document.getElementById('int-upload-menu');
+  if (m) m.style.display = 'none';
+});
+
+function downloadTemplate() {
+  const headers = [
+    'company_name','account_number','country','city','website','registration_date',
+    'business_type','vertical','monthly_volume','nature_of_business',
+    'contact_name','contact_email','contact_phone',
+    'onboarding_specialist','va_status','card_status',
+  ];
+  const labels = [
+    'Company Name*','Client ID*','Registration Country','City (Pakistan)',
+    'Website / Store URL','Reg Date (YYYY-MM-DD)',
+    'Business Type (new / established)',
+    'Vertical (it_services_provider / ecomm_seller / b2b_seller / freelancer)',
+    'Expected Monthly Volume ($)','Nature of Business',
+    'Director Name*','Director Email*','WhatsApp / Phone (+923001234567)',
+    'Onboarding Specialist Name',
+    'VA Status (required / applied / issued / activated)',
+    'Card Status (required / applied / issued)',
+  ];
+  const example = [
+    'Acme Trading LLC','CL-001','United Arab Emirates','Karachi',
+    'https://acme.com','2026-05-01','new','ecomm_seller','50000','Shopify',
+    'John Smith','john@acme.com','+923010101010','','','',
+  ];
+  const csv = [headers.join(','), labels.map(l=>`"${l}"`).join(','), example.join(',')].join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'sales_orbit_bulk_upload_template.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 async function doBulkUpload(input) {

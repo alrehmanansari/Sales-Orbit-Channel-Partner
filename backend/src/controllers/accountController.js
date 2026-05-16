@@ -458,36 +458,75 @@ async function bulkUploadAccounts(req, res, next) {
       }
     }
 
-    const cosResult = await query(
-      `SELECT id FROM users WHERE role = 'customer_onboarding_specialist' AND is_active = TRUE LIMIT 1`
-    );
-    const defaultOwnerId = cosResult.rows[0]?.id || null;
-
     const created = [];
-    const errors = [];
+    const errors  = [];
+    const validStatuses = ['registered','in_review','onboarded','activated','rejected'];
 
     for (const { rowNum, get } of dataRows) {
       const company_name  = get('company_name');
       const contact_name  = get('contact_name');
       const contact_email = get('contact_email');
       if (!company_name || !contact_name || !contact_email) {
-        errors.push({ row: rowNum, error: 'Missing required fields' });
+        errors.push({ row: rowNum, error: 'Missing required fields (company_name, contact_name, contact_email)' });
         continue;
       }
+
       try {
+        // Resolve onboarding specialist by name → owner_id
+        const specName = get('onboarding_specialist');
+        let ownerId = null;
+        if (specName) {
+          const specRes = await query(
+            `SELECT id FROM users WHERE name ILIKE $1 AND role != 'channel_partner' AND is_active = TRUE LIMIT 1`,
+            [specName]
+          );
+          ownerId = specRes.rows[0]?.id || null;
+        }
+        if (!ownerId) {
+          // Auto-assign COS with fewest accounts as fallback
+          const cosRes = await query(
+            `SELECT u.id FROM users u LEFT JOIN accounts a ON a.owner_id = u.id
+             WHERE u.role = 'customer_onboarding_specialist' AND u.is_active = TRUE
+               AND u.email NOT LIKE '%@salesorbit.app'
+             GROUP BY u.id ORDER BY COUNT(a.id) ASC LIMIT 1`
+          );
+          ownerId = cosRes.rows[0]?.id || null;
+        }
+
+        const mv     = get('monthly_volume');
+        const status = validStatuses.includes(get('status')) ? get('status') : 'registered';
+        const regDate = get('registration_date') || null;
+
         const result = await query(
           `INSERT INTO accounts
-             (company_name, trading_name, business_type, vertical, contact_name,
-              contact_email, contact_phone, country, website, nature_of_business,
-              onboarding_specialist, va_status, card_status, remarks, partner_id, owner_id)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING id, company_name`,
-          [company_name, get('trading_name') || null, get('business_type') || null,
-           get('vertical') || null, contact_name, contact_email,
-           get('contact_phone') || null, get('country') || null,
-           get('website') || null, get('nature_of_business') || null,
-           get('onboarding_specialist') || null,
-           get('va_status') || null, get('card_status') || null,
-           get('remarks') || null, req.user.id, defaultOwnerId]
+             (company_name, account_number, business_type, vertical, contact_name,
+              contact_email, contact_phone, country, city, website, nature_of_business,
+              onboarding_specialist, va_status, card_status, registration_date,
+              monthly_volume, status, remarks, partner_id, owner_id)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+           RETURNING id, company_name`,
+          [
+            company_name,
+            get('account_number') || get('client_id') || null,
+            get('business_type')     || null,
+            get('vertical')          || null,
+            contact_name,
+            contact_email,
+            get('contact_phone')     || null,
+            get('country')           || null,
+            get('city')              || null,
+            get('website')           || null,
+            get('nature_of_business') || null,
+            specName                 || null,
+            get('va_status')         || null,
+            get('card_status')       || null,
+            regDate,
+            mv ? parseFloat(mv) : null,
+            status,
+            get('remarks')           || null,
+            req.user.id,
+            ownerId
+          ]
         );
         created.push(result.rows[0]);
       } catch (e) {
