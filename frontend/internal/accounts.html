@@ -6,18 +6,40 @@
 <title>Accounts · Sales Orbit Internal</title>
 <link rel="stylesheet" href="../assets/css/design-system.css"/>
 <style>
-.acct-detail-panel{position:fixed;right:0;top:0;height:100vh;width:580px;background:var(--surface);border-left:1px solid var(--border2);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);overflow:hidden}
-[data-theme=dark] .acct-detail-panel{box-shadow:-8px 0 32px rgba(0,0,0,.6)}
+/* ── Panel shell ─────────────────────────────────────────────────────── */
+.acct-detail-panel{position:fixed;right:0;top:0;height:100vh;width:600px;background:var(--surface);border-left:1px solid var(--border2);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+[data-theme=dark] .acct-detail-panel{box-shadow:-16px 0 48px rgba(0,0,0,.7)}
 .acct-detail-panel.open{transform:translateX(0)}
-.panel-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;gap:10px}
-.panel-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:18px;transition:all .2s}
-.panel-close:hover{background:var(--border2)}
-.panel-tabs{display:flex;border-bottom:1px solid var(--border);position:relative;flex-shrink:0;padding:0 20px;overflow-x:auto}
-.tab-btn{padding:10px 14px;border:none;background:transparent;font-family:var(--font);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:color .2s;position:relative;white-space:nowrap}
-.tab-btn.active{color:var(--text)}
-.tab-indicator{position:absolute;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--g-blue),var(--g-purple));transition:all .35s cubic-bezier(.2,.8,.2,1)}
-.panel-body{flex:1;overflow-y:auto;padding:20px}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+/* ── Panel hero ───────────────────────────────────────────────────────── */
+.panel-hero{display:flex;align-items:flex-start;gap:14px;padding:20px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative}
+.panel-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--g-purple),var(--g-pink),var(--g-blue))}
+.panel-avatar{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;box-shadow:0 4px 12px -2px rgba(0,0,0,.25)}
+.panel-hero-info{flex:1;min-width:0}
+.panel-hero-name{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.panel-hero-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.panel-hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.panel-close{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:16px;transition:all .15s}
+.panel-close:hover{background:var(--bg3);color:var(--text)}
+/* ── Action bar & tabs ────────────────────────────────────────────────── */
+.panel-actions-bar{display:flex;align-items:center;gap:6px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
+.panel-tab-bar{display:flex;border-bottom:1px solid var(--border);position:relative;flex-shrink:0;background:var(--surface);overflow-x:auto}
+.tab-btn{padding:10px 14px;border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:color .2s;position:relative;white-space:nowrap;letter-spacing:.2px}
+.tab-btn.active{color:var(--g-purple)}
+.tab-indicator{position:absolute;bottom:0;height:2px;border-radius:2px 2px 0 0;background:linear-gradient(90deg,var(--g-purple),var(--g-pink));transition:all .3s cubic-bezier(.2,.8,.2,1)}
+/* ── Panel body & info cards ──────────────────────────────────────────── */
+.panel-body{flex:1;overflow-y:auto;padding:16px}
+.info-grid{display:flex;flex-direction:column;gap:10px}
+.info-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.info-card-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
+.info-card-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.info-card-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text2)}
+.info-card-body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.info-field{padding:9px 14px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.info-field:nth-child(2n){border-right:none}
+.info-field:nth-last-child(-n+2){border-bottom:none}
+.info-field.full{grid-column:1/-1;border-right:none;border-bottom:none}
+.info-field-label{font-size:9.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-bottom:3px}
+.info-field-value{font-size:12.5px;color:var(--text);font-weight:500;line-height:1.4;word-break:break-word}
 .info-item .info-label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
 .info-item .info-value{font-size:13px;color:var(--text);font-weight:500}
 .edit-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px}
@@ -178,15 +200,22 @@
 
 <!-- DETAIL PANEL -->
 <div class="acct-detail-panel" id="detail-panel">
-  <div class="panel-header">
-    <div>
-      <div style="font-size:15px;font-weight:600;color:var(--text)" id="panel-title">Account</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px" id="panel-sub"></div>
+  <!-- Hero header -->
+  <div class="panel-hero">
+    <div class="panel-avatar" id="panel-avatar">A</div>
+    <div class="panel-hero-info">
+      <div class="panel-hero-name" id="panel-title">Account</div>
+      <div class="panel-hero-sub" id="panel-sub"></div>
     </div>
-    <div id="panel-status"></div>
-    <button class="panel-close" onclick="closePanel()">×</button>
+    <div class="panel-hero-right">
+      <button class="panel-close" onclick="closePanel()">×</button>
+      <div id="panel-status"></div>
+    </div>
   </div>
-  <div class="panel-tabs">
+  <!-- Action buttons -->
+  <div class="panel-actions-bar" id="panel-actions"></div>
+  <!-- Tab bar -->
+  <div class="panel-tab-bar">
     <button class="tab-btn active" data-tab="info"    onclick="switchTab('info')">Info</button>
     <button class="tab-btn"        data-tab="edit"    onclick="switchTab('edit')">Edit</button>
     <button class="tab-btn"        data-tab="notes"   onclick="switchTab('notes')">Notes</button>
@@ -199,7 +228,6 @@
     <!-- INFO TAB -->
     <div id="tab-info">
       <div class="info-grid" id="info-grid"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="panel-actions"></div>
     </div>
 
     <!-- EDIT TAB (COS editable fields) -->
@@ -635,6 +663,57 @@ async function loadSpecialistDropdown(selectedId) {
 }
 
 // ── JOURNEY TIMELINE ──
+function buildInfoSections(a, isInternal = false) {
+  const vaL   = { required:'Required', applied:'Applied', issued:'Issued', activated:'Activated' };
+  const cardL = { required:'Required', applied:'Applied', issued:'Issued' };
+  const ic = (d,w=12,h=12) => `<svg width="${w}" height="${h}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${d}</svg>`;
+  const card = (iconSvg, title, accent, fields) => {
+    const rows = fields.map(([l, v, full]) =>
+      `<div class="info-field${full?' full':''}"><div class="info-field-label">${l}</div><div class="info-field-value">${v}</div></div>`
+    ).join('');
+    return `<div class="info-card">
+      <div class="info-card-head">
+        <div class="info-card-icon" style="background:${accent}18;color:${accent}">${iconSvg}</div>
+        <span class="info-card-title">${title}</span>
+      </div>
+      <div class="info-card-body">${rows}</div>
+    </div>`;
+  };
+  return buildJourney(a)
+    + card(ic('<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'),
+      'Company Information','var(--g-blue)',[
+        ['Client ID',   esc(a.account_number || '—')],
+        ['Reg Date',    Auth.formatDate(a.registration_date)],
+        ['Country',     esc(a.country || '—')],
+        ['City',        esc(a.city || '—')],
+        ['Website',     a.website?`<a href="${esc(a.website)}" target="_blank" style="color:var(--g-blue);word-break:break-all">${esc(a.website)}</a>`:'—',true],
+      ])
+    + card(ic('<rect x="3" y="3" width="18" height="7" rx="1"/><rect x="3" y="14" width="18" height="7" rx="1"/>'),
+      'Business Profile','var(--g-purple)',[
+        ['Business Type',  Auth.businessTypeLabel(a.business_type)],
+        ['Vertical',       Auth.verticalLabel(a.vertical)],
+        ['Nature of Biz',  esc(a.nature_of_business || '—')],
+        ['Monthly Volume', a.monthly_volume?`<strong style="color:var(--g-green)">$${Number(a.monthly_volume).toLocaleString()}</strong>`:'—'],
+        ['Partner',        esc(a.partner_name || '—')],
+        ...(isInternal ? [['Partner Email', esc(a.partner_email || '—')]] : []),
+      ])
+    + card(ic('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'),
+      'Director & Contact','#34A853',[
+        ['Director Name', esc(a.contact_name)],
+        ['Email',         `<a href="mailto:${esc(a.contact_email)}" style="color:var(--g-blue)">${esc(a.contact_email)}</a>`],
+        ['WhatsApp',      esc(a.contact_phone || '—')],
+      ])
+    + card(ic('<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>'),
+      'Account Settings','var(--g-pink)',[
+        ['Onboarding Specialist', esc(a.owner_name || a.onboarding_specialist || 'Unassigned')],
+        ['Account Stage',         Auth.statusBadge(a.status)],
+        ['VA Status',             esc(vaL[a.va_status] || a.va_status || '—')],
+        ['Card Status',           esc(cardL[a.card_status] || a.card_status || '—')],
+        ...(isInternal ? [['KYC Agent', esc(a.kyc_agent || '—')]] : []),
+      ])
+    + (a.remarks?`<div class="info-card"><div class="info-card-head"><div class="info-card-icon" style="background:#F59E0B18;color:#F59E0B">${ic('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>')}</div><span class="info-card-title">Remarks</span></div><div class="info-card-body"><div class="info-field full"><div class="info-field-value" style="white-space:pre-wrap">${esc(a.remarks)}</div></div></div></div>`:'');
+}
+
 function buildJourney(a) {
   const order    = ['registered','in_review','onboarded','activated'];
   const rejected = a.status === 'rejected';
@@ -687,50 +766,35 @@ async function openPanel(id, defaultTab = 'info') {
     const data = await API.getAccount(id);
     const a = data.data;
 
+    // Avatar
+    const colors = ['#4796E3','#9177C7','#CA6673','#34A853','#F59E0B','#06B6D4'];
+    let h = 0; for (const c of (a.company_name||'')) h = c.charCodeAt(0)+((h<<5)-h);
+    const avatarEl = document.getElementById('panel-avatar');
+    avatarEl.textContent = (a.company_name||'?')[0].toUpperCase();
+    avatarEl.style.background = `linear-gradient(135deg,${colors[Math.abs(h)%colors.length]},${colors[Math.abs(h)%colors.length]}aa)`;
+
     document.getElementById('panel-title').textContent = a.company_name;
-    document.getElementById('panel-sub').textContent   = `${Auth.verticalLabel(a.vertical)} · Ref: ${a.account_number || '—'}`;
+    document.getElementById('panel-sub').textContent   =
+      [Auth.verticalLabel(a.vertical), Auth.businessTypeLabel(a.business_type), a.country].filter(Boolean).join(' · ');
     document.getElementById('panel-status').innerHTML  = Auth.statusBadge(a.status);
 
-    // Info tab
-    const _vaL   = { required:'Required', applied:'Applied', issued:'Issued', activated:'Activated' };
-    const _cardL = { required:'Required', applied:'Applied', issued:'Issued' };
+    // Info tab — grouped card sections
+    document.getElementById('info-grid').innerHTML = buildInfoSections(a, true);
 
-    document.getElementById('info-grid').innerHTML = buildJourney(a) + [
-      ['Client ID',             esc(a.account_number || '—')],
-      ['Company Name',          esc(a.company_name)],
-      ['Reg Country',           esc(a.country || '—')],
-      ['Director Name',         esc(a.contact_name)],
-      ['Email ID',              esc(a.contact_email)],
-      ['Phone',                 esc(a.contact_phone || '—')],
-      ['City',                  esc(a.city || '—')],
-      ['Website',               a.website ? `<a href="${esc(a.website)}" target="_blank" style="color:var(--g-blue)">${esc(a.website)}</a>` : '—'],
-      ['Account Reg Date',      Auth.formatDate(a.registration_date)],
-      ['Business Type',         Auth.businessTypeLabel(a.business_type)],
-      ['Vertical',              Auth.verticalLabel(a.vertical)],
-      ['Nature of Business',    esc(a.nature_of_business || '—')],
-      ['Channel Partner',       esc(a.partner_name || '—')],
-      ['Partner Email',         esc(a.partner_email || '—')],
-      ['Onboarding Specialist', esc(a.owner_name || a.onboarding_specialist || 'Unassigned')],
-      ['Account Stage',         Auth.statusBadge(a.status)],
-      ['VA Status',             esc(_vaL[a.va_status] || a.va_status || '—')],
-      ['Card Status',           esc(_cardL[a.card_status] || a.card_status || '—')],
-      ['Monthly Volume',        a.monthly_volume ? '$'+Number(a.monthly_volume).toLocaleString() : '—'],
-      ['KYC Agent',             esc(a.kyc_agent || '—')],
-      ['Onboarded',             Auth.formatDate(a.onboarded_at)],
-      ['Activated',             Auth.formatDate(a.activated_at)],
-    ].map(([l, v]) => `<div class="info-item"><div class="info-label">${l}</div><div class="info-value">${v}</div></div>`).join('');
-
-    if (a.remarks) {
-      document.getElementById('info-grid').innerHTML += `<div class="info-item" style="grid-column:1/-1"><div class="info-label">Remarks</div><div class="info-value">${esc(a.remarks)}</div></div>`;
-    }
-
-    // Action buttons — same as partner panel
+    // Action buttons
     document.getElementById('panel-actions').innerHTML = `
       <button class="btn btn-grad btn-sm" onclick="openStageModal('${id}','${a.status}','${esc(a.company_name)}')">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;vertical-align:middle"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Move Stage
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="switchTab('edit')">Edit</button>
-      <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="switchTab('tickets')">+ Ticket</button>`;
+      <button class="btn btn-ghost btn-sm" onclick="switchTab('edit')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit
+      </button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="switchTab('notes')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Notes
+      </button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--g-pink)" onclick="switchTab('tickets')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>+ Ticket
+      </button>`;
 
     // Populate edit fields — null-safe so missing elements never crash the panel
     const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
@@ -782,7 +846,7 @@ function switchTab(tab) {
 }
 
 function positionTabInd() {
-  const active = document.querySelector('.panel-tabs .tab-btn.active');
+  const active = document.querySelector('.panel-tab-bar .tab-btn.active');
   const ind    = document.getElementById('tab-ind');
   if (active && ind) { ind.style.width = active.offsetWidth + 'px'; ind.style.left = active.offsetLeft + 'px'; }
 }
