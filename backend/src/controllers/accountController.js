@@ -451,11 +451,49 @@ async function bulkUploadAccounts(req, res, next) {
       });
     }
 
-    const required = ['company_name', 'contact_name', 'contact_email'];
-    for (const f of required) {
-      if (!(f in headers)) {
-        return res.status(400).json({ error: `Missing column: ${f}` });
+    // Map human-readable form labels → machine field names.
+    // Works by adding aliases to the existing `headers` index so the
+    // existing row.get(machineKey) calls find the right column automatically.
+    const COL_MAP = {
+      'Company Name*':               'company_name',
+      'Company Name':                'company_name',
+      'Client ID*':                  'account_number',
+      'Client ID':                   'account_number',
+      'Registration Country':        'country',
+      'City':                        'city',
+      'Website / Store':             'website',
+      'Website':                     'website',
+      'Reg Date (YYYY-MM-DD)':       'registration_date',
+      'Registration Date':           'registration_date',
+      'Business Type':               'business_type',
+      'Vertical':                    'vertical',
+      'Monthly Volume ($)':          'monthly_volume',
+      'Expected Monthly Volume ($)': 'monthly_volume',
+      'Nature of Business':          'nature_of_business',
+      'Director Name*':              'contact_name',
+      'Director Name':               'contact_name',
+      'Email*':                      'contact_email',
+      'Email':                       'contact_email',
+      'Director Email*':             'contact_email',
+      'WhatsApp / Phone':            'contact_phone',
+      'Onboarding Specialist':       'onboarding_specialist',
+      'VA Status':                   'va_status',
+      'Card Status':                 'card_status',
+    };
+    // Inject machine-name aliases into `headers` so row.get('company_name') works
+    // whether the template used 'company_name' or 'Company Name*'
+    for (const [humanKey, machineKey] of Object.entries(COL_MAP)) {
+      if (headers[humanKey] !== undefined && headers[machineKey] === undefined) {
+        headers[machineKey] = headers[humanKey];
       }
+    }
+
+    const required = ['company_name', 'contact_name', 'contact_email'];
+    const missing  = required.filter(f => !(f in headers));
+    if (missing.length) {
+      return res.status(400).json({
+        error: `Missing required column(s). Ensure your file has: Company Name*, Director Name*, Email*`
+      });
     }
 
     const created = [];

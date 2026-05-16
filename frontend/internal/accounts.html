@@ -10,22 +10,25 @@
 .acct-detail-panel{position:fixed;right:0;top:0;height:100vh;width:600px;background:var(--surface);border-left:1px solid var(--border2);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);overflow:hidden}
 [data-theme=dark] .acct-detail-panel{box-shadow:-16px 0 48px rgba(0,0,0,.7)}
 .acct-detail-panel.open{transform:translateX(0)}
-/* ── Panel hero ───────────────────────────────────────────────────────── */
-.panel-hero{display:flex;align-items:flex-start;gap:14px;padding:20px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative}
+/* ── Panel hero (no avatar) ───────────────────────────────────────────── */
+.panel-hero{display:flex;align-items:center;gap:12px;padding:16px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative}
 .panel-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--g-purple),var(--g-pink),var(--g-blue))}
-.panel-avatar{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;margin-top:2px;box-shadow:0 4px 12px -2px rgba(0,0,0,.25)}
 .panel-hero-info{flex:1;min-width:0}
 .panel-hero-name{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .panel-hero-sub{font-size:11px;color:var(--text3);margin-top:3px}
-.panel-hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.panel-hero-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .panel-close{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:16px;transition:all .15s}
 .panel-close:hover{background:var(--bg3);color:var(--text)}
-/* ── Action bar & tabs ────────────────────────────────────────────────── */
-.panel-actions-bar{display:flex;align-items:center;gap:6px;padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
-.panel-tab-bar{display:flex;border-bottom:1px solid var(--border);position:relative;flex-shrink:0;background:var(--surface);overflow-x:auto}
+/* ── Unified tab bar ─────────────────────────────────────────────────── */
+.panel-tab-bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+.panel-tabs-inner{display:flex;position:relative;flex:1;overflow-x:auto}
 .tab-btn{padding:10px 14px;border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:color .2s;position:relative;white-space:nowrap;letter-spacing:.2px}
 .tab-btn.active{color:var(--g-purple)}
 .tab-indicator{position:absolute;bottom:0;height:2px;border-radius:2px 2px 0 0;background:linear-gradient(90deg,var(--g-purple),var(--g-pink));transition:all .3s cubic-bezier(.2,.8,.2,1)}
+.panel-tab-action{padding:0 14px;border:none;border-left:1px solid var(--border);background:transparent;font-family:var(--font);font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.panel-tab-action:hover{background:var(--bg2);color:var(--text)}
+.panel-tab-action.grad{background:linear-gradient(135deg,var(--g-blue),var(--g-purple));color:#fff;border-left-color:transparent}
+.panel-tab-action.grad:hover{opacity:.9}
 /* ── Panel body & info cards ──────────────────────────────────────────── */
 .panel-body{flex:1;overflow-y:auto;padding:16px}
 .info-grid{display:flex;flex-direction:column;gap:10px}
@@ -200,28 +203,31 @@
 
 <!-- DETAIL PANEL -->
 <div class="acct-detail-panel" id="detail-panel">
-  <!-- Hero header -->
+  <!-- Hero header — company name only, no avatar -->
   <div class="panel-hero">
-    <div class="panel-avatar" id="panel-avatar">A</div>
     <div class="panel-hero-info">
       <div class="panel-hero-name" id="panel-title">Account</div>
       <div class="panel-hero-sub" id="panel-sub"></div>
     </div>
     <div class="panel-hero-right">
-      <button class="panel-close" onclick="closePanel()">×</button>
       <div id="panel-status"></div>
+      <button class="panel-close" onclick="closePanel()">×</button>
     </div>
   </div>
-  <!-- Action buttons -->
-  <div class="panel-actions-bar" id="panel-actions"></div>
-  <!-- Tab bar -->
+  <!-- Single unified tab bar — no duplication, Move Stage on right -->
   <div class="panel-tab-bar">
-    <button class="tab-btn active" data-tab="info"    onclick="switchTab('info')">Info</button>
-    <button class="tab-btn"        data-tab="edit"    onclick="switchTab('edit')">Edit</button>
-    <button class="tab-btn"        data-tab="notes"   onclick="switchTab('notes')">Notes</button>
-    <button class="tab-btn"        data-tab="tickets" onclick="switchTab('tickets')">Tickets</button>
-    <button class="tab-btn"        data-tab="history" onclick="switchTab('history')">History</button>
-    <span class="tab-indicator" id="tab-ind" style="width:38px;left:0"></span>
+    <div class="panel-tabs-inner">
+      <button class="tab-btn active" data-tab="info"    onclick="switchTab('info')">Info</button>
+      <button class="tab-btn"        data-tab="edit"    onclick="switchTab('edit')">Edit</button>
+      <button class="tab-btn"        data-tab="notes"   onclick="switchTab('notes')">Notes</button>
+      <button class="tab-btn"        data-tab="tickets" onclick="switchTab('tickets')">Tickets</button>
+      <button class="tab-btn"        data-tab="history" onclick="switchTab('history')">History</button>
+      <span class="tab-indicator" id="tab-ind" style="width:38px;left:0"></span>
+    </div>
+    <button id="move-stage-btn" class="panel-tab-action grad" onclick="openStageModalCurrent()" style="display:none">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Move Stage
+    </button>
   </div>
   <div class="panel-body">
 
@@ -457,6 +463,11 @@ let currentPage = 1;
 let currentAccountId = null;
 let searchTimer = null;
 let _pendingOwnerId = '';
+let _panelAccount   = null;
+
+function openStageModalCurrent() {
+  if (_panelAccount) openStageModal(_panelAccount.id, _panelAccount.status, _panelAccount.company_name);
+}
 let activeDateFilter = { key: null, start: null, end: null };
 
 function getDateRange(key) {
@@ -766,35 +777,15 @@ async function openPanel(id, defaultTab = 'info') {
     const data = await API.getAccount(id);
     const a = data.data;
 
-    // Avatar
-    const colors = ['#4796E3','#9177C7','#CA6673','#34A853','#F59E0B','#06B6D4'];
-    let h = 0; for (const c of (a.company_name||'')) h = c.charCodeAt(0)+((h<<5)-h);
-    const avatarEl = document.getElementById('panel-avatar');
-    avatarEl.textContent = (a.company_name||'?')[0].toUpperCase();
-    avatarEl.style.background = `linear-gradient(135deg,${colors[Math.abs(h)%colors.length]},${colors[Math.abs(h)%colors.length]}aa)`;
-
+    _panelAccount = a;
     document.getElementById('panel-title').textContent = a.company_name;
     document.getElementById('panel-sub').textContent   =
       [Auth.verticalLabel(a.vertical), Auth.businessTypeLabel(a.business_type), a.country].filter(Boolean).join(' · ');
     document.getElementById('panel-status').innerHTML  = Auth.statusBadge(a.status);
-
-    // Info tab — grouped card sections
-    document.getElementById('info-grid').innerHTML = buildInfoSections(a, true);
-
-    // Action buttons
-    document.getElementById('panel-actions').innerHTML = `
-      <button class="btn btn-grad btn-sm" onclick="openStageModal('${id}','${a.status}','${esc(a.company_name)}')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;vertical-align:middle"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Move Stage
-      </button>
-      <button class="btn btn-ghost btn-sm" onclick="switchTab('edit')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit
-      </button>
-      <button class="btn btn-ghost btn-sm" style="color:var(--g-purple)" onclick="switchTab('notes')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Notes
-      </button>
-      <button class="btn btn-ghost btn-sm" style="color:var(--g-pink)" onclick="switchTab('tickets')">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><path d="M12 5v14M5 12h14"/></svg>+ Ticket
-      </button>`;
+    document.getElementById('info-grid').innerHTML     = buildInfoSections(a, true);
+    // Show Move Stage button in tab bar
+    const msBtn = document.getElementById('move-stage-btn');
+    if (msBtn) msBtn.style.display = 'flex';
 
     // Populate edit fields — null-safe so missing elements never crash the panel
     const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
@@ -846,7 +837,7 @@ function switchTab(tab) {
 }
 
 function positionTabInd() {
-  const active = document.querySelector('.panel-tab-bar .tab-btn.active');
+  const active = document.querySelector('.panel-tabs-inner .tab-btn.active');
   const ind    = document.getElementById('tab-ind');
   if (active && ind) { ind.style.width = active.offsetWidth + 'px'; ind.style.left = active.offsetLeft + 'px'; }
 }
@@ -1157,29 +1148,13 @@ document.addEventListener('click', () => {
 });
 
 function downloadTemplate() {
-  const headers = [
-    'company_name','account_number','country','city','website','registration_date',
-    'business_type','vertical','monthly_volume','nature_of_business',
-    'contact_name','contact_email','contact_phone',
-    'onboarding_specialist','va_status','card_status',
+  // Identical to partner template — column names match Add Account form labels exactly
+  const rows = [
+    '"Company Name*","Client ID*","Registration Country","City","Website / Store","Reg Date (YYYY-MM-DD)","Business Type","Vertical","Monthly Volume ($)","Nature of Business","Director Name*","Email*","WhatsApp / Phone","Onboarding Specialist","VA Status","Card Status"',
+    '"Required","Required","e.g. United Arab Emirates","e.g. Karachi","https://example.com","YYYY-MM-DD format","new OR established","it_services_provider / ecomm_seller / b2b_seller / freelancer","Numbers only e.g. 50000","e.g. Shopify","Full legal name","Email address","+923001234567","Specialist full name","required / applied / issued / activated","required / applied / issued"',
+    '"Acme Trading LLC","CL-001","United Arab Emirates","Karachi","https://acme.com","2026-05-01","new","ecomm_seller","50000","Shopify","John Smith","john@acme.com","+923010101010","","",""',
   ];
-  const labels = [
-    'Company Name*','Client ID*','Registration Country','City (Pakistan)',
-    'Website / Store URL','Reg Date (YYYY-MM-DD)',
-    'Business Type (new / established)',
-    'Vertical (it_services_provider / ecomm_seller / b2b_seller / freelancer)',
-    'Expected Monthly Volume ($)','Nature of Business',
-    'Director Name*','Director Email*','WhatsApp / Phone (+923001234567)',
-    'Onboarding Specialist Name',
-    'VA Status (required / applied / issued / activated)',
-    'Card Status (required / applied / issued)',
-  ];
-  const example = [
-    'Acme Trading LLC','CL-001','United Arab Emirates','Karachi',
-    'https://acme.com','2026-05-01','new','ecomm_seller','50000','Shopify',
-    'John Smith','john@acme.com','+923010101010','','','',
-  ];
-  const csv = [headers.join(','), labels.map(l=>`"${l}"`).join(','), example.join(',')].join('\n');
+  const csv = rows.join('\n');
   const blob = new Blob([csv], { type:'text/csv' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
