@@ -591,7 +591,7 @@ async function loadAccounts() {
           <div class="td-sub">${esc(a.account_number || '—')}</div>
         </td>
         <td>
-          <div class="td-primary">${esc(a.partner_name || '—')}</div>
+          <div class="td-primary">${esc(a.partner_company || '—')}</div>
           <div class="td-sub">${esc(a.partner_company || '')}</div>
         </td>
         <td>${Auth.verticalLabel(a.vertical)}</td>
@@ -705,7 +705,7 @@ function buildInfoSections(a, isInternal = false) {
         ['Vertical',       Auth.verticalLabel(a.vertical)],
         ['Nature of Biz',  esc(a.nature_of_business || '—')],
         ['Monthly Volume', a.monthly_volume?`<strong style="color:var(--g-green)">$${Number(a.monthly_volume).toLocaleString()}</strong>`:'—'],
-        ['Partner',        esc(a.partner_name || '—')],
+        ['Partner',        esc(a.partner_company || '—')],
         ...(isInternal ? [['Partner Email', esc(a.partner_email || '—')]] : []),
       ])
     + card(ic('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'),
@@ -959,7 +959,7 @@ async function loadTickets() {
         <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">${esc(t.query_type)}</div>
         <div style="font-size:11px;color:var(--text2);display:flex;gap:10px;flex-wrap:wrap">
           <span>Resolution: ${esc(t.expected_resolution || '—')}</span>
-          <span>Partner: ${esc(t.partner_name)}</span>
+          <span>Partner: ${esc(t.partner_company || t.partner_name || '—')}</span>
           <span>${Math.round(t.days_to_resolve)} days open</span>
         </div>
         ${t.specialist_notes ? `<div style="font-size:12px;color:var(--text2);margin-top:6px;padding-top:6px;border-top:1px solid var(--border)">${esc(t.specialist_notes)}</div>` : ''}

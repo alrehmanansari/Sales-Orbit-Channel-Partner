@@ -213,7 +213,7 @@ function renderUserInfo(user) {
   const nameEl = document.getElementById('user-name');
   const roleEl = document.getElementById('user-role');
   const avEl   = document.getElementById('user-avatar');
-  if (nameEl) nameEl.textContent = user.name;
+  if (nameEl) nameEl.textContent = user.role === 'channel_partner' ? (user.company_name || user.name) : user.name;
   if (roleEl) roleEl.textContent = roleLabel(user.role);
   if (avEl) {
     avEl.textContent = avatarInitials(user.name);

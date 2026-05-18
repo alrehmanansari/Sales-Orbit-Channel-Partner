@@ -103,7 +103,7 @@ async function createTicket(req, res, next) {
         [
           account.owner_id,
           `New ticket on ${account.company_name}`,
-          `${req.user.name} raised: "${query_type}" — ${expected_resolution || 'no deadline set'}`,
+          `${req.user.company_name || req.user.name} raised: "${query_type}" — ${expected_resolution || 'no deadline set'}`,
           ticket.id
         ]
       );

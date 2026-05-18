@@ -484,7 +484,7 @@ async function loadAccountsTable() {
         <td style="font-size:11px">${esc(_cardL[a.card_status]||a.card_status||'—')}</td>
         <td style="font-size:11px">${esc(a.kyc_agent||'—')}</td>
         <td style="font-size:11px">${esc(a.owner_name||'—')}</td>
-        <td style="font-size:11px">${esc(a.partner_name||'—')}</td>
+        <td style="font-size:11px">${esc(a.partner_company||'—')}</td>
       </tr>`).join('');
 
     renderAcctPagination(total);
@@ -603,7 +603,7 @@ async function loadPartnerKpi() {
     }
     tbody.innerHTML = rows.map(r => `
       <tr>
-        <td style="font-weight:600">${esc(r.partner_name)}${r.partner_company ? `<div style="font-size:11px;color:var(--text3);font-weight:400">${esc(r.partner_company)}</div>` : ''}</td>
+        <td style="font-weight:600">${esc(r.partner_company || '—')}${r.partner_company ? `<div style="font-size:11px;color:var(--text3);font-weight:400">${esc(r.partner_company)}</div>` : ''}</td>
         <td class="kpi-num">${r.accounts_registered  || 0}</td>
         <td class="kpi-num">${r.accounts_in_review   || 0}</td>
         <td class="kpi-num">${r.accounts_onboarded   || 0}</td>
@@ -641,7 +641,7 @@ async function loadTicketReport() {
       <tr>
         <td style="font-weight:600">#${t.ticket_number}</td>
         <td>${esc(t.account_name)}</td>
-        <td>${esc(t.partner_name)}</td>
+        <td>${esc(t.partner_company || '—')}</td>
         <td>${esc(t.specialist_name||'—')}</td>
         <td style="font-size:11px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(t.query_type)}">${esc(t.query_type)}</td>
         <td>${Auth.ticketStatusBadge(t.status)}</td>

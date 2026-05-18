@@ -87,7 +87,7 @@ async function createNote(req, res, next) {
     const acc = accountRow.rows[0];
     const preview = `"${content.trim().substring(0, 80)}${content.trim().length > 80 ? '…' : ''}"`;
     const msgTitle = `New note on ${acc.company_name}`;
-    const msgBody  = `${req.user.name}: ${preview}`;
+    const msgBody  = `${req.user.company_name || req.user.name}: ${preview}`;
 
     if (req.user.role === ROLES.CHANNEL_PARTNER) {
       // Partner posted → notify assigned COS

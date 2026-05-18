@@ -4,9 +4,9 @@ function _logoMark() {
   return `<svg width="28" height="28" viewBox="0 0 80 80" fill="none" style="flex-shrink:0">
     <defs>
       <linearGradient id="nav-grad" x1="40" y1="4" x2="40" y2="76" gradientUnits="userSpaceOnUse">
-        <stop offset="0%"   stop-color="#4796E3"/>
-        <stop offset="45%"  stop-color="#9177C7"/>
-        <stop offset="100%" stop-color="#CA6673"/>
+        <stop offset="0%"   stop-color="#00A0F2"/>
+        <stop offset="45%"  stop-color="#045AA0"/>
+        <stop offset="100%" stop-color="#00DBBE"/>
       </linearGradient>
     </defs>
     <path d="M40 4C40 4 41.6 22 47 35C53 49 68 40 76 40C68 40 53 31 47 45C41.6 58 40 76 40 76C40 76 38.4 58 33 45C27 31 12 40 4 40C12 40 27 49 33 35C38.4 22 40 4 40 4Z" fill="url(#nav-grad)"/>

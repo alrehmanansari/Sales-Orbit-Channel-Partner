@@ -272,8 +272,8 @@ async function loadOBS() {
       if (!byPartner[pid]) {
         byPartner[pid] = {
           partner_id:      pid,
-          partner_name:    a.partner_name    || 'Unknown Partner',
-          partner_company: a.partner_company || a.partner_name || '—',
+          partner_name:    a.partner_company || 'Unknown Partner',
+          partner_company: a.partner_company || '—',
           accounts: []
         };
       }
@@ -372,7 +372,7 @@ function renderCards() {
         <div class="partner-avatar ${colorFor(p.partner_company)}">${initials(p.partner_company)}</div>
         <div style="flex:1;min-width:0">
           <div class="partner-name">${esc(p.partner_company)}</div>
-          <div class="partner-email">${esc(p.partner_name)}</div>
+          <div class="partner-email">${esc(p.partner_company || '—')}</div>
         </div>
         <div style="text-align:right;flex-shrink:0">
           <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.5px">${p.total}</div>

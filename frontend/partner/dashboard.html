@@ -205,8 +205,8 @@
 const user = Auth.requirePartnerAuth();
 if (user) {
   document.getElementById('sidebar-placeholder').outerHTML = Layout.partnerSidebar('dashboard', user);
-  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Partner Dashboard', `Welcome back, ${user.name.split(' ')[0]}`, user);
-  document.getElementById('welcome-heading').textContent   = `Good day, ${user.name.split(' ')[0]}!`;
+  document.getElementById('topbar-placeholder').outerHTML  = Layout.topbar('Partner Dashboard', `Welcome back, ${user.company_name || user.name.split(' ')[0]}`, user);
+  document.getElementById('welcome-heading').textContent   = `Good day, ${user.company_name || user.name.split(' ')[0]}!`;
   Notifications.initNotifications();
   loadDashboard();
 }

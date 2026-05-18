@@ -236,7 +236,7 @@ async function loadTickets() {
         <div class="ticket-meta-row">
           ${Auth.ticketStatusBadge(t.status)}
           <span>${esc(t.account_name)}</span>
-          <span>Partner: ${esc(t.partner_name)}</span>
+          <span>Partner: ${esc(t.partner_company || t.partner_name || '—')}</span>
           ${t.specialist_name ? `<span>Specialist: ${esc(t.specialist_name)}</span>` : ''}
           <span style="margin-left:auto;font-weight:600;color:${parseInt(t.days_to_resolve) > 5 ? 'var(--g-pink)' : 'var(--text3)'}">${Math.round(t.days_to_resolve)}d open</span>
         </div>
@@ -382,7 +382,7 @@ async function loadTicketReport() {
       <tr onclick="openTicket('${t.ticket_id || ''}')" style="cursor:pointer">
         <td style="font-weight:600">#${t.ticket_number}</td>
         <td>${esc(t.account_name)}</td>
-        <td>${esc(t.partner_name)}</td>
+        <td>${esc(t.partner_company || t.partner_name || '—')}</td>
         <td>${esc(t.specialist_name || '—')}</td>
         <td style="font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.query_type)}</td>
         <td>${Auth.ticketStatusBadge(t.status)}</td>

@@ -331,7 +331,7 @@ async function updateAccount(req, res, next) {
     // Fetch partner and owner IDs if not already on `old` (after UPDATE they're still there)
     const changeSummary = buildChangeSummary(old, updated);
     const notifTitle    = `Account updated: ${updated.company_name}`;
-    const actorLabel    = req.user.name;
+    const actorLabel = req.user.company_name || req.user.name;
 
     if (changeSummary) {
       const notifBody = `${actorLabel} updated — ${changeSummary}`;
