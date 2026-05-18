@@ -6,11 +6,22 @@
 <title>Partner Dashboard · Sales Orbit</title>
 <link rel="stylesheet" href="../assets/css/design-system.css"/>
 <style>
-.welcome-card{background:linear-gradient(135deg,rgba(71,150,227,.12),rgba(145,119,199,.12));border:1px solid var(--g-purple-soft);border-radius:20px;padding:24px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden}
-[data-theme=dark] .welcome-card{background:linear-gradient(135deg,rgba(71,150,227,.18),rgba(145,119,199,.18))}
-.welcome-card::before{content:'';position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(145,119,199,.25),transparent 70%)}
-.welcome-h{font-size:22px;font-weight:600;color:var(--text);letter-spacing:-.3px;margin-bottom:4px}
-.welcome-sub{font-size:13px;color:var(--text2)}
+/* ── One-line unified header bar ───────────────────────────────────────── */
+.dash-header-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.dash-header-identity{min-width:0;flex-shrink:0}
+.dash-header-name{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dash-header-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.partner-link-bar{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:7px 12px;transition:border-color .2s}
+.partner-link-bar:focus-within{border-color:var(--light-blue);box-shadow:0 0 0 3px rgba(0,160,242,.10)}
+.partner-link-input{flex:1;border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--text);outline:none;min-width:0}
+.partner-link-input::placeholder{color:var(--text3)}
+.partner-link-copy{padding:5px 12px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg3);font-family:var(--font);font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .18s;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.partner-link-copy:hover{border-color:var(--light-blue);color:var(--light-blue)}
+.dash-header-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}
+@media(max-width:640px){
+  .dash-header-bar{flex-direction:column;align-items:stretch}
+  .partner-link-bar{min-width:0}
+}
 .pipeline-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;margin-bottom:20px}
 [data-theme=dark] .pipeline-card{background:linear-gradient(180deg,#1d1d1d,#141414)}
 .pipeline-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)}
@@ -47,46 +58,39 @@
 
     <div class="page-body">
 
-      <!-- Top action row (no welcome banner) -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div>
-          <div style="font-size:18px;font-weight:700;color:var(--text)" id="welcome-heading"></div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px">Manage your accounts and track your performance.</div>
+      <!-- Single unified header bar: name · partner link · actions -->
+      <div class="dash-header-bar">
+        <!-- Left: company name + subtitle -->
+        <div class="dash-header-identity">
+          <div class="dash-header-name" id="welcome-heading"></div>
+          <div class="dash-header-sub">Manage your accounts and track your performance.</div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a href="accounts.html?action=new" class="btn btn-grad">
-            <svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-            Add Account
-          </a>
-          <a href="accounts.html" class="btn btn-ghost">View All Accounts</a>
-        </div>
-      </div>
 
-      <!-- Partner Link Widget -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-          <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#00A0F2,#00DBBE);display:flex;align-items:center;justify-content:center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <!-- Centre: compact Partner Link inline -->
+        <div class="partner-link-bar">
+          <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#00A0F2,#00DBBE);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           </div>
-          <div>
-            <div style="font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.5px">Partner Link</div>
-            <div style="font-size:10px;color:var(--text3)">Your referral / tracking link</div>
-          </div>
-        </div>
-        <div style="flex:1;min-width:200px;display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;flex-shrink:0">Partner Link</span>
           <input id="partner-link-input" type="url"
             placeholder="https://your-referral-link.com"
-            style="flex:1;border:1.5px solid var(--border2);border-radius:10px;padding:8px 12px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--bg2);outline:none;transition:border-color .2s"
+            class="partner-link-input"
             onfocus="this.style.borderColor='var(--light-blue)'"
             onblur="this.style.borderColor='var(--border2)'"
             oninput="savePartnerLink(this.value)"/>
-          <button onclick="copyPartnerLink()" style="padding:8px 14px;border-radius:10px;border:1.5px solid var(--border2);background:var(--bg3);font-family:var(--font);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px"
-            onmouseenter="this.style.borderColor='var(--light-blue)';this.style.color='var(--light-blue)'"
-            onmouseleave="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'"
-            id="copy-link-btn">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <button onclick="copyPartnerLink()" class="partner-link-copy" id="copy-link-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             Copy
           </button>
+        </div>
+
+        <!-- Right: action buttons -->
+        <div class="dash-header-actions">
+          <a href="accounts.html?action=new" class="btn btn-grad btn-sm">
+            <svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+            Add Account
+          </a>
+          <a href="accounts.html" class="btn btn-ghost btn-sm">All Accounts</a>
         </div>
       </div>
       <!-- Period filter — compact select matching other filters -->

@@ -658,15 +658,128 @@ hr.div-grad { border: none; height: 1px; background: linear-gradient(90deg, tran
 .section-title { font-size: 14px; font-weight: 700; color: var(--text) }
 
 /* ─── RESPONSIVE ──────────────────────────────────────────────────────── */
-@media (max-width: 1023px) { :root { --header-h: 52px } }
-@media (max-width: 768px) {
+
+/* ── Large tablet (≤1024px) ─────────────────────────────────────── */
+@media (max-width: 1024px) {
   :root { --header-h: 52px }
-  .topnav-wrap  { padding: 8px 10px }
-  .topnav       { padding: 5px 8px 5px 12px; height: 48px }
+  .stats-grid   { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) }
+  .chart-grid   { grid-template-columns: 1fr 1fr }
+  .acct-detail-panel { width: 520px !important }
+  .page-body    { padding: 20px }
+}
+
+/* ── Tablet (≤768px) ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --header-h: 50px; --r: 10px; --r-lg: 16px }
+
+  /* Topnav */
+  .topnav-wrap  { padding: 8px 12px }
+  .topnav       { padding: 5px 8px 5px 12px; height: 48px; border-radius: 24px }
   .topnav-logo-name { display: none }
   .topnav-date  { display: none }
+  .topnav-link  { padding: 6px 10px; font-size: 12px }
+  .topnav-sep   { display: none }
+
+  /* Page */
+  .page-body    { padding: 14px }
+  .page-header  { padding: 14px 14px 0 }
+  .page-title   { font-size: 18px }
+
+  /* Grids */
+  .stats-grid   { grid-template-columns: 1fr 1fr; gap: 10px }
   .chart-grid   { grid-template-columns: 1fr }
   .form-row, .form-row-3 { grid-template-columns: 1fr }
-  .stats-grid   { grid-template-columns: 1fr 1fr }
-  .page-body    { padding: 16px }
+
+  /* Tables */
+  .table-wrap   { border-radius: 12px }
+  th, td        { padding: 10px 12px }
+  .table-toolbar { padding: 10px 12px }
+  .table-foot   { padding: 10px 12px; flex-direction: column; gap: 8px }
+
+  /* Detail panels — full screen on tablet */
+  .acct-detail-panel {
+    width: 100vw !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0 !important;
+    top: auto !important;
+    bottom: 0;
+    height: 92vh !important;
+    transform: translateY(100%) !important;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1) !important;
+  }
+  .acct-detail-panel.open { transform: translateY(0) !important }
+
+  /* Modals */
+  .modal-box    { border-radius: 20px; margin: 0 8px }
+  .modal-body, .modal-header, .modal-footer { padding: 16px 18px }
+
+  /* Buttons */
+  .btn          { padding: 8px 14px; font-size: 12px }
+  .btn-sm       { padding: 5px 10px; font-size: 11px }
+
+  /* Search & filters */
+  .search-box   { padding: 7px 10px }
+  .filter-select { min-width: 90px; padding: 6px 8px; font-size: 11px }
+
+  /* Notification panel */
+  .notif-panel  { width: calc(100vw - 24px); right: 12px; left: 12px }
+}
+
+/* ── Mobile (≤480px) ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .page-body    { padding: 10px }
+
+  /* Stats: stack in 1 column on small screens */
+  .stats-grid   { grid-template-columns: 1fr }
+  .stat-card .val { font-size: 24px }
+
+  /* Topnav: only logo + bell + theme */
+  .topnav-links { display: none }
+  .topnav       { justify-content: space-between; gap: 4px }
+  .topnav-wrap  { padding: 6px 10px }
+
+  /* Tables: allow horizontal scroll */
+  .table-wrap   { overflow-x: auto; -webkit-overflow-scrolling: touch }
+  table         { min-width: 520px }
+
+  /* Buttons: full width stacked */
+  .btn          { padding: 10px 14px }
+  .modal-footer { flex-direction: column }
+  .modal-footer .btn { width: 100%; justify-content: center }
+
+  /* Forms */
+  .form-row, .form-row-3 { gap: 10px }
+  .form-input   { font-size: 14px; padding: 11px 12px }
+
+  /* Panel */
+  .acct-detail-panel { height: 96vh !important }
+
+  /* Page header */
+  .page-header  { padding: 12px 10px 0 }
+  .page-title   { font-size: 16px }
+}
+
+/* ── Touch improvements (mobile + tablet) ────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  .btn, .tab-btn, .nav-link, .topnav-link, .notif-item,
+  .acct-row, tbody tr, .pgr button { min-height: 44px }
+  .btn-sm { min-height: 36px }
+  .filter-select { padding: 9px 10px; font-size: 14px }
+  .search-box input { font-size: 16px } /* prevents iOS zoom */
+  .form-input, select.form-input { font-size: 16px }
+
+  /* Increase tap targets */
+  .panel-close  { width: 40px; height: 40px }
+  .modal-close  { width: 36px; height: 36px }
+  .panel-tab-action { min-height: 44px; padding: 0 16px }
+}
+
+/* ── Landscape mobile (height < 500px) ──────────────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  .acct-detail-panel { height: 100vh !important; width: 80vw !important;
+    top: 0 !important; right: 0 !important; bottom: auto !important;
+    border-radius: 0 !important; transform: translateX(100%) !important }
+  .acct-detail-panel.open { transform: translateX(0) !important }
+  .page-body { padding: 10px }
 }
