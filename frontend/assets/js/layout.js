@@ -31,12 +31,12 @@ function _rightControls(user) {
       </div>
       <div style="position:relative">
         <button onclick="Layout.toggleUserMenu()" style="display:flex;align-items:center;gap:8px;background:transparent;border:1px solid transparent;border-radius:10px;padding:5px 10px;cursor:pointer;transition:all .15s;font-family:var(--font)"
-          onmouseenter="this.style.background='var(--bg3)';this.style.borderColor='var(--border2)'"
+          onmouseenter="this.style.background='rgba(0,172,234,.15)';this.style.borderColor='rgba(0,172,234,.30)'"
           onmouseleave="this.style.background='transparent';this.style.borderColor='transparent'">
           <span class="av av-sm ${Auth.avatarColor(user?.company_name || user?.name)}" id="user-avatar">${Auth.avatarInitials(user?.company_name || user?.name)}</span>
           <div style="text-align:left">
-            <div class="user-name" id="user-name">${user?.role === 'channel_partner' ? (user?.company_name || user?.name || '') : (user?.name || '')}</div>
-            <div class="user-role" id="user-role">${Auth.roleLabel(user?.role)}</div>
+            <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.90)" id="user-name">${user?.role === 'channel_partner' ? (user?.company_name || user?.name || '') : (user?.name || '')}</div>
+            <div style="font-size:10px;color:rgba(0,172,234,.80)" id="user-role">${Auth.roleLabel(user?.role)}</div>
           </div>
           <svg style="width:14px;height:14px;color:var(--text3);flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
         </button>
