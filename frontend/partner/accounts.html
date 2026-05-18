@@ -93,28 +93,6 @@
   <div class="main-content">
     <div id="topbar-placeholder"></div>
     <div class="page-body">
-      <!-- Period filter — compact select matching other filters -->
-      <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-        <select class="filter-select" id="period-filter" onchange="handlePeriodSelect(this.value)" style="min-width:150px">
-          <option value="">All Time</option>
-          <option value="current_week">This Week</option>
-          <option value="last_week">Last Week</option>
-          <option value="current_month">This Month</option>
-          <option value="last_month">Last Month</option>
-          <option value="current_quarter">This Quarter</option>
-          <option value="prev_quarter">Prev Quarter</option>
-          <option value="next_quarter">Next Quarter</option>
-          <option value="ytd">Year to Date</option>
-          <option value="custom">Custom Range…</option>
-        </select>
-        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
-          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
-          <span style="color:var(--text3);font-size:11px">–</span>
-          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
-        </span>
-        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px">✕ Clear</button>
-      </div>
-
       <!-- Toolbar: Search + Filters + Actions -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
         <div class="search-box" style="min-width:220px">
@@ -122,6 +100,24 @@
           <input id="search-input" placeholder="Search by company, director, email, client ID…" oninput="debounceSearch()"/>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <select class="filter-select" id="period-filter" onchange="handlePeriodSelect(this.value)">
+            <option value="">All Time</option>
+            <option value="current_week">This Week</option>
+            <option value="last_week">Last Week</option>
+            <option value="current_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="current_quarter">This Quarter</option>
+            <option value="prev_quarter">Prev Quarter</option>
+            <option value="next_quarter">Next Quarter</option>
+            <option value="ytd">Year to Date</option>
+            <option value="custom">Custom Range…</option>
+          </select>
+          <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+            <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+            <span style="color:var(--text3);font-size:11px">–</span>
+            <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+          </span>
+          <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px">✕ Clear</button>
           <select id="filter-status" class="filter-select" onchange="loadAccounts()">
             <option value="">All Stages</option>
             <option value="registered">Registered</option>

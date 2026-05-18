@@ -56,65 +56,59 @@
     <div id="topbar-placeholder"></div>
     <div class="page-body">
 
-      <!-- ═══ FILTERS ═══ -->
-      <div class="filter-row" id="filters-row">
-        <div class="filter-group">
-          <span class="filter-label">Month</span>
-          <input type="month" class="filter-input" id="f-month" style="min-width:140px"/>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Partner</span>
-          <select class="filter-select" id="f-partner"><option value="">All Partners</option></select>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Vertical</span>
-          <select class="filter-select" id="f-vertical">
-            <option value="">All Verticals</option>
-            <option value="it_services_provider">IT Services</option>
-            <option value="ecomm_seller">E-comm Seller</option>
-            <option value="b2b_seller">B2B Goods Exports</option>
-            <option value="freelancer">Freelancer</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Reg Date From</span>
-          <input type="date" class="filter-input" id="f-date-from"/>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Reg Date To</span>
-          <input type="date" class="filter-input" id="f-date-to"/>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Onboarding Specialist</span>
-          <select class="filter-select" id="f-owner"><option value="">All Onboarding Specialists</option></select>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Account Status</span>
-          <select class="filter-select" id="f-status">
-            <option value="">All Statuses</option>
-            <option value="registered">Registered</option>
-            <option value="in_review">In Review</option>
-            <option value="onboarded">Onboarded</option>
-            <option value="activated">Activated</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">KYC Agent</span>
-          <input type="text" class="filter-input" id="f-kyc" placeholder="Agent name…"/>
-        </div>
-        <div class="filter-group">
-          <span class="filter-label">Business Type</span>
-          <select class="filter-select" id="f-biz">
-            <option value="">All Types</option>
-            <option value="new">New</option>
-            <option value="established">Established</option>
-          </select>
-        </div>
-        <div class="filter-group" style="justify-content:flex-end">
-          <button class="btn btn-grad btn-sm" onclick="applyFilters()">Apply Filters</button>
-          <button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="clearFilters()">Clear</button>
-        </div>
+      <!-- ═══ UNIFIED FILTER BAR (same pattern as all other pages) ═══ -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        <!-- Period filter first -->
+        <select class="filter-select" id="period-filter" onchange="handlePeriodSelect(this.value)">
+          <option value="">All Time</option>
+          <option value="current_week">This Week</option>
+          <option value="last_week">Last Week</option>
+          <option value="current_month">This Month</option>
+          <option value="last_month">Last Month</option>
+          <option value="current_quarter">This Quarter</option>
+          <option value="prev_quarter">Prev Quarter</option>
+          <option value="next_quarter">Next Quarter</option>
+          <option value="ytd">Year to Date</option>
+          <option value="custom">Custom Range…</option>
+        </select>
+        <span id="custom-date-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="date" id="custom-start" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+          <span style="color:var(--text3);font-size:11px">–</span>
+          <input type="date" id="custom-end" class="filter-select" style="padding:3px 8px;font-size:11px;width:120px" onchange="applyCustomDate()"/>
+        </span>
+        <button id="dc-clear" onclick="clearDateFilter()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--g-pink);padding:2px 6px">✕ Clear</button>
+        <!-- Other filters — same selects as all other pages -->
+        <select class="filter-select" id="f-status" onchange="applyFilters()">
+          <option value="">All Stages</option>
+          <option value="registered">Registered</option>
+          <option value="in_review">In Review</option>
+          <option value="onboarded">Onboarded</option>
+          <option value="activated">Activated</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <select class="filter-select" id="f-vertical" onchange="applyFilters()">
+          <option value="">All Verticals</option>
+          <option value="it_services_provider">IT Services</option>
+          <option value="ecomm_seller">E-comm Seller</option>
+          <option value="b2b_seller">B2B Goods Exports</option>
+          <option value="freelancer">Freelancer</option>
+        </select>
+        <select class="filter-select" id="f-biz" onchange="applyFilters()">
+          <option value="">All Biz Types</option>
+          <option value="new">New</option>
+          <option value="established">Established</option>
+        </select>
+        <select class="filter-select" id="f-partner" onchange="applyFilters()">
+          <option value="">All Partners</option>
+        </select>
+        <select class="filter-select" id="f-owner" onchange="applyFilters()">
+          <option value="">All Onboarding Specialists</option>
+        </select>
+        <!-- Hidden compat IDs used by existing JS -->
+        <input type="hidden" id="f-month" value=""/>
+        <input type="hidden" id="f-date-from" value=""/>
+        <input type="hidden" id="f-date-to" value=""/>
+        <input type="hidden" id="f-kyc" value=""/>
       </div>
 
       <!-- ═══ STATS ═══ -->
@@ -374,21 +368,67 @@ function getFilterParams() {
   };
 }
 
+// ── Period filter (matching all other pages) ──────────────────────────────
+let activeDateFilter = { key: null, start: null, end: null };
+
+function getDateRange(key) {
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth();
+  const dow = now.getDay(), mon = new Date(now);
+  mon.setDate(now.getDate() - ((dow + 6) % 7));
+  const fmt = d => d.toISOString().split('T')[0];
+  switch (key) {
+    case 'current_week':  { const sun=new Date(mon); sun.setDate(mon.getDate()+6); return [fmt(mon),fmt(sun)]; }
+    case 'last_week':     { const lm=new Date(mon); lm.setDate(mon.getDate()-7); const ls=new Date(lm); ls.setDate(lm.getDate()+6); return [fmt(lm),fmt(ls)]; }
+    case 'current_month': return [fmt(new Date(y,m,1)), fmt(new Date(y,m+1,0))];
+    case 'last_month':    return [fmt(new Date(y,m-1,1)), fmt(new Date(y,m,0))];
+    case 'current_quarter':{ const q=Math.floor(m/3); return [fmt(new Date(y,q*3,1)),fmt(new Date(y,q*3+3,0))]; }
+    case 'prev_quarter':  { const q=Math.floor(m/3)-1,qy=q<0?y-1:y,qq=q<0?3:q; return [fmt(new Date(qy,qq*3,1)),fmt(new Date(qy,qq*3+3,0))]; }
+    case 'next_quarter':  { const q=Math.floor(m/3)+1,qy=q>3?y+1:y,qq=q>3?0:q; return [fmt(new Date(qy,qq*3,1)),fmt(new Date(qy,qq*3+3,0))]; }
+    case 'ytd': return [fmt(new Date(y,0,1)), fmt(now)];
+    default: return [null, null];
+  }
+}
+function handlePeriodSelect(val) {
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  document.getElementById('dc-clear').style.display = 'none';
+  if (!val) { clearDateFilter(); return; }
+  if (val === 'custom') {
+    document.getElementById('custom-date-wrap').style.display = 'flex';
+    document.getElementById('dc-clear').style.display = 'inline-block';
+    return;
+  }
+  const [start, end] = getDateRange(val);
+  activeDateFilter = { key: val, start, end };
+  document.getElementById('dc-clear').style.display = 'inline-block';
+  applyFilters();
+}
+function applyCustomDate() {
+  const s = document.getElementById('custom-start').value, e = document.getElementById('custom-end').value;
+  if (s && e) { activeDateFilter = { key:'custom', start:s, end:e }; applyFilters(); }
+}
+function clearDateFilter() {
+  activeDateFilter = { key:null, start:null, end:null };
+  const pf = document.getElementById('period-filter'); if (pf) pf.value = '';
+  document.getElementById('custom-date-wrap').style.display = 'none';
+  document.getElementById('dc-clear').style.display = 'none';
+  ['custom-start','custom-end'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  applyFilters();
+}
+
 async function applyFilters() {
+  // Sync period filter dates into hidden compat fields
+  const sd = document.getElementById('f-date-from'); if (sd) sd.value = activeDateFilter.start || '';
+  const ed = document.getElementById('f-date-to');   if (ed) ed.value = activeDateFilter.end   || '';
   acctPage = 1;
   await Promise.all([loadDashboard(), loadAccountsTable()]);
 }
 
 function clearFilters() {
-  ['f-month','f-partner','f-vertical','f-date-from','f-date-to',
-   'f-owner','f-status','f-biz'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+  ['f-partner','f-vertical','f-owner','f-status','f-biz'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
   });
-  document.getElementById('f-kyc').value = '';
+  clearDateFilter(); // resets period filter + calls applyFilters
   acctPage = 1;
-  loadDashboard();
-  loadAccountsTable();
 }
 
 // ── STATS + CHARTS + FUNNEL ──
