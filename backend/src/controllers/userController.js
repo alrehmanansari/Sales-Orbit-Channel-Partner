@@ -151,15 +151,14 @@ async function listSpecialists(req, res, next) {
   }
 }
 
-// Returns all active internal team members for the Onboarding Specialist dropdown
-// COS and Manager Partnerships for the partner's Onboarding Specialist dropdown.
-// Excludes seed/system accounts (@salesorbit.app) — only real signed-up members.
+// Returns only Onboarding Specialists for the partner's Add Account dropdown.
+// Partnerships Manager excluded — they appear only in management views.
 async function listSalesTeam(req, res, next) {
   try {
     const result = await query(
       `SELECT id, name, email, role, designation
        FROM users
-       WHERE role IN ('customer_onboarding_specialist', 'manager_partnerships')
+       WHERE role = 'customer_onboarding_specialist'
          AND is_active = TRUE
          AND email NOT LIKE '%@salesorbit.app'
        ORDER BY name`,
