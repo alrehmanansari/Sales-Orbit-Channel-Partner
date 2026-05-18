@@ -614,4 +614,34 @@ async function exportAccounts(req, res, next) {
   }
 }
 
-module.exports = { listAccounts, getAccount, createAccount, updateAccount, bulkUploadAccounts, exportAccounts };
+async function deleteAccount(req, res, next) {
+  const client = await getClient();
+  try {
+    const { id } = req.params;
+    // Only internal team can delete accounts
+    if (req.user.role === ROLES.CHANNEL_PARTNER) {
+      return res.status(403).json({ error: 'Channel partners cannot delete accounts' });
+    }
+    // Check account exists
+    const check = await client.query('SELECT id, company_name, partner_id FROM accounts WHERE id = $1', [id]);
+    if (!check.rows.length) return res.status(404).json({ error: 'Account not found' });
+
+    await client.query('BEGIN');
+    // Delete in FK-safe order: notes, audit_logs, tickets, notifications, then account
+    await client.query('DELETE FROM notifications WHERE reference_id = $1', [id]);
+    await client.query('DELETE FROM audit_logs WHERE account_id = $1', [id]);
+    await client.query('DELETE FROM notes WHERE account_id = $1', [id]);
+    await client.query('DELETE FROM tickets WHERE account_id = $1', [id]);
+    await client.query('DELETE FROM accounts WHERE id = $1', [id]);
+    await client.query('COMMIT');
+
+    res.json({ message: `Account "${check.rows[0].company_name}" deleted successfully` });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { listAccounts, getAccount, createAccount, updateAccount, bulkUploadAccounts, exportAccounts, deleteAccount };

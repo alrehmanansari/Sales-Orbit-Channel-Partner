@@ -228,6 +228,10 @@
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       Move Stage
     </button>
+    <button id="delete-acct-btn" class="panel-tab-action" style="display:none;color:#DB5C46;border-left:1px solid var(--border)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      Delete
+    </button>
   </div>
   <div class="panel-body">
 
@@ -437,8 +441,9 @@
       </div>
       <div id="stage-options" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-    <div class="modal-footer">
+    <div class="modal-footer" style="justify-content:space-between">
       <button class="btn btn-ghost" onclick="closeStageModal()">Cancel</button>
+      <button id="confirm-stage-btn" class="btn btn-grad" onclick="confirmMoveStage()" style="display:none">Confirm Stage Move</button>
     </div>
   </div>
 </div>
@@ -467,6 +472,18 @@ let _panelAccount   = null;
 
 function openStageModalCurrent() {
   if (_panelAccount) openStageModal(_panelAccount.id, _panelAccount.status, _panelAccount.company_name);
+}
+
+async function deleteAccountConfirm(accountId, companyName) {
+  if (!confirm(`Delete "${companyName}" permanently?\n\nThis will remove all notes, tickets, history, and notifications for this account. This cannot be undone.`)) return;
+  try {
+    await API.deleteAccount(accountId);
+    Auth.showToast(`"${companyName}" deleted successfully.`, 'success');
+    closePanel();
+    loadAccounts();
+  } catch (e) {
+    Auth.showToast(e.message || 'Failed to delete account.', 'error');
+  }
 }
 let activeDateFilter = { key: null, start: null, end: null };
 
@@ -786,6 +803,9 @@ async function openPanel(id, defaultTab = 'info') {
     // Show Move Stage button in tab bar
     const msBtn = document.getElementById('move-stage-btn');
     if (msBtn) msBtn.style.display = 'flex';
+    // Show delete button in tab bar
+    const delBtn = document.getElementById('delete-acct-btn');
+    if (delBtn) { delBtn.style.display = 'flex'; delBtn.onclick = () => deleteAccountConfirm(a.id, a.company_name); }
 
     // Populate edit fields — null-safe so missing elements never crash the panel
     const sv = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
@@ -1013,47 +1033,73 @@ const STAGES = [
   { value:'rejected',   label:'Rejected',   color:'#D93025' },
 ];
 
+let _selectedStage = null;
+
 function openStageModal(accountId, currentStatus, companyName) {
   currentAccountId = accountId;
+  _selectedStage   = null;
   document.getElementById('stage-modal-sub').textContent = `${companyName} — current: ${STAGES.find(s=>s.value===currentStatus)?.label||currentStatus}`;
   document.getElementById('stage-err').style.display = 'none';
-  // Default date = today
-  document.getElementById('stage-date-input').value = new Date().toISOString().split('T')[0];
-  document.getElementById('stage-options').innerHTML = STAGES.map(s => {
-    const isCurrent = s.value === currentStatus;
-    return `<button onclick="moveStage('${accountId}','${s.value}')" style="
-      display:flex;align-items:center;gap:12px;padding:12px 16px;
-      border-radius:10px;border:2px solid ${isCurrent?s.color:'var(--border)'};
-      background:${isCurrent?'var(--bg2)':'var(--surface)'};
-      cursor:${isCurrent?'default':'pointer'};
-      font-family:var(--font);font-size:13px;font-weight:${isCurrent?'700':'500'};
-      color:${isCurrent?s.color:'var(--text)'};text-align:left;width:100%;transition:all .18s"
-      ${isCurrent?'disabled':''}>
-      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
-      ${s.label}
-      ${isCurrent?'<span style="margin-left:auto;font-size:11px;opacity:.6">Current</span>':''}
-    </button>`;
-  }).join('');
+  document.getElementById('stage-date-input').value   = new Date().toISOString().split('T')[0];
+  renderStageOptions(accountId, currentStatus);
   document.getElementById('stage-modal').classList.remove('hidden');
 }
 
-function closeStageModal() { document.getElementById('stage-modal').classList.add('hidden'); }
+function renderStageOptions(accountId, currentStatus, selectedStatus) {
+  document.getElementById('stage-options').innerHTML = STAGES.map(s => {
+    const isCurrent  = s.value === currentStatus;
+    const isSelected = s.value === selectedStatus;
+    const border = isSelected ? `3px solid ${s.color}` : isCurrent ? `2px solid ${s.color}` : '2px solid var(--border)';
+    const bg     = isSelected ? `${s.color}18` : isCurrent ? 'var(--bg2)' : 'var(--surface)';
+    return `<button onclick="selectStage('${accountId}','${currentStatus}','${s.value}')" style="
+      display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:10px;border:${border};
+      background:${bg};cursor:${isCurrent&&!isSelected?'default':'pointer'};
+      font-family:var(--font);font-size:13px;font-weight:${isSelected?'700':isCurrent?'600':'500'};
+      color:${isSelected||isCurrent?s.color:'var(--text)'};text-align:left;width:100%;transition:all .18s"
+      ${isCurrent&&!isSelected?'':''}
+    >
+      <span style="width:10px;height:10px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+      ${s.label}
+      ${isCurrent?'<span style="margin-left:auto;font-size:10px;opacity:.6">Current</span>':''}
+      ${isSelected?'<span style="margin-left:auto;font-size:10px;font-weight:700;color:'+s.color+'">✓ Selected</span>':''}
+    </button>`;
+  }).join('');
+}
 
-async function moveStage(accountId, newStatus) {
+function selectStage(accountId, currentStatus, newStatus) {
+  if (newStatus === currentStatus) return;
+  _selectedStage = newStatus;
+  renderStageOptions(accountId, currentStatus, newStatus);
+  document.getElementById('confirm-stage-btn').style.display = 'block';
+  document.getElementById('confirm-stage-btn').textContent   =
+    `Confirm → ${STAGES.find(s=>s.value===newStatus)?.label}`;
+}
+
+function closeStageModal() {
+  document.getElementById('stage-modal').classList.add('hidden');
+  _selectedStage = null;
+}
+
+async function confirmMoveStage() {
+  if (!_selectedStage) { Auth.showToast('Please select a stage first.', 'error'); return; }
   const errEl     = document.getElementById('stage-err');
   const stageDate = document.getElementById('stage-date-input').value;
   errEl.style.display = 'none';
+  document.getElementById('confirm-stage-btn').disabled = true;
   try {
-    await API.updateAccount(accountId, { status: newStatus, stage_date: stageDate });
+    await API.updateAccount(currentAccountId, { status: _selectedStage, stage_date: stageDate });
     closeStageModal();
-    Auth.showToast(`Stage moved to ${STAGES.find(s=>s.value===newStatus)?.label}.`, 'success');
-    openPanel(accountId);
+    Auth.showToast(`Stage moved to ${STAGES.find(s=>s.value===_selectedStage)?.label}.`, 'success');
+    openPanel(currentAccountId);
     loadAccounts();
   } catch (e) {
     errEl.textContent = e.message || 'Failed to update stage.';
     errEl.style.display = 'block';
+    document.getElementById('confirm-stage-btn').disabled = false;
   }
 }
+
+async function moveStage(accountId, newStatus) { selectStage(accountId, _panelAccount?.status||'', newStatus); }
 
 // ── RICH AUDIT LOG ─────────────────────────────────────────────────────────────
 const AUDIT_FIELD_LABELS = {

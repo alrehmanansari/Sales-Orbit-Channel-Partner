@@ -4,7 +4,7 @@ const { authenticate, requireInternal } = require('../middleware/auth');
 const { bulkUpload } = require('../middleware/upload');
 const {
   listAccounts, getAccount, createAccount,
-  updateAccount, bulkUploadAccounts, exportAccounts
+  updateAccount, bulkUploadAccounts, exportAccounts, deleteAccount
 } = require('../controllers/accountController');
 const { getNotes, createNote, getAuditLog } = require('../controllers/noteController');
 
@@ -17,6 +17,7 @@ router.get('/export',   exportAccounts);
 router.post('/bulk',    bulkUpload.single('file'), bulkUploadAccounts);
 router.get('/:id',      getAccount);
 router.put('/:id',      updateAccount);
+router.delete('/:id',   deleteAccount);
 
 // Notes & audit within account
 router.get('/:accountId/notes',     getNotes);

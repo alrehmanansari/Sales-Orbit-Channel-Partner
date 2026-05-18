@@ -60,6 +60,7 @@ const API = {
   getAccount:     (id)              => apiFetch(`/accounts/${id}`),
   createAccount:  (body)            => apiFetch('/accounts',             { method: 'POST', body: JSON.stringify(body) }),
   updateAccount:  (id, body)        => apiFetch(`/accounts/${id}`,       { method: 'PUT',  body: JSON.stringify(body) }),
+  deleteAccount:  (id)              => apiFetch(`/accounts/${id}`,       { method: 'DELETE' }),
   bulkUpload:     (formData)        => apiFetch('/accounts/bulk',        { method: 'POST', body: formData }),
   exportAccounts: (params = {})     => `${API_BASE}/accounts/export?` + new URLSearchParams({ ...params, _t: getToken() }),
 

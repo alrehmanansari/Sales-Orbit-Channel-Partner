@@ -62,6 +62,7 @@ async function register(req, res, next) {
     const DESIGNATION_ROLE_MAP = {
       'Channel Partner':                     ROLES.CHANNEL_PARTNER,
       'Onboarding Specialist':               ROLES.CUSTOMER_ONBOARDING_SPECIALIST,
+      'Partnerships Manager':               ROLES.MANAGER_PARTNERSHIPS,
       // Legacy mappings — kept for existing users
       'Customer Onboarding Specialist':      ROLES.CUSTOMER_ONBOARDING_SPECIALIST,
       'Manager Partnerships':                ROLES.MANAGER_PARTNERSHIPS,

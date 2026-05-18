@@ -421,10 +421,10 @@ async function loadDashboard() {
 function renderFunnel(f) {
   const total = parseInt(f.total_registered) || 0;
   const steps = [
-    { label:'Total Accounts Registered', count:parseInt(f.total_registered)||0, color:'#4796E3', pct:100 },
-    { label:'In Review',                 count:parseInt(f.in_review)||0,         color:'#9177C7', pct:total?Math.round((f.in_review/total)*100):0 },
-    { label:'Onboarded Accounts',        count:parseInt(f.onboarded)||0,         color:'#CA6673', pct:total?Math.round((f.onboarded/total)*100):0 },
-    { label:'Activated Accounts',        count:parseInt(f.activated)||0,         color:'#1E8E3E', pct:total?Math.round((f.activated/total)*100):0 },
+    { label:'Total Accounts Registered', count:parseInt(f.total_registered)||0, color:'#00A0F2', pct:100 },
+    { label:'In Review',                 count:parseInt(f.in_review)||0,         color:'#045AA0', pct:total?Math.round((f.in_review/total)*100):0 },
+    { label:'Onboarded Accounts',        count:parseInt(f.onboarded)||0,         color:'#00DBBE', pct:total?Math.round((f.onboarded/total)*100):0 },
+    { label:'Activated Accounts',        count:parseInt(f.activated)||0,         color:'#3FDBFF', pct:total?Math.round((f.activated/total)*100):0 },
   ];
   const widths = [100, 85, 70, 55];
   document.getElementById('funnel-steps').innerHTML = steps.map((s,i) => `
@@ -521,28 +521,28 @@ function initCharts() {
   };
   chartReg = new Chart(document.getElementById('chart-registration'), {
     type:'line',
-    data:{ labels:[], datasets:[{ label:'Registered', data:[], borderColor:'#4796E3', backgroundColor:'rgba(71,150,227,.12)', fill:true, tension:.4, borderWidth:2, pointRadius:3 }] },
+    data:{ labels:[], datasets:[{ label:'Registered', data:[], borderColor:'#00A0F2', backgroundColor:'rgba(0,160,242,.10)', fill:true, tension:.4, borderWidth:2, pointRadius:3 }] },
     options:{ ...baseOpts }
   });
   chartAct = new Chart(document.getElementById('chart-activation'), {
     type:'line',
-    data:{ labels:[], datasets:[{ label:'Activated', data:[], borderColor:'#1E8E3E', backgroundColor:'rgba(30,142,62,.1)', fill:true, tension:.4, borderWidth:2, pointRadius:3 }] },
+    data:{ labels:[], datasets:[{ label:'Activated', data:[], borderColor:'#00DBBE', backgroundColor:'rgba(0,219,190,.08)', fill:true, tension:.4, borderWidth:2, pointRadius:3 }] },
     options:{ ...baseOpts }
   });
   chartBiz = new Chart(document.getElementById('chart-biztype'), {
     type:'bar',
     data:{ labels:[], datasets:[
-      { label:'New', data:[], backgroundColor:'rgba(71,150,227,.75)', borderRadius:4 },
-      { label:'Established', data:[], backgroundColor:'rgba(145,119,199,.75)', borderRadius:4 }
+      { label:'New', data:[], backgroundColor:'rgba(0,160,242,.80)', borderRadius:4 },
+      { label:'Established', data:[], backgroundColor:'rgba(4,90,160,.75)', borderRadius:4 }
     ]},
     options:{ ...baseOpts, plugins:{ legend:{ display:true, labels:{ color:textColor(), font:{family:'Google Sans',size:10} } } } }
   });
   chartVol = new Chart(document.getElementById('chart-volume'), {
     type:'bar',
     data:{ labels:[], datasets:[
-      { label:'Registered', data:[], backgroundColor:'rgba(71,150,227,.7)',  borderRadius:4 },
-      { label:'Onboarded',  data:[], backgroundColor:'rgba(145,119,199,.7)', borderRadius:4 },
-      { label:'Activated',  data:[], backgroundColor:'rgba(30,142,62,.7)',   borderRadius:4 },
+      { label:'Registered', data:[], backgroundColor:'rgba(0,160,242,.80)',  borderRadius:4 },
+      { label:'Onboarded',  data:[], backgroundColor:'rgba(4,90,160,.75)', borderRadius:4 },
+      { label:'Activated',  data:[], backgroundColor:'rgba(0,219,190,.75)',   borderRadius:4 },
     ]},
     options:{ ...baseOpts, plugins:{ legend:{ display:true, labels:{ color:textColor(), font:{family:'Google Sans',size:10} } } } }
   });
